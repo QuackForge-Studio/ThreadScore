@@ -5,9 +5,13 @@ import { VOTE_RATE_LIMIT } from '../../src/shared/constants';
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   const ip = context.request.headers.get('CF-Connecting-IP') ?? 'unknown';
   const { checkRateLimit } = await import('../../src/server/services/rateLimit');
-  const rl = await checkRateLimit(context.env, `vote:${ip}`, VOTE_RATE_LIMIT);
-  if (!rl.allowed) {
-    return Response.json({ error: 'Bạn đã vote quá số lần cho phép (3 lần/giờ). Vui lòng thử lại sau.' }, { status: 429 });
+  const { getSession } = await import('../../src/server/services/session');
+  const sessionUser = await getSession(context.env, context.request);
+  if (!sessionUser) {
+    const rl = await checkRateLimit(context.env, `vote:${ip}`, VOTE_RATE_LIMIT);
+    if (!rl.allowed) {
+      return Response.json({ error: 'Bạn đã vote quá số lần cho phép (3 lần/giờ). Vui lòng thử lại sau.' }, { status: 429 });
+    }
   }
 
   const body = await context.request.json().catch(() => null);
@@ -18,7 +22,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const { newId, nowSec } = await import('../../src/server/db');
 
   await insertVote(context.env.DB, {
-    id: newId(), comment_id: parsed.data.comment_id, user_id: null,
+    id: newId(), comment_id: parsed.data.comment_id, user_id: sessionUser ? `${sessionUser.provider}:${sessionUser.external_id}` : null,
     vote: parsed.data.vote, created_at: nowSec(),
   });
   const counts = await getVoteCounts(context.env.DB, parsed.data.comment_id);
