@@ -86,4 +86,27 @@ describe('runScoringWorker', () => {
     expect(scores).toHaveLength(2);
     expect(scores[0].model).toBe('lexicon-fallback');
   });
+
+  it('resumes scoring across runs when comments exceed the per-run batch ceiling', async () => {
+    // 20 batches × 25 comments = 500 per run; 501 forces a leftover 'scoring' state.
+    const comments = Array.from({ length: 501 }, (_, i) => ({
+      external_id: `big-${i}`,
+      text: i % 2 === 0 ? 'đồ ngu' : 'rất vui',
+    }));
+    const { threadId } = await importThreadPayload(env as never, payload(comments));
+
+    const first = await runScoringWorker(env as never);
+    expect(first.scoredComments).toBe(500);
+
+    const mid = await getThreadByUrl(env.DB, URL);
+    expect(mid?.scoring_status).toBe('scoring');
+    expect(await getScoresForThread(env.DB, threadId)).toHaveLength(500);
+
+    const second = await runScoringWorker(env as never);
+    expect(second.scoredComments).toBe(1);
+
+    const done = await getThreadByUrl(env.DB, URL);
+    expect(done?.scoring_status).toBe('scored');
+    expect(await getScoresForThread(env.DB, threadId)).toHaveLength(501);
+  });
 });
