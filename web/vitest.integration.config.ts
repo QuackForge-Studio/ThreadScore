@@ -9,6 +9,7 @@ export default defineWorkersConfig({
         miniflare: {
           bindings: { ADMIN_SECRET_KEY: 'test-secret', TEST_MIGRATIONS: migrations },
           d1Databases: { DB: 'threadscore-test' },
+          kvNamespaces: { KV: 'threadscore-test-kv' },
           compatibilityDate: '2024-08-01',
         },
       },
