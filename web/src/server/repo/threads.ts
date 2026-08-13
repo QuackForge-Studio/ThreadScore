@@ -36,8 +36,10 @@ export async function listThreads(db: D1Database, opts: { sort: 'newest' | 'hott
 }
 
 export async function listPendingScoring(db: D1Database, limit: number): Promise<ThreadRecord[]> {
+  // Include 'scoring' threads so a worker that crashed (or a prior pass that hit the
+  // MAX_WORKER_BATCHES ceiling) can be resumed on the next run.
   const { results } = await db.prepare(
-    `SELECT * FROM threads WHERE scoring_status = 'pending_scoring' ORDER BY created_at ASC LIMIT ?`
+    `SELECT * FROM threads WHERE scoring_status IN ('pending_scoring', 'scoring') ORDER BY created_at ASC LIMIT ?`
   ).bind(limit).all<ThreadRecord>();
   return results ?? [];
 }
