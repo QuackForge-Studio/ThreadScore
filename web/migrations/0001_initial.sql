@@ -69,3 +69,8 @@ CREATE TABLE IF NOT EXISTS user_comments (
   created_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_user_comments_thread ON user_comments(thread_id);
+
+CREATE TABLE IF NOT EXISTS locks (
+  name TEXT PRIMARY KEY,
+  expires_at INTEGER NOT NULL
+);

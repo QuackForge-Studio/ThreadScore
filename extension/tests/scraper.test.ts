@@ -28,6 +28,11 @@ function makeDom(): Document {
         <span class="reply-text">Tuyệt vời</span>
         <span class="reply-likes">3</span>
       </div>
+      <div class="reply-item">
+        <span class="reply-author">@c</span>
+        <span class="reply-text">Rất vui</span>
+        <span class="reply-likes">12.3K</span>
+      </div>
     </div>
   </body></html>`;
   return new JSDOM(html).window.document;
@@ -39,8 +44,9 @@ describe('scrapeCurrentThread', () => {
     const result = await scrapeCurrentThread(doc);
     expect(result.title).toBe('Giá xăng tăng phi mã');
     expect(result.author_username).toBe('nguoila');
-    expect(result.comments).toHaveLength(2);
+    expect(result.comments).toHaveLength(3);
     expect(result.comments[0].text).toBe('Tôi ghét điều này');
     expect(result.comments[0].like_count).toBe(12);
+    expect(result.comments[2].like_count).toBe(12300);
   });
 });

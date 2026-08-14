@@ -9,6 +9,6 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     await destroySession(context.env, m[1]);
   }
   const res = Response.json({ ok: true });
-  res.headers.append('Set-Cookie', `${SESSION_COOKIE}=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0`);
+  res.headers.append('Set-Cookie', `${SESSION_COOKIE}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`);
   return res;
 };

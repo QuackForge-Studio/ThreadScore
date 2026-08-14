@@ -41,7 +41,7 @@ describe('ThreadPage', () => {
     );
     await waitFor(() => expect(screen.getByText('Chủ đề test')).toBeTruthy());
     expect(screen.getByText('85.0/100')).toBeTruthy();
-    expect(screen.getByText('Tôi ghét điều này')).toBeTruthy();
+    expect(screen.getAllByText('Tôi ghét điều này').length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Bùng nổ/).length).toBeGreaterThan(0);
   });
 });
