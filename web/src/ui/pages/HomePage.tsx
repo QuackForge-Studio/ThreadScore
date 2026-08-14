@@ -24,8 +24,32 @@ export default function HomePage() {
 
   return (
     <div className="page">
-      <h1 className="page-title">ThreadScore</h1>
+      <section className="hero">
+        <span className="hero-eyebrow">Chấm điểm tức giận bằng AI</span>
+        <h1 className="hero-title">
+          Bài nào đang <span className="accent">bùng nổ</span>?
+        </h1>
+        <p className="hero-subtitle">
+          Dán link Threads vào để xem từng bình luận được chấm điểm tức giận từ 0 đến 100.
+        </p>
+        <div className="spectrum" aria-label="Quang phổ điểm">
+          <span className="spectrum-item">
+            <span className="spectrum-dot anger" />
+            Bùng nổ <span className="spectrum-range">70-100</span>
+          </span>
+          <span className="spectrum-item">
+            <span className="spectrum-dot neutral" />
+            Trung lập <span className="spectrum-range">30-69</span>
+          </span>
+          <span className="spectrum-item">
+            <span className="spectrum-dot calm" />
+            Vui vẻ <span className="spectrum-range">0-29</span>
+          </span>
+        </div>
+      </section>
+
       <SearchBox />
+
       <div className="sort-tabs">
         {(['newest', 'hottest', 'most_comments'] as const).map(s => (
           <button key={s} className={`sort-tab${sort === s ? ' active' : ''}`} onClick={() => setSort(s)}>
@@ -33,6 +57,7 @@ export default function HomePage() {
           </button>
         ))}
       </div>
+
       {error && (
         <div className="error-banner" role="alert">
           <WarningCircle aria-hidden="true" /> {error}

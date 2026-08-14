@@ -103,13 +103,14 @@ export default function ThreadPage() {
         <div className="thread-summary">
           <HeatGauge breakdown={data.breakdown} />
           <div className="thread-summary-stats">
-            <span className="mono">Bùng nổ {data.breakdown.bang_no}</span>
-            <span className="mono">Trung lập {data.breakdown.trung_lap}</span>
-            <span className="mono">Vui vẻ {data.breakdown.vui_ve}</span>
+            <span className="stat-chip anger">Bùng nổ <span className="stat-n">{data.breakdown.bang_no}</span></span>
+            <span className="stat-chip neutral">Trung lập <span className="stat-n">{data.breakdown.trung_lap}</span></span>
+            <span className="stat-chip calm">Vui vẻ <span className="stat-n">{data.breakdown.vui_ve}</span></span>
           </div>
           {data.thread.avg_anger_score != null && (
             <p className="thread-avg">
-              Điểm tức giận trung bình: <strong className="mono thread-avg-value">{data.thread.avg_anger_score.toFixed(1)}/100</strong>
+              Điểm tức giận trung bình
+              <strong className="mono thread-avg-value">{data.thread.avg_anger_score.toFixed(1)}/100</strong>
             </p>
           )}
         </div>
@@ -130,7 +131,7 @@ export default function ThreadPage() {
       </div>
 
       {topBangNo.length > 0 && (
-        <section className="ranking-section">
+        <section className="ranking-section bang">
           <h2 className="ranking-title">Top Bùng nổ</h2>
           {topBangNo.map(c => (
             <div key={c.id} className="ranking-item">
@@ -142,7 +143,7 @@ export default function ThreadPage() {
       )}
 
       {topVuiVe.length > 0 && (
-        <section className="ranking-section">
+        <section className="ranking-section vui">
           <h2 className="ranking-title">Top Vui vẻ</h2>
           {topVuiVe.map(c => (
             <div key={c.id} className="ranking-item">
