@@ -24,7 +24,7 @@ export function apiPost<T>(path: string, body: unknown): Promise<T> {
 
 export type SearchResult =
   | { kind: 'url'; state: 'scored' | 'pending' | 'unknown'; thread?: { id: string; url: string; scoring_status: string }; request?: { id: string } }
-  | { kind: 'keyword'; threads: Array<{ id: string; url: string; title: string | null }> };
+  | { kind: 'keyword'; threads: Array<{ id: string; url: string; title: string | null; author_username: string | null }> };
 
 export const searchThreads = (q: string) => apiGet<SearchResult>(`/api/search?q=${encodeURIComponent(q)}`);
 export const getThread = (id: string) => apiGet<unknown>(`/api/threads/${id}`);

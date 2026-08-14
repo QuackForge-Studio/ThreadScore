@@ -1,11 +1,11 @@
 // web/src/server/services/scoringWorker.ts
-import { MAX_AI_BATCH, MAX_WORKER_BATCHES, SCORING_LOCK_KEY } from '../../shared/constants';
+import { MAX_AI_BATCH, MAX_WORKER_BATCHES, SCORING_LOCK_KEY, SCORING_LOCK_TTL } from '../../shared/constants';
 import { labelFromScore } from '../../shared/labels';
 import { nowSec, newId } from '../db';
 import type { Env } from '../db';
 import { listPendingScoring, updateThread } from '../repo/threads';
 import { getCommentsByThread } from '../repo/comments';
-import { hasScoresForComment, insertScores } from '../repo/scores';
+import { insertScores } from '../repo/scores';
 import { scoreCommentsWithAI } from './aiScoring';
 
 export interface ScoringWorkerResult {
@@ -13,15 +13,38 @@ export interface ScoringWorkerResult {
   scoredComments: number;
 }
 
+/**
+ * Atomically acquire the scoring lock in D1.
+ *
+ * The upsert either inserts a fresh lock row or, if a row already exists, only
+ * re-acquires it when the previous lock has expired. We then read back the row
+ * and only consider ourselves the owner when `expires_at` equals our requested
+ * expiry — a still-valid lock from another worker keeps its own expiry and we
+ * do not acquire.
+ */
+async function acquireScoringLock(env: Env): Promise<boolean> {
+  const now = nowSec();
+  const expiresAt = now + SCORING_LOCK_TTL;
+  await env.DB.prepare(
+    `INSERT INTO locks (name, expires_at) VALUES (?, ?)
+     ON CONFLICT(name) DO UPDATE SET expires_at = excluded.expires_at
+     WHERE locks.expires_at < ?`
+  ).bind(SCORING_LOCK_KEY, expiresAt, now).run();
+  const row = await env.DB.prepare('SELECT expires_at FROM locks WHERE name = ?')
+    .bind(SCORING_LOCK_KEY).first<{ expires_at: number }>();
+  return row?.expires_at === expiresAt;
+}
+
+async function releaseScoringLock(env: Env): Promise<void> {
+  await env.DB.prepare('DELETE FROM locks WHERE name = ?').bind(SCORING_LOCK_KEY).run();
+}
+
 export async function runScoringWorker(env: Env): Promise<ScoringWorkerResult> {
-  // KV lock: get-then-put with a 600s TTL.
-  // NOTE: miniflare 3.20240718 + @cloudflare/workers-types 4.20240806 do not support
-  // the conditional `onlyIf: 'no_exists'` KV put from the brief, so we fall back to a
-  // get-then-put lock (documented deviation). The TTL guarantees the lock self-releases
-  // even if a worker crashes before the finally block.
-  const existing = await env.KV.get(SCORING_LOCK_KEY);
-  if (existing !== null) return { processedThreads: 0, scoredComments: 0 };
-  await env.KV.put(SCORING_LOCK_KEY, String(nowSec()), { expirationTtl: 600 });
+  // Atomic D1-based lock (600s). A concurrent worker that cannot acquire the
+  // lock returns immediately without touching any threads.
+  if (!(await acquireScoringLock(env))) {
+    return { processedThreads: 0, scoredComments: 0 };
+  }
 
   try {
     const threads = await listPendingScoring(env.DB, 5);
@@ -32,10 +55,11 @@ export async function runScoringWorker(env: Env): Promise<ScoringWorkerResult> {
         await updateThread(env.DB, thread.id, { scoring_status: 'scoring' });
 
         const allComments = await getCommentsByThread(env.DB, thread.id);
-        const pendingComments: typeof allComments = [];
-        for (const c of allComments) {
-          if (!(await hasScoresForComment(env.DB, c.id))) pendingComments.push(c);
-        }
+        const { results: scoredIds } = await env.DB.prepare(
+          'SELECT comment_id FROM ai_scores WHERE comment_id IN (SELECT id FROM comments WHERE thread_id = ?)'
+        ).bind(thread.id).all<{ comment_id: string }>();
+        const scoredSet = new Set((scoredIds ?? []).map(r => r.comment_id));
+        const pendingComments = allComments.filter(c => !scoredSet.has(c.id));
 
         const context = `${thread.title ?? ''}\n${thread.content ?? ''}`.trim();
         let batchCount = 0;
@@ -83,6 +107,6 @@ export async function runScoringWorker(env: Env): Promise<ScoringWorkerResult> {
 
     return { processedThreads: threads.length, scoredComments };
   } finally {
-    await env.KV.delete(SCORING_LOCK_KEY);
+    await releaseScoringLock(env);
   }
 }

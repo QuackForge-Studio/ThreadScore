@@ -45,9 +45,14 @@ export default function App() {
               </button>
             </>
           ) : (
-            <a className="nav-link" href="/api/auth/google/login">
-              Đăng nhập
-            </a>
+            <>
+              <a className="nav-link" href="/api/auth/google/login">
+                Đăng nhập Google
+              </a>
+              <a className="nav-link" href="/api/auth/github/login">
+                Đăng nhập GitHub
+              </a>
+            </>
           )}
         </nav>
       </header>

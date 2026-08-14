@@ -23,8 +23,18 @@ export interface ScrapedThread {
 
 function parseLikes(el: Element | null): number {
   const raw = el?.textContent?.trim() ?? '';
-  const n = Number(raw.replace(/[^\d]/g, ''));
-  return Number.isFinite(n) ? n : 0;
+  if (!raw) return 0;
+  const compact = raw.replace(/,/g, '').trim();
+  const m = compact.match(/^([\d.]+)\s*([KkMm])?$/);
+  if (!m) {
+    const n = Number(compact.replace(/[^\d]/g, ''));
+    return Number.isFinite(n) ? n : 0;
+  }
+  const value = Number(m[1]);
+  if (!Number.isFinite(value)) return 0;
+  const suffix = m[2]?.toUpperCase();
+  const multiplier = suffix === 'K' ? 1000 : suffix === 'M' ? 1000000 : 1;
+  return Math.round(value * multiplier);
 }
 
 function parseTime(el: Element | null): number | null {

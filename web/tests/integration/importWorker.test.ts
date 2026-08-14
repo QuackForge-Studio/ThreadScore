@@ -8,6 +8,7 @@ import { getCommentsByThread } from '../../src/server/repo/comments';
 import { getScoresForThread } from '../../src/server/repo/scores';
 import { getRequestByUrl, insertRequest } from '../../src/server/repo/requests';
 import { newId, nowSec } from '../../src/server/db';
+import { SCORING_LOCK_KEY } from '../../src/shared/constants';
 
 const URL = 'https://www.threads.net/@test/post/IMPORT1';
 
@@ -108,5 +109,29 @@ describe('runScoringWorker', () => {
     const done = await getThreadByUrl(env.DB, URL);
     expect(done?.scoring_status).toBe('scored');
     expect(await getScoresForThread(env.DB, threadId)).toHaveLength(501);
+  });
+
+  it('returns 0/0 when the scoring lock is held by another worker', async () => {
+    await importThreadPayload(env as never, payload([
+      { external_id: 'lock-1', text: 'đồ ngu' },
+    ]));
+    // Simulate a concurrent worker that owns a fresh lock with a DISTINCT expiry
+    // (offset by +1s so it cannot collide with the runner's own now+600 expiry
+    // when both are computed within the same second).
+    const heldExpiry = nowSec() + 600 + 1;
+    await env.DB.prepare(
+      `INSERT INTO locks (name, expires_at) VALUES (?, ?)
+       ON CONFLICT(name) DO UPDATE SET expires_at = excluded.expires_at
+       WHERE locks.expires_at < excluded.expires_at`
+    ).bind(SCORING_LOCK_KEY, heldExpiry).run();
+
+    const out = await runScoringWorker(env as never);
+    expect(out.processedThreads).toBe(0);
+    expect(out.scoredComments).toBe(0);
+
+    // Lock must remain owned by the simulated worker (not released by the loser).
+    const row = await env.DB.prepare('SELECT expires_at FROM locks WHERE name = ?')
+      .bind(SCORING_LOCK_KEY).first<{ expires_at: number }>();
+    expect(row?.expires_at).toBe(heldExpiry);
   });
 });

@@ -20,6 +20,7 @@ export default function ThreadPage() {
   const { id } = useParams<{ id: string }>();
   const [data, setData] = useState<ThreadDetail | null>(null);
   const [filter, setFilter] = useState<'all' | 'BÙNG NỔ' | 'TRUNG LẬP' | 'VUI VẺ'>('all');
+  const [scoreFilter, setScoreFilter] = useState<'all' | '70-100' | '30-69' | '0-29'>('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -66,9 +67,28 @@ export default function ThreadPage() {
 
   if (!data) return <div className="page" />;
 
+  const scoredComments = data.comments.filter(c => c.score != null);
+
+  const inScoreRange = (score: number): boolean => {
+    if (scoreFilter === '70-100') return score >= 70 && score <= 100;
+    if (scoreFilter === '30-69') return score >= 30 && score <= 69;
+    if (scoreFilter === '0-29') return score >= 0 && score <= 29;
+    return true;
+  };
+
   const visible = data.comments.filter(c =>
-    filter === 'all' || (c.score?.label === filter),
+    (filter === 'all' || (c.score?.label === filter)) &&
+    (c.score == null || inScoreRange(c.score.score)),
   );
+
+  const topBangNo = scoredComments
+    .filter(c => c.score!.label === 'BÙNG NỔ')
+    .sort((a, b) => b.score!.score - a.score!.score)
+    .slice(0, 3);
+  const topVuiVe = scoredComments
+    .filter(c => c.score!.label === 'VUI VẺ')
+    .sort((a, b) => a.score!.score - b.score!.score)
+    .slice(0, 3);
 
   return (
     <div className="page">
@@ -93,6 +113,44 @@ export default function ThreadPage() {
             </p>
           )}
         </div>
+      )}
+
+      <div className="filter-controls">
+        <select
+          className="filter-select"
+          aria-label="Lọc theo điểm"
+          value={scoreFilter}
+          onChange={e => setScoreFilter(e.target.value as typeof scoreFilter)}
+        >
+          <option value="all">Tất cả mức điểm</option>
+          <option value="70-100">70-100 Bùng nổ</option>
+          <option value="30-69">30-69 Trung lập</option>
+          <option value="0-29">0-29 Vui vẻ</option>
+        </select>
+      </div>
+
+      {topBangNo.length > 0 && (
+        <section className="ranking-section">
+          <h2 className="ranking-title">Top Bùng nổ</h2>
+          {topBangNo.map(c => (
+            <div key={c.id} className="ranking-item">
+              <span className="ranking-text">{c.text}</span>
+              <span className="mono ranking-score">{c.score!.score.toFixed(0)}/100</span>
+            </div>
+          ))}
+        </section>
+      )}
+
+      {topVuiVe.length > 0 && (
+        <section className="ranking-section">
+          <h2 className="ranking-title">Top Vui vẻ</h2>
+          {topVuiVe.map(c => (
+            <div key={c.id} className="ranking-item">
+              <span className="ranking-text">{c.text}</span>
+              <span className="mono ranking-score">{c.score!.score.toFixed(0)}/100</span>
+            </div>
+          ))}
+        </section>
       )}
 
       <div className="filter-tabs">
