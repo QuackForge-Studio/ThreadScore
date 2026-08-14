@@ -5,8 +5,8 @@ pages_build_output_dir = "./dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "threadscore-db"
-database_id = "REPLACE_AFTER_wrangler_d1_create"
+database_id = "3ff88902-75a3-407b-8bd1-0f00f6e2908d"
 
 [[kv_namespaces]]
 binding = "KV"
-id = "REPLACE_AFTER_wrangler_kv_create"
+id = "43e8d8ed36f941f6b8a18ecb205db0e4"
