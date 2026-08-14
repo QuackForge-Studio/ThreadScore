@@ -18,12 +18,16 @@ export async function processOneUrl(config: ExtensionConfig, url: string): Promi
       await new Promise(r => setTimeout(r, 500));
       try {
         status = (await chrome.tabs.get(tabId)).status ?? 'loading';
-      } catch { break; }
+      } catch { status = 'failed'; break; }
+    }
+
+    if (status !== 'complete') {
+      return { ok: false, error: status === 'failed' ? 'Không thể kiểm tra trạng thái tab' : 'Tab không load xong sau 30s' };
     }
 
     const [injected] = await chrome.scripting.executeScript({
       target: { tabId },
-      func: () => true, // đảm bảo content script được inject (crxjs đã đăng ký qua manifest)
+      func: () => true, // Xác nhận trang có thể inject script
     });
     void injected;
 
