@@ -1,0 +1,12 @@
+import type { Env } from '../../../../src/server/db';
+import { generateOAuthState, storeOAuthState } from '../../../../src/server/services/oauth';
+
+export const onRequestGet: PagesFunction<Env> = async (context) => {
+  const clientId = (context.env as unknown as Record<string, string>).GITHUB_CLIENT_ID;
+  if (!clientId) return Response.json({ error: 'Chưa cấu hình GITHUB_CLIENT_ID' }, { status: 500 });
+  const redirectUri = new URL('/api/auth/github/callback', context.request.url).toString();
+  const state = generateOAuthState();
+  await storeOAuthState(context.env, state);
+  const params = new URLSearchParams({ client_id: clientId, redirect_uri: redirectUri, scope: 'read:user', state });
+  return Response.redirect(`https://github.com/login/oauth/authorize?${params}`, 302);
+};
