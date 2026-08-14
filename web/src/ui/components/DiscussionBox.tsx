@@ -33,11 +33,11 @@ export default function DiscussionBox({ threadId, userComments, onPosted }: {
       <div className="discussion-form">
         <label className="field">
           <span className="field-label">Tên hiển thị (không bắt buộc)</span>
-          <input className="field-input" value={name} onChange={e => setName(e.target.value)} />
+          <input className="field-input" placeholder="Ví dụ: Khách ghé thăm" value={name} onChange={e => setName(e.target.value)} />
         </label>
         <label className="field">
           <span className="field-label">Bình luận của bạn</span>
-          <textarea className="field-input" value={content} onChange={e => setContent(e.target.value)} rows={3} />
+          <textarea className="field-input" placeholder="Nhập nhận xét hoặc góc nhìn của bạn về bài viết này..." value={content} onChange={e => setContent(e.target.value)} rows={3} />
         </label>
         <button className="btn btn-primary" onClick={submit} disabled={!content.trim()}>Gửi bình luận</button>
         {error && <p className="error-text">{error}</p>}

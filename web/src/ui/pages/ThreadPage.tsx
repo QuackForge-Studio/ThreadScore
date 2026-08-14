@@ -132,7 +132,7 @@ export default function ThreadPage() {
 
       {topBangNo.length > 0 && (
         <section className="ranking-section bang">
-          <h2 className="ranking-title">Top Bùng nổ</h2>
+          <h2 className="ranking-title">🔥 Top Bùng nổ</h2>
           {topBangNo.map(c => (
             <div key={c.id} className="ranking-item">
               <span className="ranking-text">{c.text}</span>
@@ -144,7 +144,7 @@ export default function ThreadPage() {
 
       {topVuiVe.length > 0 && (
         <section className="ranking-section vui">
-          <h2 className="ranking-title">Top Vui vẻ</h2>
+          <h2 className="ranking-title">🌿 Top Vui vẻ</h2>
           {topVuiVe.map(c => (
             <div key={c.id} className="ranking-item">
               <span className="ranking-text">{c.text}</span>

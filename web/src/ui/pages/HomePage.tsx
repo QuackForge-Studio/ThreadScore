@@ -25,14 +25,14 @@ export default function HomePage() {
   return (
     <div className="page">
       <section className="hero">
-        <span className="hero-eyebrow">Chấm điểm tức giận bằng AI</span>
+        <span className="hero-eyebrow">Đo sắc thái cảm xúc Threads</span>
         <h1 className="hero-title">
-          Bài nào đang <span className="accent">bùng nổ</span>?
+          Bài viết nào đang <span className="accent">bùng nổ</span> dư luận?
         </h1>
         <p className="hero-subtitle">
-          Dán link Threads vào để xem từng bình luận được chấm điểm tức giận từ 0 đến 100.
+          Dán liên kết Threads bất kỳ để phân tích mức độ tức giận và bức tranh cảm xúc của cộng đồng qua từng bình luận.
         </p>
-        <div className="spectrum" aria-label="Quang phổ điểm">
+        <div className="spectrum" aria-label="Quang phổ cảm xúc">
           <span className="spectrum-item">
             <span className="spectrum-dot anger" />
             Bùng nổ <span className="spectrum-range">70-100</span>
