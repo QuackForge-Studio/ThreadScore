@@ -7,9 +7,9 @@ export const LABEL_DISPLAY: Record<Label, string> = {
 };
 
 export const LABEL_COLORS: Record<Label, string> = {
-  'BÙNG NỔ': '#e5484d',
-  'TRUNG LẬP': '#8d8d8d',
-  'VUI VẺ': '#2f9e6e',
+  'BÙNG NỔ': '#DC3D1E',
+  'TRUNG LẬP': '#9A8A78',
+  'VUI VẺ': '#2A6F8E',
 };
 
 export function labelFromScore(score: number): Label {
