@@ -67,6 +67,14 @@ export interface UserCommentRecord {
   created_at: number;
 }
 
+export interface OverallStats {
+  threads: number;
+  comments: number;
+  avg_anger: number | null;
+  breakdown: { bang_no: number; trung_lap: number; vui_ve: number };
+  top_threads: Array<Pick<ThreadRecord, 'id' | 'title' | 'avg_anger_score' | 'total_comments'>>;
+}
+
 export interface ImportCommentInput {
   external_id?: string | null;
   author_username?: string | null;

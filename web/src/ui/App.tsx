@@ -24,45 +24,89 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <header className="site-header">
-        <Link to="/" className="site-logo">
-          ThreadScore
-        </Link>
-        <nav className="site-nav">
-          {user ? (
-            <>
-              <span className="nav-user">{user.name || user.provider}</span>
-              <button
-                type="button"
-                className="nav-link"
-                onClick={() => {
-                  fetch('/api/auth/logout', { method: 'POST' }).finally(() => {
-                    window.location.href = '/';
-                  });
-                }}
-              >
-                Đăng xuất
-              </button>
-            </>
-          ) : (
-            <>
-              <a className="nav-link" href="/api/auth/google/login">
-                Đăng nhập Google
-              </a>
-              <a className="nav-link" href="/api/auth/github/login">
-                Đăng nhập GitHub
-              </a>
-            </>
-          )}
-        </nav>
-      </header>
-      <main className="site-main">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/t/:id" element={<ThreadPage />} />
-          <Route path="/admin" element={<AdminPage />} />
-        </Routes>
-      </main>
+      <div className="app-shell">
+        <div className="noise" aria-hidden="true" />
+        <header className="site-header">
+          <Link to="/" className="site-logo">
+            <img src="/ThreadScore.png" alt="ThreadScore Logo" className="logo-img" />
+            <span>ThreadScore</span>
+          </Link>
+          <nav className="site-nav">
+            {user ? (
+              <>
+                <span className="nav-user">{user.name || user.provider}</span>
+                <button
+                  type="button"
+                  className="nav-link"
+                  onClick={() => {
+                    fetch('/api/auth/logout', { method: 'POST' }).finally(() => {
+                      window.location.href = '/';
+                    });
+                  }}
+                >
+                  Đăng xuất
+                </button>
+              </>
+            ) : (
+              <>
+                <a className="nav-link" href="/api/auth/google/login">Đăng nhập Google</a>
+                <a className="nav-link primary" href="/api/auth/github/login">Đăng nhập GitHub</a>
+              </>
+            )}
+          </nav>
+        </header>
+        <main className="site-main">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/t/:id" element={<ThreadPage />} />
+            <Route path="/admin" element={<AdminPage />} />
+          </Routes>
+        </main>
+        <footer className="site-footer">
+          <div className="footer-inner">
+            <div className="footer-brand">
+              <span className="site-logo">
+                <img src="/ThreadScore.png" alt="ThreadScore Logo" className="logo-img" />
+                <span>ThreadScore</span>
+              </span>
+              <p>Đo nhiệt độ cảm xúc của cộng đồng Threads bằng AI — từng bình luận, từng bài viết.</p>
+            </div>
+            <div className="footer-links">
+              <div className="footer-col">
+                <h4>Sản phẩm</h4>
+                <Link to="/">Trang chủ</Link>
+                <a href="https://www.threads.net" target="_blank" rel="noreferrer">Threads</a>
+              </div>
+              <div className="footer-col">
+                <h4>Tài khoản</h4>
+                {user ? (
+                  <button
+                    type="button"
+                    className="nav-link"
+                    style={{ padding: '4px 0', color: 'inherit' }}
+                    onClick={() => {
+                      fetch('/api/auth/logout', { method: 'POST' }).finally(() => {
+                        window.location.href = '/';
+                      });
+                    }}
+                  >
+                    Đăng xuất
+                  </button>
+                ) : (
+                  <>
+                    <a href="/api/auth/google/login">Đăng nhập Google</a>
+                    <a href="/api/auth/github/login">Đăng nhập GitHub</a>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="footer-bottom">
+            <span>© {new Date().getFullYear()} ThreadScore</span>
+            <span className="mono">threadscore.quackforge.io.vn</span>
+          </div>
+        </footer>
+      </div>
     </BrowserRouter>
   );
 }

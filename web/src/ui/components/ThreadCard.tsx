@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import HeatGauge from './HeatGauge';
-import { labelFromScore } from '../../shared/labels';
+import { labelFromScore, LABEL_COLORS } from '../../shared/labels';
 import { formatRelativeTime } from '../format';
 import type { ThreadRecord } from '../../shared/types';
 
@@ -9,9 +9,10 @@ export default function ThreadCard({ thread }: { thread: ThreadRecord }) {
   const avg = thread.avg_anger_score;
   const cls = avg != null ? labelFromScore(avg) : null;
   const scoreBigClass = cls === 'BÙNG NỔ' ? 'anger' : cls === 'VUI VẺ' ? 'calm' : 'neutral';
+  const heat = cls ? LABEL_COLORS[cls] : 'var(--neutral)';
 
   return (
-    <article className="threadcard">
+    <article className="threadcard" style={{ '--card-heat': heat } as React.CSSProperties}>
       <div className="threadcard-head">
         <Link to={`/t/${thread.id}`} className="threadcard-title">
           {thread.title ?? 'Bài viết Threads'}
