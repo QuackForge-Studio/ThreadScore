@@ -1,6 +1,7 @@
 import { SELECTORS } from './selectors';
 import { MAX_COMMENTS } from './constants';
 import { autoScrollUntilStable } from './autoScroll';
+import { initGraphQLInterceptor } from './graphqlInterceptor';
 
 export interface ScrapedComment {
   external_id: string | null;
@@ -19,6 +20,23 @@ export interface ScrapedThread {
   author_name: string | null;
   posted_at: number | null;
   comments: ScrapedComment[];
+}
+
+// Buffer lưu trữ các comment bắt được từ GraphQL API
+const interceptedCommentsBuffer: ScrapedComment[] = [];
+
+if (typeof window !== 'undefined') {
+  initGraphQLInterceptor();
+
+  window.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'TS_GRAPHQL_COMMENTS_INTERCEPTED' && Array.isArray(event.data.comments)) {
+      for (const c of event.data.comments) {
+        if (c && c.text && c.author_username) {
+          interceptedCommentsBuffer.push(c);
+        }
+      }
+    }
+  });
 }
 
 function parseLikes(el: Element | null): number {
@@ -43,7 +61,6 @@ function parseTime(el: Element | null): number | null {
     const t = Date.parse(dt);
     return Number.isFinite(t) ? Math.floor(t / 1000) : null;
   }
-  // Fallback: parse text content như '2026-08-01' hoặc ISO date
   const text = el?.textContent?.trim();
   if (text) {
     const t = Date.parse(text);
@@ -69,13 +86,30 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
   const mainTitleText = titleEl?.textContent?.trim() ?? '';
   const mainContentText = contentEl?.textContent?.trim() ?? '';
 
-  // Extract all pressable post/comment containers across top-level and sub-replies
+  const seenKeys = new Set<string>();
+  const comments: ScrapedComment[] = [];
+
+  // 1. Ưu tiên lấy các comment chất lượng cao từ GraphQL API Interceptor
+  for (const gc of interceptedCommentsBuffer) {
+    if (!gc.text || !gc.author_username) continue;
+    const key = `${gc.author_username.toLowerCase()}:${gc.text}`;
+    if (seenKeys.has(key)) continue;
+    seenKeys.add(key);
+
+    comments.push({
+      external_id: gc.external_id,
+      author_username: gc.author_username,
+      author_name: null,
+      text: gc.text,
+      like_count: gc.like_count || 0,
+      posted_at: gc.posted_at,
+    });
+  }
+
+  // 2. Bổ sung các comment từ DOM nếu GraphQL chưa phủ hết
   const allContainers = Array.from(
     doc.querySelectorAll('div[data-pressable-container="true"], article, div[role="listitem"], .reply-item')
   );
-
-  const seenKeys = new Set<string>();
-  const comments: ScrapedComment[] = [];
 
   let isFirst = true;
 
@@ -84,7 +118,6 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
     const text = textEl?.textContent?.trim() ?? '';
     if (!text) continue;
 
-    // Bỏ qua nếu text là nút bấm mở rộng hoặc tiêu đề thanh bên
     const lowerText = text.toLowerCase();
     if (
       lowerText.includes('xem tất cả') ||
@@ -97,18 +130,17 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
     const itemAuthorEl = item.querySelector('a[href*="/@"], .reply-author, span[dir="auto"]');
     const authorHref = itemAuthorEl?.getAttribute('href');
     const username = cleanUsername(authorHref ?? itemAuthorEl?.textContent);
+    if (!username) continue;
 
     const likesEl = item.querySelector(SELECTORS.replyLikes);
 
-    // Bỏ qua container đầu tiên nếu trùng với bài viết chính
     if (isFirst && (text === mainTitleText || text === mainContentText)) {
       isFirst = false;
       continue;
     }
     isFirst = false;
 
-    // Lọc trùng lặp bình luận & câu trả lời (sub-replies)
-    const key = `${username ?? 'anon'}:${text}`;
+    const key = `${username.toLowerCase()}:${text}`;
     if (seenKeys.has(key)) continue;
     seenKeys.add(key);
 
