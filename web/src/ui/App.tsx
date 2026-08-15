@@ -28,7 +28,7 @@ export default function App() {
         <div className="noise" aria-hidden="true" />
         <header className="site-header">
           <Link to="/" className="site-logo">
-            <img src="/ThreadScore.png" alt="ThreadScore Logo" className="logo-img" />
+            <img src="/ThreadScore.png?v=2" alt="ThreadScore Logo" className="logo-img" />
             <span>ThreadScore</span>
           </Link>
           <nav className="site-nav">
@@ -66,7 +66,7 @@ export default function App() {
           <div className="footer-inner">
             <div className="footer-brand">
               <span className="site-logo">
-                <img src="/ThreadScore.png" alt="ThreadScore Logo" className="logo-img" />
+                <img src="/ThreadScore.png?v=2" alt="ThreadScore Logo" className="logo-img" />
                 <span>ThreadScore</span>
               </span>
               <p>Đo nhiệt độ cảm xúc của cộng đồng Threads bằng AI — từng bình luận, từng bài viết.</p>

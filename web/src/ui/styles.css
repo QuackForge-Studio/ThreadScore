@@ -208,10 +208,9 @@ button { font-family: var(--font-sans); }
 .site-logo:hover { opacity: 0.82; }
 
 .logo-img {
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   object-fit: contain;
-  border-radius: 6px;
   transition: transform 0.2s ease;
 }
 .site-logo:hover .logo-img {
