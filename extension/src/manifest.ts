@@ -6,7 +6,7 @@ export default defineManifest({
   version: '0.1.2',
   description: 'Import bài viết + comments từ Threads vào ThreadScore',
   permissions: ['storage', 'activeTab', 'scripting', 'alarms', 'notifications', 'sidePanel'],
-  host_permissions: ['https://*.threads.net/*'],
+  host_permissions: ['https://*.threads.net/*', 'https://*.threads.com/*', 'https://threads.net/*', 'https://threads.com/*'],
   action: { default_title: 'ThreadScore Importer' },
   side_panel: {
     default_path: 'index.html',
@@ -14,7 +14,7 @@ export default defineManifest({
   background: { service_worker: 'src/batch/background.ts', type: 'module' },
   content_scripts: [
     {
-      matches: ['https://*.threads.net/*'],
+      matches: ['https://*.threads.net/*', 'https://*.threads.com/*', 'https://threads.net/*', 'https://threads.com/*'],
       js: ['src/content/scraper.ts'],
       run_at: 'document_idle',
     },
@@ -22,7 +22,7 @@ export default defineManifest({
   web_accessible_resources: [
     {
       resources: ['index.html', 'assets/*'],
-      matches: ['https://*.threads.net/*'],
+      matches: ['https://*.threads.net/*', 'https://*.threads.com/*', 'https://threads.net/*', 'https://threads.com/*'],
     },
   ],
 });
