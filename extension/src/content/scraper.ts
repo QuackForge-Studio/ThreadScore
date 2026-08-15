@@ -95,6 +95,123 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
   };
 }
 
+function setupInjectedSidebar(): void {
+  if (typeof document === 'undefined' || document.getElementById('ts-sidebar-container')) return;
+
+  const container = document.createElement('div');
+  container.id = 'ts-sidebar-container';
+
+  // Toggle button floating on the right edge of the screen
+  const toggleBtn = document.createElement('button');
+  toggleBtn.id = 'ts-sidebar-toggle-btn';
+  toggleBtn.innerHTML = `
+    <svg width="18" height="18" viewBox="0 0 256 256" fill="#FFFFFF">
+      <path d="M173.81,109.84a16,16,0,0,0-13.43-8.84,16.29,16.29,0,0,0-15,9.66l-10,21.91-10.42-32.32a16,16,0,0,0-30.5,0L84.05,132.57l-10-21.91A16.29,16.29,0,0,0,59.08,101a16,16,0,0,0-13.43,8.84,16.28,16.28,0,0,0,.6,16.08l40,72a16,16,0,0,0,28,0l13.75-24.75L141.75,198a16,16,0,0,0,28,0l40-72A16.28,16.28,0,0,0,210.35,109.84Z"/>
+    </svg>
+    <span style="font-size: 10px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 4px; writing-mode: vertical-rl; transform: rotate(180deg);">ThreadScore</span>
+  `;
+
+  Object.assign(toggleBtn.style, {
+    position: 'fixed',
+    top: '35%',
+    right: '0px',
+    zIndex: '2147483646',
+    background: 'linear-gradient(135deg, #E5484D, #F05A28)',
+    color: '#FFF',
+    border: 'none',
+    borderRadius: '10px 0 0 10px',
+    padding: '10px 5px',
+    cursor: 'pointer',
+    boxShadow: '-2px 4px 16px rgba(0,0,0,0.35)',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    transition: 'all 0.25s ease',
+  });
+
+  // Panel Wrapper + Iframe
+  const panelWrapper = document.createElement('div');
+  panelWrapper.id = 'ts-sidebar-panel';
+  Object.assign(panelWrapper.style, {
+    position: 'fixed',
+    top: '0px',
+    right: '0px',
+    width: '380px',
+    height: '100vh',
+    zIndex: '2147483647',
+    background: '#141210',
+    borderLeft: '1px solid #36302B',
+    boxShadow: '-6px 0 32px rgba(0,0,0,0.6)',
+    transform: 'translateX(100%)',
+    transition: 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)',
+    display: 'flex',
+    flexDirection: 'column',
+  });
+
+  const iframeUrl = chrome.runtime.getURL('index.html');
+  const iframe = document.createElement('iframe');
+  iframe.src = iframeUrl;
+  Object.assign(iframe.style, {
+    width: '100%',
+    height: '100%',
+    border: 'none',
+    background: 'transparent',
+  });
+
+  // Close bar inside panel header
+  const closeBar = document.createElement('div');
+  Object.assign(closeBar.style, {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '8px 12px',
+    background: '#1E1B18',
+    borderBottom: '1px solid #282420',
+    color: '#A89B8F',
+    fontSize: '11px',
+    fontWeight: '700',
+  });
+  closeBar.innerHTML = `
+    <span>THREADSCORE SIDEBAR</span>
+    <button id="ts-close-sidebar-btn" style="background:transparent;border:none;color:#FFF;cursor:pointer;font-size:16px;font-weight:bold;">✕</button>
+  `;
+
+  panelWrapper.appendChild(closeBar);
+  panelWrapper.appendChild(iframe);
+  container.appendChild(toggleBtn);
+  container.appendChild(panelWrapper);
+
+  let isOpen = false;
+
+  function toggleSidebar(forceState?: boolean) {
+    isOpen = forceState ?? !isOpen;
+    if (isOpen) {
+      panelWrapper.style.transform = 'translateX(0)';
+      toggleBtn.style.transform = 'translateX(-380px)';
+      document.body.style.transition = 'margin-right 0.28s cubic-bezier(0.16, 1, 0.3, 1)';
+      document.body.style.marginRight = '380px';
+    } else {
+      panelWrapper.style.transform = 'translateX(100%)';
+      toggleBtn.style.transform = 'translateX(0)';
+      document.body.style.marginRight = '0px';
+    }
+  }
+
+  toggleBtn.addEventListener('click', () => toggleSidebar());
+  closeBar.querySelector('#ts-close-sidebar-btn')?.addEventListener('click', () => toggleSidebar(false));
+
+  document.body.appendChild(container);
+}
+
+// Initialize injected sidebar when page loads
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setupInjectedSidebar());
+  } else {
+    setupInjectedSidebar();
+  }
+}
+
 // Guard: content script có thể được inject trước khi chrome.runtime sẵn sàng
 if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
   chrome.runtime.onMessage.addListener((message: { type?: string }, _sender, sendResponse) => {
