@@ -106,39 +106,41 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
     });
   }
 
-  // 2. Bổ sung các comment từ DOM nếu GraphQL chưa phủ hết
-  const allContainers = Array.from(
-    doc.querySelectorAll('div[data-pressable-container="true"], article, div[role="listitem"], .reply-item')
-  );
+  // 2. Bổ sung các comment từ DOM (bao gồm cả sub-replies cấp con)
+  const authorLinks = Array.from(doc.querySelectorAll('a[href*="/@"]'));
 
-  let isFirst = true;
+  let mainPostSkipped = false;
 
-  for (const item of allContainers) {
-    const textEl = item.querySelector('div[dir="auto"], span[dir="auto"], .reply-text');
+  for (const link of authorLinks) {
+    const authorHref = link.getAttribute('href');
+    const username = cleanUsername(authorHref ?? link.textContent);
+    if (!username) continue;
+
+    // Tìm container chứa comment nhỏ nhất quanh author link này
+    const card = link.closest('div[data-pressable-container="true"], div[role="listitem"], article') ?? link.parentElement?.parentElement;
+    if (!card) continue;
+
+    const textEl = card.querySelector('div[dir="auto"], span[dir="auto"], .reply-text');
     const text = textEl?.textContent?.trim() ?? '';
-    if (!text) continue;
+    if (!text || text.length < 2) continue;
 
     const lowerText = text.toLowerCase();
     if (
       lowerText.includes('xem tất cả') ||
       lowerText.includes('threadscore sidebar') ||
-      lowerText.includes('đã ẩn một số')
+      lowerText.includes('đã ẩn một số') ||
+      lowerText.includes('xem câu trả lời')
     ) {
       continue;
     }
 
-    const itemAuthorEl = item.querySelector('a[href*="/@"], .reply-author, span[dir="auto"]');
-    const authorHref = itemAuthorEl?.getAttribute('href');
-    const username = cleanUsername(authorHref ?? itemAuthorEl?.textContent);
-    if (!username) continue;
-
-    const likesEl = item.querySelector(SELECTORS.replyLikes);
-
-    if (isFirst && (text === mainTitleText || text === mainContentText)) {
-      isFirst = false;
+    // Bỏ qua bài viết chính ở đầu trang
+    if (!mainPostSkipped && (text === mainTitleText || text === mainContentText)) {
+      mainPostSkipped = true;
       continue;
     }
-    isFirst = false;
+
+    const likesEl = card.querySelector(SELECTORS.replyLikes);
 
     const key = `${username.toLowerCase()}:${text}`;
     if (seenKeys.has(key)) continue;
