@@ -103,7 +103,16 @@ export default function App() {
           </div>
           <div className="footer-bottom">
             <span>© {new Date().getFullYear()} ThreadScore</span>
-            <span className="mono">threadscore.quackforge.io.vn</span>
+            <div className="footer-credits">
+              Powered by{' '}
+              <a href="https://quackforge.io.vn" target="_blank" rel="noreferrer" className="footer-credit-link">
+                QuackForge Studio
+              </a>{' '}
+              &amp;{' '}
+              <a href="https://modelmart.io.vn" target="_blank" rel="noreferrer" className="footer-credit-link">
+                ModelMart
+              </a>
+            </div>
           </div>
         </footer>
       </div>
