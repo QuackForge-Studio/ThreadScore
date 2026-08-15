@@ -26,7 +26,7 @@ export async function scrapeActiveTab(): Promise<ScrapedThread> {
   }
 
   const payload = await new Promise<ScrapedThread | null>((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('Thao tác quá thời gian (Timeout 60s).')), 60_000);
+    const timer = setTimeout(() => reject(new Error('Thao tác quá thời gian (Timeout 90s).')), 90_000);
     chrome.tabs.sendMessage(tab.id!, { type: 'TS_SCRAPE' }, (response) => {
       clearTimeout(timer);
       const err = chrome.runtime.lastError;
