@@ -75,21 +75,36 @@ function cleanUsername(hrefOrText: string | null | undefined): string | null {
   return m ? m[1] : null;
 }
 
-// Trích xuất chính xác phần nội dung chữ của bình luận (không nhầm với tên tác giả hoặc thời gian)
+// Tìm phần tử chứa bài viết chính để không bị quét nhầm vào danh sách bình luận
+function findMainPostContainer(doc: Document): Element | null {
+  const contentEl = doc.querySelector(SELECTORS.content) ?? doc.querySelector(SELECTORS.title);
+  if (contentEl) {
+    const mainCard = contentEl.closest('div[data-pressable-container="true"], article, div[role="listitem"]');
+    if (mainCard) return mainCard;
+  }
+  return doc.querySelector('article, div[data-pressable-container="true"]');
+}
+
+// Trích xuất chính xác phần nội dung chữ của bình luận
 function extractCommentText(card: Element, link: Element): string {
   const textCandidates = Array.from(
     card.querySelectorAll('div[dir="auto"], span[dir="auto"], .reply-text')
   ).filter((el) => {
     if (link.contains(el) || el.contains(link)) return false;
-    if (el.closest('button, [role="button"], time, a')) return false;
+    if (el.closest('button, [role="button"], time, a, header, nav')) return false;
     const t = el.textContent?.trim() ?? '';
     if (!t || t.length < 1) return false;
+
     const lower = t.toLowerCase();
     if (
+      /^\d+\s*(giờ|phút|giây|ngày|tuần|tháng|năm|h|m|s|d|w|lượt xem|views)$/i.test(lower) ||
       lower.includes('xem tất cả') ||
       lower.includes('đã ẩn một số') ||
       lower.includes('câu trả lời') ||
-      lower.includes('threadscore sidebar')
+      lower.includes('threadscore sidebar') ||
+      lower === 'hàng đầu' ||
+      lower === 'xem hoạt động' ||
+      lower.startsWith('trả lời @')
     ) {
       return false;
     }
@@ -102,8 +117,16 @@ function extractCommentText(card: Element, link: Element): string {
 
   // Fallback: Tìm các đoạn text trực tiếp
   const directTexts = Array.from(card.querySelectorAll('div, span, p')).filter((el) => {
-    if (link.contains(el) || el.closest('button, [role="button"], time, a')) return false;
+    if (link.contains(el) || el.closest('button, [role="button"], time, a, header, nav')) return false;
     const t = el.textContent?.trim() ?? '';
+    const lower = t.toLowerCase();
+    if (
+      /^\d+\s*(giờ|phút|giây|ngày|tuần|tháng|năm|h|m|s|d|w|lượt xem|views)$/i.test(lower) ||
+      lower.includes('câu trả lời') ||
+      lower.includes('thông báo')
+    ) {
+      return false;
+    }
     return t.length > 1 && el.children.length === 0;
   });
 
@@ -118,6 +141,7 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
   const authorEl = doc.querySelector(SELECTORS.authorLink);
   const timeEl = doc.querySelector(SELECTORS.time);
 
+  const mainPostContainer = findMainPostContainer(doc);
   const mainTitleText = titleEl?.textContent?.trim() ?? '';
   const mainContentText = contentEl?.textContent?.trim() ?? '';
 
@@ -141,11 +165,18 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
     });
   }
 
-  // 2. Lấy từ DOM (bao gồm cả sub-replies)
+  // 2. Lấy từ DOM (loại bỏ hoàn toàn bài viết chính và thanh header)
   const authorLinks = Array.from(doc.querySelectorAll('a[href*="/@"]'));
-  let mainPostSkipped = false;
 
   for (const link of authorLinks) {
+    // Bỏ qua nếu thuộc Sidebar hoặc Header/Nav điều hướng
+    if (link.closest('#ts-sidebar-container, header, nav, [role="navigation"]')) continue;
+
+    // Bỏ qua nếu thuộc bài viết chính ở đầu trang
+    if (mainPostContainer && (mainPostContainer === link || mainPostContainer.contains(link))) {
+      continue;
+    }
+
     const authorHref = link.getAttribute('href');
     const username = cleanUsername(authorHref ?? link.textContent);
     if (!username) continue;
@@ -153,13 +184,13 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
     const card = link.closest('div[data-pressable-container="true"], div[role="listitem"], article') ?? link.parentElement?.parentElement;
     if (!card) continue;
 
+    // Bỏ qua nếu card là bài viết chính hoặc ô nhập comment
+    if (mainPostContainer && (mainPostContainer === card || mainPostContainer.contains(card))) continue;
+    if (card.querySelector('input, textarea, [contenteditable="true"]')) continue;
+
     const text = extractCommentText(card, link);
     if (!text || text.length < 1) continue;
-
-    if (!mainPostSkipped && (text === mainTitleText || text === mainContentText)) {
-      mainPostSkipped = true;
-      continue;
-    }
+    if (text === mainTitleText || text === mainContentText) continue;
 
     const likesEl = card.querySelector(SELECTORS.replyLikes);
 
@@ -210,11 +241,13 @@ export async function testScrapeAndHighlight(doc: Document, limit: number = 5): 
   const authorEl = doc.querySelector(SELECTORS.authorLink);
   const timeEl = doc.querySelector(SELECTORS.time);
 
+  const mainPostContainer = findMainPostContainer(doc);
   const mainTitleText = titleEl?.textContent?.trim() ?? '';
   const mainContentText = contentEl?.textContent?.trim() ?? '';
 
-  // Thử click mở rộng sub-replies cho 5 bình luận đầu
+  // Thử click mở rộng sub-replies của các bình luận hiển thị
   const expandButtons = Array.from(doc.querySelectorAll('div[role="button"], button, span, a')).filter((el) => {
+    if (el.closest('#ts-sidebar-container, header, nav, [role="navigation"]')) return false;
     const txt = el.textContent?.trim().toLowerCase() ?? '';
     return /\d+\s+câu\s+trả\s+lời/i.test(txt) || /\d+\s+replies/i.test(txt) || /\d+\s+phản\s+hồi/i.test(txt);
   });
@@ -230,11 +263,18 @@ export async function testScrapeAndHighlight(doc: Document, limit: number = 5): 
   const seenKeys = new Set<string>();
   const comments: ScrapedComment[] = [];
 
-  let mainPostSkipped = false;
   let highlightIndex = 1;
 
   for (const link of authorLinks) {
     if (comments.length >= limit) break;
+
+    // Bỏ qua header, nav, sidebar
+    if (link.closest('#ts-sidebar-container, header, nav, [role="navigation"]')) continue;
+
+    // BỎ QUA HOÀN TOÀN BÀI VIẾT CHÍNH
+    if (mainPostContainer && (mainPostContainer === link || mainPostContainer.contains(link))) {
+      continue;
+    }
 
     const authorHref = link.getAttribute('href');
     const username = cleanUsername(authorHref ?? link.textContent);
@@ -243,13 +283,13 @@ export async function testScrapeAndHighlight(doc: Document, limit: number = 5): 
     const card = link.closest('div[data-pressable-container="true"], div[role="listitem"], article') ?? link.parentElement?.parentElement;
     if (!card || !(card instanceof HTMLElement)) continue;
 
+    // Bỏ qua nếu là bài viết chính hoặc ô soạn thảo
+    if (mainPostContainer && (mainPostContainer === card || mainPostContainer.contains(card))) continue;
+    if (card.querySelector('input, textarea, [contenteditable="true"]')) continue;
+
     const text = extractCommentText(card, link);
     if (!text || text.length < 1) continue;
-
-    if (!mainPostSkipped && (text === mainTitleText || text === mainContentText)) {
-      mainPostSkipped = true;
-      continue;
-    }
+    if (text === mainTitleText || text === mainContentText) continue;
 
     const key = `${username.toLowerCase()}:${text}`;
     if (seenKeys.has(key)) continue;
@@ -299,7 +339,7 @@ export async function testScrapeAndHighlight(doc: Document, limit: number = 5): 
 
     // Cuộn nhẹ tới phần tử để người dùng thấy
     card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    await new Promise((r) => setTimeout(r, 250));
+    await new Promise((r) => setTimeout(r, 200));
 
     highlightIndex++;
   }
