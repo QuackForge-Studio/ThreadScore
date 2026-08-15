@@ -109,9 +109,9 @@ export default function HomePage() {
           </Reveal>
           <div className="how-grid">
             {[
-              { n: '01', t: 'Dán link bài viết', d: 'Sao chép liên kết Threads bất kỳ và dán vào ô tìm kiếm. Không cần tài khoản, không cần cài đặt.' },
-              { n: '02', t: 'AI đọc từng bình luận', d: 'Mỗi bình luận được chấm điểm 0-100 theo mức độ tức giận, kèm lý do vì sao AI nghĩ như vậy.' },
-              { n: '03', t: 'Xem bức tranh cảm xúc', d: 'Tổng hợp thành điểm trung bình, phân bố Bùng nổ - Trung lập - Vui vẻ và những trích dẫn tiêu biểu.' },
+              { n: '01', t: 'Dán link hoặc gửi yêu cầu', d: 'Dán liên kết Threads vào ô tìm kiếm. Xem ngay kết quả nếu bài đã phân tích hoặc gửi yêu cầu bài viết mới vào hàng chờ.' },
+              { n: '02', t: 'AI đọc & chấm điểm cảm xúc', d: 'Hệ thống tự động xử lý và AI phân tích từng bình luận, chấm điểm từ 0-100 (Bùng nổ, Trung lập, Vui vẻ) kèm lý do giải thích.' },
+              { n: '03', t: 'Xem bảng nhiệt & tương tác', d: 'Theo dõi điểm số trung bình, biểu đồ cảm xúc cộng đồng, xem bình luận tiêu biểu và vote đánh giá độ chính xác của AI.' },
             ].map((s, i) => (
               <Reveal key={s.n} delay={i * 0.12}>
                 <div className="how-step">
@@ -131,7 +131,7 @@ export default function HomePage() {
           <Reveal>
             <div className="section-head">
               <span className="section-eyebrow">Dành cho ai</span>
-              <h2 className="section-title">Đọc vị không khí trước khi nói</h2>
+              <h2 className="section-title">Khám phá góc nhìn dư luận</h2>
             </div>
           </Reveal>
           <Reveal>
