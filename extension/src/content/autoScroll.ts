@@ -5,7 +5,7 @@ export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?
   let lastCount = -1;
 
   for (let i = 0; i < maxScrolls; i++) {
-    // 1. Click các nút mở rộng bình luận bị ẩn chính xác (không click nút Trả lời bài viết)
+    // 1. Click các nút mở rộng bình luận bị ẩn & câu trả lời ẩn (Ví dụ: "Xem 9 câu trả lời", "Xem 3 phản hồi")
     await expandHiddenReplies(doc);
 
     // 2. Cuộn trang xuống cuối
@@ -37,7 +37,7 @@ export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?
   }
 }
 
-// Click mở rộng chính xác các cụm bình luận ẩn (tránh bấm nhầm nút Trả lời / Reply)
+// Click mở rộng chính xác các cụm bình luận ẩn & câu trả lời ẩn (sub-replies)
 async function expandHiddenReplies(doc: Document): Promise<boolean> {
   let clickedAny = false;
   const clickables = Array.from(
@@ -67,19 +67,20 @@ async function expandHiddenReplies(doc: Document): Promise<boolean> {
       continue;
     }
 
-    // Chỉ nhận diện các cụm từ mở rộng bình luận bị ẩn
+    // Nhận diện các cụm từ mở rộng bình luận bị ẩn & mở các nút câu trả lời con ("Xem 9 câu trả lời", "9 replies")
     const isExpandTarget =
+      /xem\s+\d+\s+câu\s+trả\s+lời/i.test(txt) ||
+      /\d+\s+câu\s+trả\s+lời/i.test(txt) ||
+      /xem\s+.*câu\s+trả\s+lời/i.test(txt) ||
+      /xem\s+.*phản\s+hồi/i.test(txt) ||
+      /\d+\s+phản\s+hồi/i.test(txt) ||
+      /view\s+\d+\s+replies/i.test(txt) ||
+      /\d+\s+replies/i.test(txt) ||
+      /view\s+.*replies/i.test(txt) ||
       txt.includes('xem tất cả') ||
       txt.includes('đã ẩn') ||
       txt.includes('bị ẩn') ||
-      txt.includes('xem thêm câu trả lời') ||
-      txt.includes('xem các câu trả lời') ||
-      txt.includes('xem câu trả lời') ||
-      txt.includes('view hidden replies') ||
-      txt.includes('show hidden replies') ||
-      txt.includes('view replies') ||
-      txt.includes('view all replies') ||
-      txt.includes('more replies');
+      txt.includes('xem thêm');
 
     if (isExpandTarget) {
       const rect = el.getBoundingClientRect();
@@ -87,7 +88,7 @@ async function expandHiddenReplies(doc: Document): Promise<boolean> {
         try {
           el.click();
           clickedAny = true;
-          await new Promise((r) => setTimeout(r, 250));
+          await new Promise((r) => setTimeout(r, 300));
         } catch {
           // ignore error
         }
@@ -99,6 +100,6 @@ async function expandHiddenReplies(doc: Document): Promise<boolean> {
 
 function countReplies(doc: Document): number {
   return doc.querySelectorAll(
-    'div[data-pressable-container="true"], article, div[role="listitem"], .reply-item'
+    'a[href*="/@"], div[data-pressable-container="true"], article, div[role="listitem"], .reply-item'
   ).length;
 }
