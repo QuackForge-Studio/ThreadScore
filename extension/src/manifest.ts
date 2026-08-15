@@ -19,4 +19,10 @@ export default defineManifest({
       run_at: 'document_idle',
     },
   ],
+  web_accessible_resources: [
+    {
+      resources: ['index.html', 'assets/*'],
+      matches: ['https://*.threads.net/*'],
+    },
+  ],
 });
