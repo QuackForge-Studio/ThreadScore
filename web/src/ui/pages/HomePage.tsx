@@ -59,15 +59,12 @@ export default function HomePage() {
 
   return (
     <div className="page">
-      {/* INTEREST — Overall thermometer + search */}
-      <section className="section-tight">
-        {stats && <Reveal><OverallHeat stats={stats} /></Reveal>}
-        <SearchBox />
-      </section>
-
-      {/* Explore */}
-      <section className="section" id="explore">
+      {/* INTEREST — Thermometer + Search + Explore */}
+      <section className="section-tight" id="explore">
         <div className="container">
+          {stats && <Reveal><OverallHeat stats={stats} /></Reveal>}
+          <SearchBox />
+
           <div className="sort-tabs">
             {(['hottest', 'newest', 'most_comments'] as const).map(s => (
               <button key={s} className={`sort-tab${sort === s ? ' active' : ''}`} onClick={() => setSort(s)}>
