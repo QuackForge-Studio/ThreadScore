@@ -19,13 +19,13 @@ describe('storage', () => {
 
   it('returns default config when empty', async () => {
     const cfg = await getConfig();
-    expect(cfg.webUrl).toBe('');
+    expect(cfg.webUrl).toBe('https://threadscore.quackforge.io.vn');
     expect(cfg.adminKey).toBe('');
   });
 
   it('persists and reads config', async () => {
     await setConfig({ webUrl: 'https://ts.example.com', adminKey: 'k123' });
     const cfg = await getConfig();
-    expect(cfg).toEqual({ webUrl: 'https://ts.example.com', adminKey: 'k123' });
+    expect(cfg).toEqual({ webUrl: 'https://ts.example.com', adminKey: 'k123', autoEnabled: false });
   });
 });
