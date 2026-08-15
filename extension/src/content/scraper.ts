@@ -66,23 +66,63 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
   const authorEl = doc.querySelector(SELECTORS.authorLink);
   const timeEl = doc.querySelector(SELECTORS.time);
 
-  const replyItems = Array.from(doc.querySelectorAll(SELECTORS.replyItem)).slice(0, opts?.maxComments ?? MAX_COMMENTS);
+  const mainTitleText = titleEl?.textContent?.trim() ?? '';
+  const mainContentText = contentEl?.textContent?.trim() ?? '';
 
-  const comments: ScrapedComment[] = replyItems.map(item => {
-    const authorEl = item.querySelector(SELECTORS.replyAuthor);
-    const textEl = item.querySelector(SELECTORS.replyText);
-    const likesEl = item.querySelector(SELECTORS.replyLikes);
+  // Extract all pressable post/comment containers across top-level and sub-replies
+  const allContainers = Array.from(
+    doc.querySelectorAll('div[data-pressable-container="true"], article, div[role="listitem"], .reply-item')
+  );
+
+  const seenKeys = new Set<string>();
+  const comments: ScrapedComment[] = [];
+
+  let isFirst = true;
+
+  for (const item of allContainers) {
+    const textEl = item.querySelector('div[dir="auto"], span[dir="auto"], .reply-text');
     const text = textEl?.textContent?.trim() ?? '';
-    const authorHref = authorEl?.getAttribute('href');
-    return {
+    if (!text) continue;
+
+    // Bỏ qua nếu text là nút bấm mở rộng hoặc tiêu đề thanh bên
+    const lowerText = text.toLowerCase();
+    if (
+      lowerText.includes('xem tất cả') ||
+      lowerText.includes('threadscore sidebar') ||
+      lowerText.includes('đã ẩn một số')
+    ) {
+      continue;
+    }
+
+    const itemAuthorEl = item.querySelector('a[href*="/@"], .reply-author, span[dir="auto"]');
+    const authorHref = itemAuthorEl?.getAttribute('href');
+    const username = cleanUsername(authorHref ?? itemAuthorEl?.textContent);
+
+    const likesEl = item.querySelector(SELECTORS.replyLikes);
+
+    // Bỏ qua container đầu tiên nếu trùng với bài viết chính
+    if (isFirst && (text === mainTitleText || text === mainContentText)) {
+      isFirst = false;
+      continue;
+    }
+    isFirst = false;
+
+    // Lọc trùng lặp bình luận & câu trả lời (sub-replies)
+    const key = `${username ?? 'anon'}:${text}`;
+    if (seenKeys.has(key)) continue;
+    seenKeys.add(key);
+
+    comments.push({
       external_id: null,
-      author_username: cleanUsername(authorHref ?? authorEl?.textContent),
+      author_username: username,
       author_name: null,
       text,
       like_count: parseLikes(likesEl),
       posted_at: null,
-    };
-  }).filter(c => c.text.length > 0);
+    });
+
+    if (comments.length >= (opts?.maxComments ?? MAX_COMMENTS)) break;
+  }
 
   return {
     url: doc.location?.href ?? doc.defaultView?.location.href ?? '',
