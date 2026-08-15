@@ -1,18 +1,46 @@
 import type { ScrapedThread } from '../content/scraper';
 
 export async function scrapeActiveTab(): Promise<ScrapedThread> {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab?.id) throw new Error('Không tìm thấy tab đang mở');
+  const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+  let tab = tabs[0];
+  if (!tab?.id) {
+    const allTabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+    tab = allTabs[0];
+  }
+
+  if (!tab?.id) throw new Error('Không tìm thấy tab đang mở.');
+
+  const url = tab.url ?? '';
+  if (!url.includes('threads.net') && !url.includes('threads.com')) {
+    throw new Error('Vui lòng mở một trang bài viết trên Threads (threads.net hoặc threads.com) để quét!');
+  }
+
+  // Inject content script nếu chưa sẵn sàng
+  if (chrome.scripting) {
+    await chrome.scripting
+      .executeScript({
+        target: { tabId: tab.id },
+        files: ['src/content/scraper.ts'],
+      })
+      .catch(() => {});
+  }
 
   const payload = await new Promise<ScrapedThread | null>((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('Scrape timeout sau 60s')), 60_000);
+    const timer = setTimeout(() => reject(new Error('Thao tác quá thời gian (Timeout 60s).')), 60_000);
     chrome.tabs.sendMessage(tab.id!, { type: 'TS_SCRAPE' }, (response) => {
       clearTimeout(timer);
-      if (chrome.runtime.lastError) { reject(new Error(chrome.runtime.lastError.message)); return; }
+      const err = chrome.runtime.lastError;
+      if (err) {
+        reject(new Error('Chưa kết nối được trang Threads. Hãy bấm F5 làm mới lại trang Threads và thử lại!'));
+        return;
+      }
       resolve(response ?? null);
     });
   });
 
-  if (!payload || !payload.comments) throw new Error('Scrape thất bại — hãy mở một bài Threads');
+  if (!payload || !payload.comments) {
+    throw new Error('Không tìm thấy nội dung bài viết Threads trên trang hiện tại.');
+  }
+
   return payload;
 }
