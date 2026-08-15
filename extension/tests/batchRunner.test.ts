@@ -6,6 +6,7 @@ const SCRAPED = {
   title: 'T', content: null, author_username: 'x', author_name: null, posted_at: null,
   comments: [{ external_id: null, author_username: 'u', author_name: null, text: 'đồ ngu', like_count: 0, posted_at: null }],
 };
+const storageLocal: Record<string, unknown> = {};
 vi.stubGlobal('chrome', {
   tabs: {
     create: vi.fn(async () => { const id = createdTabs.length + 100; createdTabs.push(id); return { id }; }),
@@ -13,8 +14,9 @@ vi.stubGlobal('chrome', {
     get: vi.fn(async () => ({ status: 'complete' })),
     sendMessage: vi.fn(async (_tabId: number, _msg: unknown, cb: (resp: unknown) => void) => cb(SCRAPED)),
   },
-  scripting: { executeScript: vi.fn(async () => [{ result: true }]) },
+  scripting: { executeScript: vi.fn(async () => [{ result: { text: 'thread content', url: 'https://www.threads.net/@x/post/C1' } }]) },
   runtime: { lastError: undefined },
+  storage: { local: { get: vi.fn(async (k: string) => ({ [k]: storageLocal[k] })), set: vi.fn(async (v: Record<string, unknown>) => { Object.assign(storageLocal, v); }) } },
 });
 
 vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
