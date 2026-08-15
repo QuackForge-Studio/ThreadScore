@@ -4,30 +4,8 @@ import { apiGet } from '../api';
 import SearchBox from '../components/SearchBox';
 import ThreadCard from '../components/ThreadCard';
 import OverallHeat from '../components/OverallHeat';
-import AccordionSlices from '../components/AccordionSlices';
 import { Reveal, CountUp } from '../components/motion';
 import type { ThreadRecord, OverallStats } from '../../shared/types';
-
-const SLICES = [
-  {
-    title: 'Bài nào đang bùng nổ',
-    desc: 'Xếp hạng nóng theo điểm tức giận trung bình, cập nhật theo từng đợt chấm điểm.',
-    chip: 'bảng nhiệt',
-    img: 'https://picsum.photos/seed/threadscore-fire/1200/900',
-  },
-  {
-    title: 'Điều gì đang gây tranh cãi',
-    desc: 'Tìm ra những bình luận đang đốt nóng cuộc thảo luận nhất trong bài viết.',
-    chip: 'chấn động',
-    img: 'https://picsum.photos/seed/threadscore-spark/1200/900',
-  },
-  {
-    title: 'Đâu là không gian bình yên',
-    desc: 'Không phải chỗ nào cũng nóng — phát hiện cả những bài viết đang nhận sự đồng cảm.',
-    chip: 'góc dịu mát',
-    img: 'https://picsum.photos/seed/threadscore-breeze/1200/900',
-  },
-];
 
 export default function HomePage() {
   const [threads, setThreads] = useState<ThreadRecord[]>([]);
@@ -109,8 +87,8 @@ export default function HomePage() {
           </Reveal>
           <div className="how-grid">
             {[
-              { n: '01', t: 'Dán link hoặc gửi yêu cầu', d: 'Dán liên kết Threads vào ô tìm kiếm. Xem ngay kết quả nếu bài đã phân tích hoặc gửi yêu cầu bài viết mới vào hàng chờ.' },
-              { n: '02', t: 'AI đọc & chấm điểm cảm xúc', d: 'Hệ thống tự động xử lý và AI phân tích từng bình luận, chấm điểm từ 0-100 (Bùng nổ, Trung lập, Vui vẻ) kèm lý do giải thích.' },
+              { n: '01', t: 'Đăng nhập để gửi yêu cầu', d: 'Đăng nhập tài khoản để dán liên kết Threads bất kỳ và gửi yêu cầu phân tích bài viết mới.' },
+              { n: '02', t: 'Đợi admin duyệt & AI xử lý', d: 'Đơn yêu cầu sẽ được admin kiểm tra, duyệt và hệ thống AI tiến hành đọc, chấm điểm từng bình luận.' },
               { n: '03', t: 'Xem bảng nhiệt & tương tác', d: 'Theo dõi điểm số trung bình, biểu đồ cảm xúc cộng đồng, xem bình luận tiêu biểu và vote đánh giá độ chính xác của AI.' },
             ].map((s, i) => (
               <Reveal key={s.n} delay={i * 0.12}>
@@ -122,21 +100,6 @@ export default function HomePage() {
               </Reveal>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Use cases — accordion slices */}
-      <section className="section">
-        <div className="container">
-          <Reveal>
-            <div className="section-head">
-              <span className="section-eyebrow">Dành cho ai</span>
-              <h2 className="section-title">Khám phá góc nhìn dư luận</h2>
-            </div>
-          </Reveal>
-          <Reveal>
-            <AccordionSlices slices={SLICES} />
-          </Reveal>
         </div>
       </section>
 
