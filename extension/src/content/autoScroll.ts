@@ -1,16 +1,15 @@
-// Auto-scroll orchestrator: Cuộn thông minh & mở rộng câu trả lời con (sub-replies) trực tiếp trên bài viết.
-// Đã loại bỏ hoàn toàn việc click vào trang "Câu trả lời đã ẩn" để tránh chuyển trang hay bị timeout.
+// Auto-scroll orchestrator: Cuộn trang kiên trì, nhận diện & mở rộng toàn bộ câu trả lời con (sub-replies).
 
 export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?: number; maxScrolls?: number }): Promise<void> {
-  const maxScrolls = opts?.maxScrolls ?? 50;
+  const maxScrolls = opts?.maxScrolls ?? 80;
   let stableCount = 0;
   let lastCount = -1;
 
   for (let i = 0; i < maxScrolls; i++) {
-    // 1. Chỉ mở rộng các câu trả lời con trực tiếp ("Xem 9 câu trả lời", "3 replies", v.v.)
-    await expandSubReplies(doc);
+    // 1. Quét và bấm mở rộng tất cả các câu trả lời con chưa được mở
+    const expandedCount = await expandSubReplies(doc);
 
-    // 2. Cuộn trang xuống cuối
+    // 2. Cuộn trang xuống cuối để kích hoạt nạp thêm bình luận
     const w = doc.defaultView;
     if (w) {
       const body = doc.body;
@@ -18,13 +17,15 @@ export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?
       else (w as unknown as { scrollY: number }).scrollY = body.scrollHeight;
     }
 
-    const jitter = 250 + Math.floor(Math.random() * 250);
-    await new Promise((r) => setTimeout(r, jitter));
+    // Chờ mạng nạp dữ liệu: 450 - 750ms
+    const waitTime = expandedCount > 0 ? 800 : 500 + Math.floor(Math.random() * 250);
+    await new Promise((r) => setTimeout(r, waitTime));
 
     const count = countReplies(doc);
-    if (count === lastCount) {
+    if (count === lastCount && expandedCount === 0) {
       stableCount++;
-      if (stableCount >= 2) break;
+      // Cần ít nhất 5 lần liên tiếp không có comment mới mới dừng hẳn
+      if (stableCount >= 5) break;
     } else {
       stableCount = 0;
     }
@@ -33,8 +34,9 @@ export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?
   }
 }
 
-// Mở rộng các câu trả lời con trực tiếp trên bài viết
-async function expandSubReplies(doc: Document): Promise<void> {
+// Mở rộng các câu trả lời con (sub-replies) trực tiếp trên từng bình luận
+async function expandSubReplies(doc: Document): Promise<number> {
+  let expandedCount = 0;
   const clickables = Array.from(
     doc.querySelectorAll('div[role="button"], button, span, a, div[tabindex="0"]')
   );
@@ -43,10 +45,13 @@ async function expandSubReplies(doc: Document): Promise<void> {
     if (!(el instanceof HTMLElement)) continue;
     if (el.closest('#ts-sidebar-container, header, nav, [role="navigation"]')) continue;
 
+    // Bỏ qua nếu phần tử này đã được click mở rộng trước đó
+    if (el.dataset.tsExpanded === 'true') continue;
+
     const txt = el.textContent?.trim().toLowerCase() ?? '';
     if (!txt || txt.length > 80) continue;
 
-    // LỌC BỎ các nút hành động, menu, và BLOCK HOÀN TOÀN các nút chuyển trang "bị ẩn" / "xem tất cả"
+    // LỌC BỎ: Nút hành động, menu 3 chấm, và block chuyển sang trang "bị ẩn"
     const ariaLabel = (el.getAttribute('aria-label') ?? '').toLowerCase();
     const title = (el.getAttribute('title') ?? '').toLowerCase();
 
@@ -60,8 +65,8 @@ async function expandSubReplies(doc: Document): Promise<void> {
       txt.includes('hidden replies') ||
       txt.startsWith('trả lời @') ||
       txt.startsWith('reply to') ||
-      ariaLabel.includes('trả lời') ||
-      ariaLabel.includes('reply') ||
+      ariaLabel === 'trả lời' ||
+      ariaLabel === 'reply' ||
       ariaLabel.includes('tùy chọn') ||
       ariaLabel.includes('khác') ||
       ariaLabel.includes('more') ||
@@ -72,28 +77,32 @@ async function expandSubReplies(doc: Document): Promise<void> {
       continue;
     }
 
-    // CHỈ nhận diện các nút chứa số lượng câu trả lời con:
-    // Ví dụ: "Xem 9 câu trả lời", "9 câu trả lời", "Xem 3 phản hồi", "9 replies", "View 9 replies"
+    // NHẬN DIỆN CÂU TRẢ LỜI CON:
+    // "Xem 9 câu trả lời", "9 câu trả lời", "9 phản hồi", "1 phản hồi", "Xem 3 phản hồi", "9 replies", "1 reply", "View 9 replies"
     const isSubReplyExpander =
-      /xem\s+\d+\s+câu\s+trả\s+lời/i.test(txt) ||
-      /^\d+\s+câu\s+trả\s+lời/i.test(txt) ||
-      /xem\s+\d+\s+phản\s+hồi/i.test(txt) ||
-      /^\d+\s+phản\s+hồi/i.test(txt) ||
-      /view\s+\d+\s+replies/i.test(txt) ||
-      /^\d+\s+replies/i.test(txt) ||
-      txt.includes('xem thêm câu trả lời') ||
-      txt.includes('xem thêm phản hồi');
+      /\d+\s+câu\s+trả\s+lời/i.test(txt) ||
+      /\d+\s+trả\s+lời/i.test(txt) ||
+      /\d+\s+phản\s+hồi/i.test(txt) ||
+      /\d+\s+replies/i.test(txt) ||
+      /\d+\s+reply/i.test(txt) ||
+      /xem\s+.*câu\s+trả\s+lời/i.test(txt) ||
+      /xem\s+.*phản\s+hồi/i.test(txt) ||
+      /view\s+.*replies/i.test(txt);
 
     if (isSubReplyExpander) {
       const rect = el.getBoundingClientRect();
       if (rect.width > 0 && rect.height > 0) {
         try {
+          el.dataset.tsExpanded = 'true';
           el.click();
-          await new Promise((r) => setTimeout(r, 300));
+          expandedCount++;
+          await new Promise((r) => setTimeout(r, 350));
         } catch {}
       }
     }
   }
+
+  return expandedCount;
 }
 
 function countReplies(doc: Document): number {
