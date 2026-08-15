@@ -4,9 +4,8 @@ import { apiGet } from '../api';
 import SearchBox from '../components/SearchBox';
 import ThreadCard from '../components/ThreadCard';
 import OverallHeat from '../components/OverallHeat';
-import Marquee from '../components/Marquee';
 import AccordionSlices from '../components/AccordionSlices';
-import { Reveal, ScrubText, CountUp } from '../components/motion';
+import { Reveal, CountUp } from '../components/motion';
 import type { ThreadRecord, OverallStats } from '../../shared/types';
 
 const SLICES = [
@@ -66,25 +65,9 @@ export default function HomePage() {
         <SearchBox />
       </section>
 
-      {/* DESIRE — Marquee */}
-      <section className="section-tight">
-        <Marquee />
-      </section>
-
       {/* Explore */}
       <section className="section" id="explore">
         <div className="container">
-          <Reveal>
-            <div className="section-head">
-              <span className="section-eyebrow">Bảng nhiệt</span>
-              <h2 className="section-title">Cộng đồng đang nói về gì</h2>
-              <ScrubText
-                className="section-sub"
-                text="Mỗi bài viết là một ngọn lửa riêng. ThreadScore đo độ nóng của từng bài, từ những cuộc tranh cãi rực lửa đến những góc thảo luận dịu mát."
-              />
-            </div>
-          </Reveal>
-
           <div className="sort-tabs">
             {(['hottest', 'newest', 'most_comments'] as const).map(s => (
               <button key={s} className={`sort-tab${sort === s ? ' active' : ''}`} onClick={() => setSort(s)}>
