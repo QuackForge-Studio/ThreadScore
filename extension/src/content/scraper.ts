@@ -75,6 +75,41 @@ function cleanUsername(hrefOrText: string | null | undefined): string | null {
   return m ? m[1] : null;
 }
 
+// Trích xuất chính xác phần nội dung chữ của bình luận (không nhầm với tên tác giả hoặc thời gian)
+function extractCommentText(card: Element, link: Element): string {
+  const textCandidates = Array.from(
+    card.querySelectorAll('div[dir="auto"], span[dir="auto"], .reply-text')
+  ).filter((el) => {
+    if (link.contains(el) || el.contains(link)) return false;
+    if (el.closest('button, [role="button"], time, a')) return false;
+    const t = el.textContent?.trim() ?? '';
+    if (!t || t.length < 1) return false;
+    const lower = t.toLowerCase();
+    if (
+      lower.includes('xem tất cả') ||
+      lower.includes('đã ẩn một số') ||
+      lower.includes('câu trả lời') ||
+      lower.includes('threadscore sidebar')
+    ) {
+      return false;
+    }
+    return true;
+  });
+
+  if (textCandidates.length > 0) {
+    return textCandidates[0].textContent?.trim() ?? '';
+  }
+
+  // Fallback: Tìm các đoạn text trực tiếp
+  const directTexts = Array.from(card.querySelectorAll('div, span, p')).filter((el) => {
+    if (link.contains(el) || el.closest('button, [role="button"], time, a')) return false;
+    const t = el.textContent?.trim() ?? '';
+    return t.length > 1 && el.children.length === 0;
+  });
+
+  return directTexts[0]?.textContent?.trim() ?? '';
+}
+
 export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: number }): Promise<ScrapedThread> {
   await autoScrollUntilStable(doc, { maxComments: opts?.maxComments ?? MAX_COMMENTS });
 
@@ -89,7 +124,7 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
   const seenKeys = new Set<string>();
   const comments: ScrapedComment[] = [];
 
-  // 1. Ưu tiên lấy các comment chất lượng cao từ GraphQL API Interceptor
+  // 1. Lấy từ GraphQL API buffer
   for (const gc of interceptedCommentsBuffer) {
     if (!gc.text || !gc.author_username) continue;
     const key = `${gc.author_username.toLowerCase()}:${gc.text}`;
@@ -106,9 +141,8 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
     });
   }
 
-  // 2. Bổ sung các comment từ DOM (bao gồm cả sub-replies cấp con)
+  // 2. Lấy từ DOM (bao gồm cả sub-replies)
   const authorLinks = Array.from(doc.querySelectorAll('a[href*="/@"]'));
-
   let mainPostSkipped = false;
 
   for (const link of authorLinks) {
@@ -116,25 +150,12 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
     const username = cleanUsername(authorHref ?? link.textContent);
     if (!username) continue;
 
-    // Tìm container chứa comment nhỏ nhất quanh author link này
     const card = link.closest('div[data-pressable-container="true"], div[role="listitem"], article') ?? link.parentElement?.parentElement;
     if (!card) continue;
 
-    const textEl = card.querySelector('div[dir="auto"], span[dir="auto"], .reply-text');
-    const text = textEl?.textContent?.trim() ?? '';
-    if (!text || text.length < 2) continue;
+    const text = extractCommentText(card, link);
+    if (!text || text.length < 1) continue;
 
-    const lowerText = text.toLowerCase();
-    if (
-      lowerText.includes('xem tất cả') ||
-      lowerText.includes('threadscore sidebar') ||
-      lowerText.includes('đã ẩn một số') ||
-      lowerText.includes('xem câu trả lời')
-    ) {
-      continue;
-    }
-
-    // Bỏ qua bài viết chính ở đầu trang
     if (!mainPostSkipped && (text === mainTitleText || text === mainContentText)) {
       mainPostSkipped = true;
       continue;
@@ -156,6 +177,131 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
     });
 
     if (comments.length >= (opts?.maxComments ?? MAX_COMMENTS)) break;
+  }
+
+  return {
+    url: doc.location?.href ?? doc.defaultView?.location.href ?? '',
+    title: titleEl?.textContent?.trim() ?? null,
+    content: contentEl?.textContent?.trim() ?? null,
+    author_username: cleanUsername(authorEl?.getAttribute('href') ?? authorEl?.textContent),
+    author_name: null,
+    posted_at: parseTime(timeEl),
+    comments,
+  };
+}
+
+// CHẾ ĐỘ TEST & HIGHLIGHT TRỰC QUAN
+export async function testScrapeAndHighlight(doc: Document, limit: number = 5): Promise<ScrapedThread> {
+  // Xóa các highlight cũ
+  const oldBadges = doc.querySelectorAll('.ts-highlight-badge');
+  oldBadges.forEach((b) => b.remove());
+  const oldHighlighted = doc.querySelectorAll('[data-ts-highlighted="true"]');
+  oldHighlighted.forEach((el) => {
+    if (el instanceof HTMLElement) {
+      el.style.outline = '';
+      el.style.backgroundColor = '';
+      el.style.boxShadow = '';
+      el.removeAttribute('data-ts-highlighted');
+    }
+  });
+
+  const titleEl = doc.querySelector(SELECTORS.title);
+  const contentEl = doc.querySelector(SELECTORS.content);
+  const authorEl = doc.querySelector(SELECTORS.authorLink);
+  const timeEl = doc.querySelector(SELECTORS.time);
+
+  const mainTitleText = titleEl?.textContent?.trim() ?? '';
+  const mainContentText = contentEl?.textContent?.trim() ?? '';
+
+  // Thử click mở rộng sub-replies cho 5 bình luận đầu
+  const expandButtons = Array.from(doc.querySelectorAll('div[role="button"], button, span, a')).filter((el) => {
+    const txt = el.textContent?.trim().toLowerCase() ?? '';
+    return /\d+\s+câu\s+trả\s+lời/i.test(txt) || /\d+\s+replies/i.test(txt) || /\d+\s+phản\s+hồi/i.test(txt);
+  });
+
+  for (const btn of expandButtons.slice(0, 5)) {
+    if (btn instanceof HTMLElement) {
+      btn.click();
+      await new Promise((r) => setTimeout(r, 400));
+    }
+  }
+
+  const authorLinks = Array.from(doc.querySelectorAll('a[href*="/@"]'));
+  const seenKeys = new Set<string>();
+  const comments: ScrapedComment[] = [];
+
+  let mainPostSkipped = false;
+  let highlightIndex = 1;
+
+  for (const link of authorLinks) {
+    if (comments.length >= limit) break;
+
+    const authorHref = link.getAttribute('href');
+    const username = cleanUsername(authorHref ?? link.textContent);
+    if (!username) continue;
+
+    const card = link.closest('div[data-pressable-container="true"], div[role="listitem"], article') ?? link.parentElement?.parentElement;
+    if (!card || !(card instanceof HTMLElement)) continue;
+
+    const text = extractCommentText(card, link);
+    if (!text || text.length < 1) continue;
+
+    if (!mainPostSkipped && (text === mainTitleText || text === mainContentText)) {
+      mainPostSkipped = true;
+      continue;
+    }
+
+    const key = `${username.toLowerCase()}:${text}`;
+    if (seenKeys.has(key)) continue;
+    seenKeys.add(key);
+
+    const likesEl = card.querySelector(SELECTORS.replyLikes);
+
+    comments.push({
+      external_id: null,
+      author_username: username,
+      author_name: null,
+      text,
+      like_count: parseLikes(likesEl),
+      posted_at: null,
+    });
+
+    // HIGHLIGHT TRỰC QUAN LÊN TRANG THREADS
+    card.setAttribute('data-ts-highlighted', 'true');
+    card.style.outline = '3px solid #E5484D';
+    card.style.outlineOffset = '2px';
+    card.style.backgroundColor = 'rgba(229, 72, 77, 0.15)';
+    card.style.boxShadow = '0 0 16px rgba(229, 72, 77, 0.6)';
+    card.style.borderRadius = '8px';
+    card.style.position = 'relative';
+    card.style.transition = 'all 0.3s ease';
+
+    // Thêm huy hiệu badge đánh số thứ tự
+    const badge = doc.createElement('div');
+    badge.className = 'ts-highlight-badge';
+    badge.textContent = `#${highlightIndex} @${username}`;
+    Object.assign(badge.style, {
+      position: 'absolute',
+      top: '-12px',
+      left: '12px',
+      background: 'linear-gradient(135deg, #E5484D, #F05A28)',
+      color: '#FFFFFF',
+      fontSize: '11px',
+      fontWeight: '800',
+      padding: '3px 8px',
+      borderRadius: '12px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+      zIndex: '999999',
+      pointerEvents: 'none',
+      fontFamily: 'system-ui, sans-serif',
+    });
+    card.appendChild(badge);
+
+    // Cuộn nhẹ tới phần tử để người dùng thấy
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    await new Promise((r) => setTimeout(r, 250));
+
+    highlightIndex++;
   }
 
   return {
@@ -288,12 +434,18 @@ if (typeof document !== 'undefined') {
 
 // Guard: content script có thể được inject trước khi chrome.runtime sẵn sàng
 if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
-  chrome.runtime.onMessage.addListener((message: { type?: string }, _sender, sendResponse) => {
+  chrome.runtime.onMessage.addListener((message: { type?: string; limit?: number }, _sender, sendResponse) => {
     if (message.type === 'TS_SCRAPE') {
       scrapeCurrentThread(document)
-        .then(result => sendResponse(result))
-        .catch(e => sendResponse({ error: e instanceof Error ? e.message : 'Scrape lỗi' }));
-      return true; // giữ channel mở cho async
+        .then((result) => sendResponse(result))
+        .catch((e) => sendResponse({ error: e instanceof Error ? e.message : 'Scrape lỗi' }));
+      return true;
+    }
+    if (message.type === 'TS_TEST_SCRAPE') {
+      testScrapeAndHighlight(document, message.limit ?? 5)
+        .then((result) => sendResponse(result))
+        .catch((e) => sendResponse({ error: e instanceof Error ? e.message : 'Test scrape lỗi' }));
+      return true;
     }
     return false;
   });
