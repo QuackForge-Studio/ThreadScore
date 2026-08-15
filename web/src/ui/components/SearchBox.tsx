@@ -41,6 +41,7 @@ export default function SearchBox() {
         <div className="searchbox-input-wrap">
           <MagnifyingGlass className="searchbox-icon" aria-hidden="true" />
           <input
+            id="searchbox-input"
             className="searchbox-input"
             placeholder="Tìm bài viết hoặc dán link Threads..."
             value={q}

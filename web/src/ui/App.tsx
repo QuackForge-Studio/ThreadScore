@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { GoogleLogo, GithubLogo } from '@phosphor-icons/react';
 import HomePage from './pages/HomePage';
 import ThreadPage from './pages/ThreadPage';
 import AdminPage from './pages/AdminPage';
@@ -49,8 +50,12 @@ export default function App() {
               </>
             ) : (
               <>
-                <a className="nav-link" href="/api/auth/google/login">Đăng nhập Google</a>
-                <a className="nav-link primary" href="/api/auth/github/login">Đăng nhập GitHub</a>
+                <a className="nav-link nav-google" href="/api/auth/google/login">
+                  <GoogleLogo weight="bold" size={18} /> Đăng nhập Google
+                </a>
+                <a className="nav-link primary nav-github" href="/api/auth/github/login">
+                  <GithubLogo weight="fill" size={18} /> Đăng nhập GitHub
+                </a>
               </>
             )}
           </nav>

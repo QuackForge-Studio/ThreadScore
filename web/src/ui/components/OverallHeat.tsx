@@ -13,9 +13,9 @@ export default function OverallHeat({ stats }: { stats: OverallStats }) {
   const avg = stats.avg_anger ?? 0;
   const label = stats.avg_anger != null ? labelFromScore(avg) : null;
   const rows = [
-    { key: 'bang_no', label: 'Bùng nổ', color: LABEL_COLORS['BÙNG NỔ'], n: stats.breakdown.bang_no, dot: 'anger' },
-    { key: 'trung_lap', label: 'Trung lập', color: LABEL_COLORS['TRUNG LẬP'], n: stats.breakdown.trung_lap, dot: 'neutral' },
-    { key: 'vui_ve', label: 'Vui vẻ', color: LABEL_COLORS['VUI VẺ'], n: stats.breakdown.vui_ve, dot: 'calm' },
+    { key: 'bang_no', label: 'Bùng nổ', range: '70-100', color: LABEL_COLORS['BÙNG NỔ'], n: stats.breakdown.bang_no, dot: 'anger' },
+    { key: 'trung_lap', label: 'Trung lập', range: '30-69', color: LABEL_COLORS['TRUNG LẬP'], n: stats.breakdown.trung_lap, dot: 'neutral' },
+    { key: 'vui_ve', label: 'Vui vẻ', range: '0-29', color: LABEL_COLORS['VUI VẺ'], n: stats.breakdown.vui_ve, dot: 'calm' },
   ] as const;
 
   return (
@@ -26,7 +26,7 @@ export default function OverallHeat({ stats }: { stats: OverallStats }) {
             {stats.avg_anger != null ? <CountUp to={Math.round(avg)} /> : '--'}
           </span>
           <span className="overall-thermo-label">nhiệt độ cộng đồng</span>
-          <div className="thermo-track">
+          <div className="thermo-track" title={`Nhiệt độ cảm xúc: ${Math.round(avg)}/100`}>
             <div className="thermo-knob" style={{ left: `${Math.min(100, Math.max(0, avg))}%`, background: heatColor(avg) }} />
           </div>
           <span className="overall-thermo-label" style={{ color: label ? heatColor(avg) : 'var(--faint)' }}>
@@ -38,6 +38,10 @@ export default function OverallHeat({ stats }: { stats: OverallStats }) {
           {rows.map(r => (
             <div className="overall-legend-row" key={r.key}>
               <span className={`dot ${r.dot}`} />
+              <span className="legend-text">
+                <span className="legend-name">{r.label}</span>
+                <span className="legend-range">{r.range}</span>
+              </span>
               <div className="bar"><i style={{ width: `${(r.n / total) * 100}%`, background: r.color }} /></div>
               <span className="n">{r.n}</span>
             </div>

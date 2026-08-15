@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { WarningCircle, Fire, Eye, NewspaperClipping } from '@phosphor-icons/react';
+import { WarningCircle, Fire, Eye, NewspaperClipping, ChatCircleDots, Lightning } from '@phosphor-icons/react';
 import { apiGet } from '../api';
 import SearchBox from '../components/SearchBox';
 import ThreadCard from '../components/ThreadCard';
@@ -16,12 +16,9 @@ export default function HomePage() {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setError(null);
-    apiGet<{ threads: ThreadRecord[] }>(`/api/threads?sort=${sort}&limit=50&offset=0`)
-      .then(r => { if (!cancelled) setThreads(r.threads); })
-      .catch(e => { if (!cancelled) setError(e.message); })
-      .finally(() => { if (!cancelled) setLoading(false); });
+    apiGet<{ threads: ThreadRecord[] }>(`/api/threads?sort=${sort}`)
+      .then(r => { if (!cancelled) { setThreads(r.threads); setLoading(false); } })
+      .catch(e => { if (!cancelled) { setError(e.message || 'Lỗi tải danh sách'); setLoading(false); } });
     return () => { cancelled = true; };
   }, [sort]);
 
@@ -67,8 +64,11 @@ export default function HomePage() {
               {threads.map((t, i) => <Reveal key={t.id} delay={(i % 3) * 0.08}><ThreadCard thread={t} /></Reveal>)}
               {threads.length === 0 && !error && (
                 <div className="empty-state">
-                  <p className="empty-title">Chưa có bài viết nào</p>
-                  <p className="empty-subtitle">Dán link Threads vào ô tìm kiếm để yêu cầu bài đầu tiên</p>
+                  <div className="empty-icon">
+                    <ChatCircleDots size={48} weight="duotone" color="var(--accent)" />
+                  </div>
+                  <p className="empty-title">Chưa có bài viết nào được phân tích</p>
+                  <p className="empty-subtitle">Dán liên kết Threads bất kỳ vào ô tìm kiếm ở trên để gửi yêu cầu đo nhiệt độ bài viết đầu tiên!</p>
                 </div>
               )}
             </>
@@ -123,11 +123,9 @@ export default function HomePage() {
               </div>
             </Reveal>
             <Reveal className="bento-2" delay={0.08}>
-              <div className="bento-card">
-                <div className="bento-img" style={{ backgroundImage: 'url(https://picsum.photos/seed/threadscore-chat/1600/900)', filter: 'grayscale(0.35) contrast(1.05)' }} />
-                <div className="bento-overlay" />
+              <div className="bento-card bento-plain bento-featured-dark">
                 <div className="bento-body">
-                  <span className="bento-kicker">Bùng nổ nhất</span>
+                  <span className="bento-kicker"><Fire size={16} weight="fill" /> Bùng nổ nhất</span>
                   {stats?.top_threads[0] ? (
                     <>
                       <h3>{stats.top_threads[0].title ?? 'Bài viết Threads'}</h3>
@@ -140,13 +138,11 @@ export default function HomePage() {
               </div>
             </Reveal>
             <Reveal className="bento-3" delay={0.04}>
-              <div className="bento-card">
-                <div className="bento-img" style={{ backgroundImage: 'url(https://picsum.photos/seed/threadscore-scroll/1200/900)' }} />
-                <div className="bento-overlay" />
+              <div className="bento-card bento-plain bento-featured-slate">
                 <div className="bento-body">
-                  <span className="bento-kicker">Bình luận đã phân tích</span>
+                  <span className="bento-kicker"><Lightning size={16} weight="fill" /> Bình luận đã phân tích</span>
                   <h3 className="mono">{stats ? <CountUp to={stats.comments} /> : '--'}</h3>
-                  <p>và con số này vẫn đang tăng</p>
+                  <p>dữ liệu cập nhật liên tục</p>
                 </div>
               </div>
             </Reveal>
@@ -160,9 +156,7 @@ export default function HomePage() {
               </div>
             </Reveal>
             <Reveal className="bento-5" delay={0.12}>
-              <div className="bento-card">
-                <div className="bento-img" style={{ backgroundImage: 'url(https://picsum.photos/seed/threadscore-eye/1200/900)', filter: 'grayscale(0.4)' }} />
-                <div className="bento-overlay" />
+              <div className="bento-card bento-plain bento-featured-dark">
                 <div className="bento-body">
                   <span className="bento-kicker">Theo dõi</span>
                   <h3>Nhiệt độ cập nhật liên tục</h3>
@@ -195,9 +189,19 @@ export default function HomePage() {
             <div className="cta-banner">
               <h2>Đo ngay bài viết đang làm bạn tò mò</h2>
               <p>Dán link, chờ AI chấm điểm, rồi xem cộng đồng thực sự nghĩ gì.</p>
-              <a className="btn btn-primary" href="#top">
-                <Fire weight="fill" aria-hidden="true" /> Dán link bài viết
-              </a>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => {
+                  const el = document.getElementById('searchbox-input');
+                  if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    el.focus();
+                  }
+                }}
+              >
+                <Fire weight="fill" aria-hidden="true" /> Dán link bài viết ngay
+              </button>
             </div>
           </Reveal>
         </div>
