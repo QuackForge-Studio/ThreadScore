@@ -19,6 +19,14 @@ chrome.runtime.onStartup.addListener(() => {
   }
 });
 
+if (chrome.action?.onClicked) {
+  chrome.action.onClicked.addListener((tab) => {
+    if (tab?.id && chrome.sidePanel?.open) {
+      chrome.sidePanel.open({ tabId: tab.id }).catch(() => {});
+    }
+  });
+}
+
 // Khi popup bật/tắt auto, lắng nghe message để cập nhật alarm ngay
 chrome.runtime.onMessage.addListener((message: { type?: string }, _sender, sendResponse) => {
   if (message.type === 'TS_SETUP_ALARM') {
