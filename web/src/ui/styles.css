@@ -1224,7 +1224,10 @@ textarea.field-input { resize: vertical; }
 .footer-col h4 { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255, 253, 248, 0.4); margin: 0 0 var(--space-3); }
 .footer-col a { display: block; font-size: 14px; padding: 4px 0; color: rgba(255, 253, 248, 0.7); transition: color 150ms ease; }
 .footer-col a:hover { color: #FFFDF8; }
-.footer-bottom { max-width: var(--maxw); margin: var(--space-7) auto 0; padding-top: var(--space-5); border-top: 1px solid rgba(255, 253, 248, 0.1); display: flex; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; font-size: 13px; color: rgba(255, 253, 248, 0.45); }
+.footer-bottom { max-width: var(--maxw); margin: var(--space-7) auto 0; padding-top: var(--space-5); border-top: 1px solid rgba(255, 253, 248, 0.1); display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); flex-wrap: wrap; font-size: 13px; color: rgba(255, 253, 248, 0.45); }
+.footer-credits { display: inline-flex; align-items: center; gap: 4px; }
+.footer-credit-link { color: var(--accent-strong); font-weight: 600; text-decoration: none; transition: opacity 150ms ease; }
+.footer-credit-link:hover { opacity: 0.85; text-decoration: underline; }
 
 /* ===== Admin ===== */
 .admin-actions { display: flex; gap: var(--space-2); margin: var(--space-4) 0; }
