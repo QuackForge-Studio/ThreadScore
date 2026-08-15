@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { WarningCircle, Fire, Eye, NewspaperClipping } from '@phosphor-icons/react';
+import { WarningCircle, Eye, NewspaperClipping } from '@phosphor-icons/react';
 import { apiGet } from '../api';
 import SearchBox from '../components/SearchBox';
 import ThreadCard from '../components/ThreadCard';
@@ -60,31 +60,6 @@ export default function HomePage() {
 
   return (
     <div className="page">
-      {/* ATTENTION — Hero */}
-      <section className="hero">
-        <div className="hero-radial" aria-hidden="true" />
-        <Reveal>
-          <h1 className="hero-title">
-            Bài viết nào đang <span className="accent">bùng nổ</span> dư luận?
-          </h1>
-        </Reveal>
-        <Reveal delay={0.1}>
-          <p className="hero-subtitle">
-            Dán link Threads bất kỳ, AI đọc từng bình luận và đo nhiệt độ cảm xúc của cả cộng đồng.
-          </p>
-        </Reveal>
-        <Reveal delay={0.2}>
-          <div className="hero-cta">
-            <a className="btn btn-primary" href="#explore">
-              <Fire weight="fill" aria-hidden="true" /> Xem bảng nhiệt
-            </a>
-            <a className="btn btn-ghost" href="#how">
-              Cách hoạt động
-            </a>
-          </div>
-        </Reveal>
-      </section>
-
       {/* INTEREST — Overall thermometer + search */}
       <section className="section-tight">
         {stats && <Reveal><OverallHeat stats={stats} /></Reveal>}
