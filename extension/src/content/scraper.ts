@@ -75,7 +75,7 @@ function cleanUsername(hrefOrText: string | null | undefined): string | null {
   return m ? m[1] : null;
 }
 
-// Tìm phần tử chứa bài viết chính để không bị quét nhầm vào danh sách bình luận
+// Tìm phần tử chứa bài viết chính ở đầu trang
 function findMainPostContainer(doc: Document): Element | null {
   const contentEl = doc.querySelector(SELECTORS.content) ?? doc.querySelector(SELECTORS.title);
   if (contentEl) {
@@ -83,6 +83,28 @@ function findMainPostContainer(doc: Document): Element | null {
     if (mainCard) return mainCard;
   }
   return doc.querySelector('article, div[data-pressable-container="true"]');
+}
+
+// Tìm nút bấm phản hồi (ví dụ con số 9 cạnh icon bong bóng 💬)
+function findCommentReplyTrigger(card: Element): HTMLElement | null {
+  const buttons = Array.from(card.querySelectorAll('div[role="button"], button, a, span'));
+  for (const btn of buttons) {
+    if (!(btn instanceof HTMLElement)) continue;
+    const txt = btn.textContent?.trim() ?? '';
+
+    // Nếu text là một con số > 0 (ví dụ "9" bên cạnh icon comment)
+    if (/^\d+$/.test(txt) && parseInt(txt, 10) > 0) {
+      const aria = (btn.getAttribute('aria-label') ?? '').toLowerCase();
+      if (aria.includes('trả lời') || aria.includes('reply') || btn.querySelector('svg')) {
+        return btn;
+      }
+    }
+    // Nếu text chứa chữ "câu trả lời" hoặc "replies"
+    if (/\d+\s*(câu\s+trả\s+lời|phản\s+hồi|replies)/i.test(txt)) {
+      return btn;
+    }
+  }
+  return null;
 }
 
 // Trích xuất chính xác phần nội dung chữ của bình luận
@@ -142,6 +164,9 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
   const timeEl = doc.querySelector(SELECTORS.time);
 
   const mainPostContainer = findMainPostContainer(doc);
+  const mainPostRect = mainPostContainer?.getBoundingClientRect();
+  const mainPostBottom = mainPostRect ? mainPostRect.bottom : 0;
+
   const mainTitleText = titleEl?.textContent?.trim() ?? '';
   const mainContentText = contentEl?.textContent?.trim() ?? '';
 
@@ -169,8 +194,12 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
   const authorLinks = Array.from(doc.querySelectorAll('a[href*="/@"]'));
 
   for (const link of authorLinks) {
-    // Bỏ qua nếu thuộc Sidebar hoặc Header/Nav điều hướng
+    // Bỏ qua nếu thuộc Sidebar hoặc Header/Nav điều hướng ở trên cùng
     if (link.closest('#ts-sidebar-container, header, nav, [role="navigation"]')) continue;
+
+    // Bỏ qua nếu nằm phía trên bài viết gốc (Top back bar)
+    const rect = link.getBoundingClientRect();
+    if (mainPostRect && rect.top < mainPostRect.top) continue;
 
     // Bỏ qua nếu thuộc bài viết chính ở đầu trang
     if (mainPostContainer && (mainPostContainer === link || mainPostContainer.contains(link))) {
@@ -242,22 +271,10 @@ export async function testScrapeAndHighlight(doc: Document, limit: number = 5): 
   const timeEl = doc.querySelector(SELECTORS.time);
 
   const mainPostContainer = findMainPostContainer(doc);
+  const mainPostRect = mainPostContainer?.getBoundingClientRect();
+
   const mainTitleText = titleEl?.textContent?.trim() ?? '';
   const mainContentText = contentEl?.textContent?.trim() ?? '';
-
-  // Thử click mở rộng sub-replies của các bình luận hiển thị
-  const expandButtons = Array.from(doc.querySelectorAll('div[role="button"], button, span, a')).filter((el) => {
-    if (el.closest('#ts-sidebar-container, header, nav, [role="navigation"]')) return false;
-    const txt = el.textContent?.trim().toLowerCase() ?? '';
-    return /\d+\s+câu\s+trả\s+lời/i.test(txt) || /\d+\s+replies/i.test(txt) || /\d+\s+phản\s+hồi/i.test(txt);
-  });
-
-  for (const btn of expandButtons.slice(0, 5)) {
-    if (btn instanceof HTMLElement) {
-      btn.click();
-      await new Promise((r) => setTimeout(r, 400));
-    }
-  }
 
   const authorLinks = Array.from(doc.querySelectorAll('a[href*="/@"]'));
   const seenKeys = new Set<string>();
@@ -270,6 +287,10 @@ export async function testScrapeAndHighlight(doc: Document, limit: number = 5): 
 
     // Bỏ qua header, nav, sidebar
     if (link.closest('#ts-sidebar-container, header, nav, [role="navigation"]')) continue;
+
+    // BỎ QUA CÁC LINK NẰM PHÍA TRÊN BÀI VIẾT CHÍNH (Thanh "← Thread 26K lượt xem")
+    const linkRect = link.getBoundingClientRect();
+    if (mainPostRect && linkRect.top < mainPostRect.top + 10) continue;
 
     // BỎ QUA HOÀN TOÀN BÀI VIẾT CHÍNH
     if (mainPostContainer && (mainPostContainer === link || mainPostContainer.contains(link))) {
@@ -306,6 +327,15 @@ export async function testScrapeAndHighlight(doc: Document, limit: number = 5): 
       posted_at: null,
     });
 
+    // Thử click nút phản hồi (ví dụ nút 💬 9) của bình luận này
+    const replyTrigger = findCommentReplyTrigger(card);
+    if (replyTrigger) {
+      try {
+        replyTrigger.click();
+        await new Promise((r) => setTimeout(r, 400));
+      } catch {}
+    }
+
     // HIGHLIGHT TRỰC QUAN LÊN TRANG THREADS
     card.setAttribute('data-ts-highlighted', 'true');
     card.style.outline = '3px solid #E5484D';
@@ -339,7 +369,7 @@ export async function testScrapeAndHighlight(doc: Document, limit: number = 5): 
 
     // Cuộn nhẹ tới phần tử để người dùng thấy
     card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    await new Promise((r) => setTimeout(r, 200));
+    await new Promise((r) => setTimeout(r, 250));
 
     highlightIndex++;
   }
