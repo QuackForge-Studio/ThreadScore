@@ -83,20 +83,6 @@ export default function HomePage() {
             </a>
           </div>
         </Reveal>
-        <div className="spectrum" aria-label="Quang phổ cảm xúc">
-          <span className="spectrum-item">
-            <span className="spectrum-dot anger" />
-            Bùng nổ <span className="spectrum-range">70-100</span>
-          </span>
-          <span className="spectrum-item">
-            <span className="spectrum-dot neutral" />
-            Trung lập <span className="spectrum-range">30-69</span>
-          </span>
-          <span className="spectrum-item">
-            <span className="spectrum-dot calm" />
-            Vui vẻ <span className="spectrum-range">0-29</span>
-          </span>
-        </div>
       </section>
 
       {/* INTEREST — Overall thermometer + search */}
