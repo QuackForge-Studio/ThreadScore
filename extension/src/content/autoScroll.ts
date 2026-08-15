@@ -5,7 +5,7 @@ export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?
   let lastCount = -1;
 
   for (let i = 0; i < maxScrolls; i++) {
-    // 1. Tự động click mở rộng các nút "Xem tất cả", "Đã ẩn một số thread trả lời", "View replies", v.v.
+    // 1. Click các nút mở rộng bình luận bị ẩn chính xác (không click nút Trả lời bài viết)
     await expandHiddenReplies(doc);
 
     // 2. Cuộn trang xuống cuối
@@ -16,16 +16,15 @@ export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?
       else (w as unknown as { scrollY: number }).scrollY = body.scrollHeight;
     }
 
-    // Jitter: 200-600ms + 10% pause 1-2s như người thật
-    const jitter = 200 + Math.floor(Math.random() * 400);
-    const occasionalPause = Math.random() < 0.1 ? 1000 + Math.floor(Math.random() * 1000) : 0;
+    // Jitter: 200-500ms + 10% pause 1s
+    const jitter = 200 + Math.floor(Math.random() * 300);
+    const occasionalPause = Math.random() < 0.1 ? 800 + Math.floor(Math.random() * 800) : 0;
     await new Promise((r) => setTimeout(r, jitter + occasionalPause));
 
     const count = countReplies(doc);
     if (count === lastCount) {
       stableCount++;
       if (stableCount >= 3) {
-        // Thử click mở rộng một lần cuối trước khi kết thúc
         const expandedMore = await expandHiddenReplies(doc);
         if (!expandedMore) return;
         stableCount = 0;
@@ -38,7 +37,7 @@ export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?
   }
 }
 
-// Click tự động mở rộng các bình luận bị ẩn / trả lời bình luận
+// Click mở rộng chính xác các cụm bình luận ẩn (tránh bấm nhầm nút Trả lời / Reply)
 async function expandHiddenReplies(doc: Document): Promise<boolean> {
   let clickedAny = false;
   const clickables = Array.from(
@@ -47,20 +46,40 @@ async function expandHiddenReplies(doc: Document): Promise<boolean> {
 
   for (const el of clickables) {
     if (!(el instanceof HTMLElement)) continue;
+
+    // Bỏ qua các phần tử thuộc thanh bên Sidebar của Extension
+    if (el.closest('#ts-sidebar-container')) continue;
+
     const txt = el.textContent?.trim().toLowerCase() ?? '';
     if (!txt || txt.length > 90) continue;
 
+    // LỌC BỎ các nút hành động "Trả lời" / "Reply" (nút để mở ô nhập bình luận)
+    const ariaLabel = (el.getAttribute('aria-label') ?? '').toLowerCase();
+    if (
+      txt === 'trả lời' ||
+      txt === 'reply' ||
+      txt.startsWith('trả lời @') ||
+      txt.startsWith('reply to') ||
+      ariaLabel === 'trả lời' ||
+      ariaLabel === 'reply' ||
+      ariaLabel.includes('viết câu trả lời')
+    ) {
+      continue;
+    }
+
+    // Chỉ nhận diện các cụm từ mở rộng bình luận bị ẩn
     const isExpandTarget =
       txt.includes('xem tất cả') ||
-      txt.includes('xem thêm') ||
+      txt.includes('đã ẩn') ||
       txt.includes('bị ẩn') ||
-      txt.includes('câu trả lời') ||
-      txt.includes('trả lời') ||
-      txt.includes('view all') ||
+      txt.includes('xem thêm câu trả lời') ||
+      txt.includes('xem các câu trả lời') ||
+      txt.includes('xem câu trả lời') ||
+      txt.includes('view hidden replies') ||
+      txt.includes('show hidden replies') ||
       txt.includes('view replies') ||
-      txt.includes('hidden replies') ||
-      txt.includes('more replies') ||
-      txt.includes('show replies');
+      txt.includes('view all replies') ||
+      txt.includes('more replies');
 
     if (isExpandTarget) {
       const rect = el.getBoundingClientRect();
@@ -68,7 +87,7 @@ async function expandHiddenReplies(doc: Document): Promise<boolean> {
         try {
           el.click();
           clickedAny = true;
-          await new Promise((r) => setTimeout(r, 300));
+          await new Promise((r) => setTimeout(r, 250));
         } catch {
           // ignore error
         }
