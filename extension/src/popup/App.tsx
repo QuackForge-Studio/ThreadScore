@@ -223,14 +223,31 @@ export default function App() {
               <div className="sp-result-box">
                 <div className="sp-result-meta">
                   <span className="sp-result-title">{scraped.title || 'Bài viết Threads'}</span>
-                  <span className="sp-result-count">{scraped.comments.length} bình luận</span>
+                  <span className="sp-result-count">{scraped.comments.length} bình luận (đã gom cả phản hồi con)</span>
                 </div>
+
+                {scraped.comments.length > 0 && (
+                  <div className="sp-comments-list">
+                    {scraped.comments.slice(0, 15).map((c, idx) => (
+                      <div key={idx} className="sp-comment-item">
+                        <span className="sp-comment-user">@{c.author_username || 'người dùng'}:</span>
+                        <span className="sp-comment-snippet">{c.text}</span>
+                      </div>
+                    ))}
+                    {scraped.comments.length > 15 && (
+                      <span style={{ fontSize: 10.5, color: '#888', textAlign: 'center', marginTop: 4 }}>
+                        ... và {scraped.comments.length - 15} bình luận khác (Tải JSON để xem hết)
+                      </span>
+                    )}
+                  </div>
+                )}
+
                 <div className="sp-btn-group">
                   <button className="sp-btn sp-btn-primary sp-flex-1" onClick={doPush} disabled={busy}>
                     <CloudArrowUp size={16} weight="bold" /> Đẩy lên Web
                   </button>
                   <button className="sp-btn sp-btn-secondary" onClick={doDownload}>
-                    <DownloadSimple size={16} weight="bold" /> JSON
+                    <DownloadSimple size={16} weight="bold" /> Tải JSON
                   </button>
                 </div>
               </div>

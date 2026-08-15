@@ -383,6 +383,46 @@ body {
   color: var(--sp-calm);
 }
 
+.sp-comments-list {
+  max-height: 150px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: var(--sp-radius-sm);
+  padding: 8px 10px;
+  border: 1px solid var(--sp-border-soft);
+}
+
+.sp-comment-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 4px;
+}
+
+.sp-comment-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.sp-comment-user {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--sp-calm);
+}
+
+.sp-comment-snippet {
+  font-size: 11.5px;
+  color: var(--sp-text-muted);
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Quota & Cooldown */
 .sp-quota-panel {
   background: var(--sp-bg);
