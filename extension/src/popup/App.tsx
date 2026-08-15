@@ -12,9 +12,10 @@ import {
   Queue,
   SlidersHorizontal,
   TerminalWindow,
+  Flask,
 } from '@phosphor-icons/react';
 import { getConfig, setConfig, type ExtensionConfig } from '../lib/storage';
-import { scrapeActiveTab } from './manual';
+import { scrapeActiveTab, scrapeTestActiveTab } from './manual';
 import { runBatchFromPopup } from './batch';
 import { pushImport } from '../lib/api';
 import type { ScrapedThread } from '../content/scraper';
@@ -84,6 +85,22 @@ export default function App() {
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Lỗi quét bài viết');
       log(`Thất bại: ${e instanceof Error ? e.message : 'Lỗi không xác định'}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function doTestScrape() {
+    setBusy(true);
+    setError(null);
+    try {
+      log('🧪 Bắt đầu TEST & HIGHLIGHT: Đang quét ~5 bình luận đầu + phản hồi con...');
+      const s = await scrapeTestActiveTab(5);
+      setScraped(s);
+      log(`Đã highlight trực tiếp ${s.comments.length} phần tử (viền đỏ & badge) trên trang Threads!`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Lỗi test quét bài');
+      log(`Lỗi test: ${e instanceof Error ? e.message : 'Lỗi không xác định'}`);
     } finally {
       setBusy(false);
     }
@@ -215,9 +232,19 @@ export default function App() {
               <span className="sp-card-desc">Quét trực tiếp tab Threads đang mở</span>
             </div>
 
-            <button className="sp-btn sp-btn-accent sp-btn-block" onClick={doScrape} disabled={busy}>
-              <Browser size={18} weight="bold" /> {busy ? 'Đang quét...' : 'Lấy bài + comments'}
-            </button>
+            <div style={{ display: 'flex', gap: 8, flexDirection: 'column' }}>
+              <button className="sp-btn sp-btn-accent sp-btn-block" onClick={doScrape} disabled={busy}>
+                <Browser size={18} weight="bold" /> {busy ? 'Đang quét...' : 'Lấy bài + comments'}
+              </button>
+              <button
+                className="sp-btn sp-btn-secondary sp-btn-block"
+                onClick={doTestScrape}
+                disabled={busy}
+                style={{ borderColor: 'rgba(229, 72, 77, 0.4)', color: '#FFF' }}
+              >
+                <Flask size={16} weight="bold" color="#E5484D" /> Test 5 Comment & Highlight
+              </button>
+            </div>
 
             {scraped && (
               <div className="sp-result-box">
