@@ -5,7 +5,7 @@ export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?
   let lastCount = -1;
 
   for (let i = 0; i < maxScrolls; i++) {
-    // 1. Click các nút mở rộng bình luận bị ẩn & câu trả lời ẩn (Ví dụ: "Xem 9 câu trả lời", "Xem 3 phản hồi")
+    // 1. Click các nút mở rộng bình luận bị ẩn & câu trả lời ẩn (Ví dụ: "Xem 9 câu trả lời", "Xem tất cả")
     await expandHiddenReplies(doc);
 
     // 2. Cuộn trang xuống cuối
@@ -47,22 +47,30 @@ async function expandHiddenReplies(doc: Document): Promise<boolean> {
   for (const el of clickables) {
     if (!(el instanceof HTMLElement)) continue;
 
-    // Bỏ qua các phần tử thuộc thanh bên Sidebar của Extension
-    if (el.closest('#ts-sidebar-container')) continue;
+    // Bỏ qua các phần tử thuộc thanh bên Sidebar của Extension hoặc thanh điều hướng trang Threads
+    if (el.closest('#ts-sidebar-container, header, nav, [role="navigation"]')) continue;
 
     const txt = el.textContent?.trim().toLowerCase() ?? '';
     if (!txt || txt.length > 90) continue;
 
-    // LỌC BỎ các nút hành động "Trả lời" / "Reply" (nút để mở ô nhập bình luận)
+    // LỌC BỎ các nút menu/hành động (Nút 3 chấm tùy chọn, nút Trả lời, nút Xem thêm menu điều hướng)
     const ariaLabel = (el.getAttribute('aria-label') ?? '').toLowerCase();
+    const title = (el.getAttribute('title') ?? '').toLowerCase();
+
     if (
       txt === 'trả lời' ||
       txt === 'reply' ||
+      txt === 'xem thêm' ||
       txt.startsWith('trả lời @') ||
       txt.startsWith('reply to') ||
-      ariaLabel === 'trả lời' ||
-      ariaLabel === 'reply' ||
-      ariaLabel.includes('viết câu trả lời')
+      ariaLabel.includes('trả lời') ||
+      ariaLabel.includes('reply') ||
+      ariaLabel.includes('tùy chọn') ||
+      ariaLabel.includes('khác') ||
+      ariaLabel.includes('more') ||
+      ariaLabel.includes('menu') ||
+      title.includes('tùy chọn') ||
+      title.includes('more')
     ) {
       continue;
     }
@@ -80,7 +88,8 @@ async function expandHiddenReplies(doc: Document): Promise<boolean> {
       txt.includes('xem tất cả') ||
       txt.includes('đã ẩn') ||
       txt.includes('bị ẩn') ||
-      txt.includes('xem thêm');
+      txt.includes('xem thêm câu trả lời') ||
+      txt.includes('xem thêm phản hồi');
 
     if (isExpandTarget) {
       const rect = el.getBoundingClientRect();
@@ -88,7 +97,7 @@ async function expandHiddenReplies(doc: Document): Promise<boolean> {
         try {
           el.click();
           clickedAny = true;
-          await new Promise((r) => setTimeout(r, 300));
+          await new Promise((r) => setTimeout(r, 250));
         } catch {
           // ignore error
         }
