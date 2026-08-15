@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { WarningCircle, Eye, NewspaperClipping } from '@phosphor-icons/react';
+import { WarningCircle, Fire, Eye, NewspaperClipping } from '@phosphor-icons/react';
 import { apiGet } from '../api';
 import SearchBox from '../components/SearchBox';
 import ThreadCard from '../components/ThreadCard';
