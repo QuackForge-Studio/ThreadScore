@@ -1,35 +1,110 @@
-# ThreadScore
+# 🦆 ThreadScore
 
-Web cộng đồng đo mức độ tức giận của comments trên Threads.
+Nền tảng đo lường & phân tích mức độ cảm xúc, tranh luận và "nhiệt độ" thảo luận trong các bài viết Threads của cộng đồng.
 
-## Cấu trúc
+---
 
-- `web/` — React SPA + Cloudflare Pages Functions + D1 + KV
-- `extension/` — Chrome MV3 extension cho owner scrape + batch import
+## 🌟 Tính năng chính
 
-## Deploy web (Cloudflare)
+- **Chấm điểm cảm xúc đa tầng**: Kết hợp từ điển phân tích từ ngữ tiếng Việt (Lexicon) và LLM (Gemini) để đánh giá chỉ số toxic, hài hước, đồng thuận và mức độ phẫn nộ.
+- **Tiện ích mở rộng Chrome (MV3 Extension)**:
+  - Tự động cào bình luận và các nhánh trả lời con (sub-replies) trực tiếp từ Meta Threads.
+  - Tích hợp **GraphQL Interceptor** và **JSON Hydration scanner** giúp thu thập dữ liệu với độ chính xác cao và đầy đủ số lượt like, thời gian, tác giả.
+  - Hỗ trợ chế độ cào thủ công (Interactive Test Scrape & Highlight) và quét tự động hàng đợi (Background Batch Queue).
+- **Kiến trúc Serverless Edge**: Chạy hoàn toàn trên Cloudflare Pages Functions, Cloudflare D1 (SQL) và Cloudflare KV, tối ưu chi phí và tốc độ phản hồi cực nhanh.
 
-1. `cd web && npm install`
-2. Tạo database: `npx wrangler d1 create threadscore-db` → ghi `database_id` vào `wrangler.toml`
-3. Tạo KV: `npx wrangler kv namespace create KV` → ghi `id` vào `wrangler.toml`
-4. Apply migration: `npx wrangler d1 execute threadscore-db --file=migrations/0001_initial.sql`
-5. Deploy: `npx wrangler pages deploy dist` (build trước bằng `npm run build`)
-6. Cấu hình env vars trên Cloudflare Dashboard:
-   - `ADMIN_SECRET_KEY` — secret key cho extension
-   - `AI_BASE_URL`, `AI_API_KEY`, `AI_MODEL` — provider AI (tùy chọn; thiếu thì dùng lexicon fallback)
-   - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (tùy chọn cho OAuth)
-   - `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` (tùy chọn cho OAuth)
-   - `CRON_SECRET` (tùy chọn, cho cron scoring)
-7. Cron scoring: tạo Cron Trigger trên dashboard trỏ tới `/api/cron/scoring` mỗi 5 phút với header `Authorization: Bearer <CRON_SECRET>` (tùy chọn; worker cũng chạy sau mỗi import)
+---
 
-## Cài extension
+## 📂 Cấu trúc Repository
 
-1. `cd extension && npm install && npm run build`
-2. Chrome → `chrome://extensions` → Developer mode → Load unpacked → chọn `extension/dist`
-3. Mở popup, nhập Web URL + Admin key, lưu
+```text
+ThreadScore/
+├── web/               # Ứng dụng Web (React + Vite) & Cloudflare Pages Functions API
+│   ├── functions/     # Edge API endpoints (Cloudflare Pages Functions)
+│   ├── migrations/    # D1 SQL Database schema
+│   ├── src/           # Giao diện UI và Server services (chấm điểm, session, OAuth)
+│   └── cron-worker/   # Cloudflare Worker Cron trigger hỗ trợ chấm điểm nền
+├── extension/         # Chrome MV3 Extension (Sidepanel + Content Scripts + Interceptor)
+└── docs/              # Tài liệu thiết kế & đặc tả hệ thống
+```
 
-## Test
+---
 
-- Web unit: `cd web && npm test`
-- Web integration: `cd web && npm run test:integration` (Windows path có space cần copy sang path không space hoặc nâng `@cloudflare/vitest-pool-workers` >= 0.18.7)
-- Extension: `cd extension && npm test`
+## 🚀 Hướng dẫn triển khai Web (Cloudflare Pages)
+
+### 1. Yêu cầu môi trường
+- Node.js >= 18
+- Tài khoản Cloudflare
+
+### 2. Cài đặt & Cấu hình cơ sở dữ liệu
+```bash
+cd web
+npm install
+
+# Tạo Cloudflare D1 database
+npx wrangler d1 create threadscore-db
+# Copy database_id vào web/wrangler.toml
+
+# Tạo Cloudflare KV namespace
+npx wrangler kv namespace create KV
+# Copy kv id vào web/wrangler.toml
+
+# Chạy migration tạo bảng dữ liệu
+npx wrangler d1 execute threadscore-db --file=migrations/0001_initial.sql
+```
+
+### 3. Biến môi trường (.dev.vars)
+Tạo file `.dev.vars` (tham khảo `web/.dev.vars.example`):
+- `ADMIN_SECRET_KEY`: Khóa bí mật dùng để xác thực request gửi dữ liệu từ Extension.
+- `AI_API_KEY`, `AI_BASE_URL`, `AI_MODEL`: Cấu hình LLM chấm điểm (tùy chọn; nếu không điền sẽ tự động dùng Lexicon Tiếng Việt).
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`: OAuth Google (tùy chọn).
+- `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`: OAuth GitHub (tùy chọn).
+- `CRON_SECRET`: Khóa bảo vệ endpoint `/api/cron/scoring` (tùy chọn).
+
+### 4. Chạy cục bộ & Triển khai
+```bash
+# Chạy Frontend Dev
+npm run dev
+
+# Build production
+npm run build
+
+# Deploy lên Cloudflare Pages
+npx wrangler pages deploy dist
+```
+
+---
+
+## 🧩 Cài đặt Chrome Extension
+
+1. Build tiện ích:
+   ```bash
+   cd extension
+   npm install
+   npm run build
+   ```
+2. Mở trình duyệt Chrome: truy cập `chrome://extensions`.
+3. Bật **Developer mode** (Chế độ dành cho nhà phát triển).
+4. Chọn **Load unpacked** (Tải tiện ích đã giải nén) và trỏ tới thư mục `extension/dist`.
+5. Mở Sidepanel của tiện ích, vào Cài đặt và nhập:
+   - **Web URL**: URL trang web ThreadScore của bạn (ví dụ: `https://threadscore.quackforge.io.vn` hoặc `http://localhost:5173`).
+   - **Admin Key**: Khóa trùng khớp với `ADMIN_SECRET_KEY` trên server.
+
+---
+
+## 🧪 Kiểm thử (Tests)
+
+```bash
+# Chạy Unit Tests cho Web
+cd web && npm test
+
+# Chạy Unit Tests cho Extension
+cd extension && npm test
+```
+
+---
+
+## 📄 Giấy phép (License)
+
+Dự án được phân phối dưới giấy phép **MIT License**. Xem file [LICENSE](LICENSE) để biết thêm chi tiết.
+
