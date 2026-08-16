@@ -1,0 +1,21 @@
+# Cloudflare Pages / Local Worker environment variables example
+# Copy this file to .dev.vars for local testing with wrangler pages dev
+
+# Secret key used to authorize Chrome Extension importer requests (header: X-Admin-Key)
+ADMIN_SECRET_KEY=your_secure_admin_secret_key_here
+
+# AI Scoring (Optional: If empty, ThreadScore will fall back to local Vietnamese lexicon analysis)
+AI_BASE_URL=https://generativelanguage.googleapis.com/v1beta
+AI_API_KEY=
+AI_MODEL=gemini-2.5-flash
+
+# Cron scoring trigger secret (Optional)
+CRON_SECRET=your_cron_secret_here
+
+# OAuth GitHub login (Optional)
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+
+# OAuth Google login (Optional)
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
