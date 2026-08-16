@@ -19,12 +19,14 @@ import { scrapeActiveTab, scrapeTestActiveTab } from './manual';
 import { runBatchFromPopup } from './batch';
 import { pushImport } from '../lib/api';
 import type { ScrapedThread } from '../content/scraper';
+import { debugStats, type DebugStats } from '../content/scraper';
 import { getUsage, isCooldownActive, getCooldownReason, POLICY } from './shared';
 
 export default function App() {
   const [config, setConfigState] = useState<ExtensionConfig>({ webUrl: '', adminKey: '', autoEnabled: false });
   const [tab, setTab] = useState<'manual' | 'batch' | 'settings'>('manual');
   const [scraped, setScraped] = useState<ScrapedThread | null>(null);
+  const [lastStats, setLastStats] = useState<DebugStats | null>(null);
   const [logLines, setLogLines] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,6 +65,24 @@ export default function App() {
     setLogLines((prev) => [...prev, `[${time}] ${msg}`]);
   }
 
+  function formatDebugStats(s: DebugStats): string {
+    const parts = [
+      `interceptor msgs=${s.interceptedMessages}`,
+      `raw comments=${s.totalInterceptedRaw}`,
+      `buffer=${s.bufferSize}`,
+      `replies in buffer=${s.bufferedWithReplies}`,
+      `GraphQL used=${s.graphQLComments}`,
+      `DOM used=${s.domComments}`,
+      `author links=${s.totalAuthorLinks}`,
+      `skipped: sidebar=${s.skippedSidebar} aboveMain=${s.skippedAboveMain} inMain=${s.skippedInMain} noCard=${s.skippedNoCard} noText=${s.skippedNoText} mainText=${s.skippedMainText} dup=${s.skippedDup}`,
+      `mainPost=${s.mainPostContainerTag}`,
+      `expanders found=${s.expandersFound}`,
+      `expanders clicked=${s.expandersClicked}`,
+      `dom replies counted=${s.repliesCounted}`,
+    ];
+    return parts.join(' | ');
+  }
+
   async function saveConfig() {
     await setConfig(config);
     if (config.autoEnabled) {
@@ -80,8 +100,11 @@ export default function App() {
     try {
       log('Đang quét bài viết từ tab hiện tại...');
       const s = await scrapeActiveTab();
+      const stats = s.debugStats || debugStats;
       setScraped(s);
+      setLastStats({ ...stats });
       log(`Quét thành công! Tìm thấy ${s.comments.length} bình luận.`);
+      log(`🔍 Debug: ${formatDebugStats(stats)}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Lỗi quét bài viết');
       log(`Thất bại: ${e instanceof Error ? e.message : 'Lỗi không xác định'}`);
@@ -96,8 +119,11 @@ export default function App() {
     try {
       log('🧪 Bắt đầu TEST & HIGHLIGHT: Đang quét ~5 bình luận đầu + phản hồi con...');
       const s = await scrapeTestActiveTab(5);
+      const stats = s.debugStats || debugStats;
       setScraped(s);
+      setLastStats({ ...stats });
       log(`Đã highlight trực tiếp ${s.comments.length} phần tử (viền đỏ & badge) trên trang Threads!`);
+      log(`🔍 Debug: ${formatDebugStats(stats)}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Lỗi test quét bài');
       log(`Lỗi test: ${e instanceof Error ? e.message : 'Lỗi không xác định'}`);
@@ -240,9 +266,9 @@ export default function App() {
                 className="sp-btn sp-btn-secondary sp-btn-block"
                 onClick={doTestScrape}
                 disabled={busy}
-                style={{ borderColor: 'rgba(229, 72, 77, 0.4)', color: '#FFF' }}
+                style={{ borderColor: 'rgba(217, 72, 31, 0.4)', color: 'var(--ember)' }}
               >
-                <Flask size={16} weight="bold" color="#E5484D" /> Test 5 Comment & Highlight
+                <Flask size={16} weight="bold" color="var(--ember)" /> Test 5 Comment & Highlight
               </button>
             </div>
 
@@ -257,12 +283,17 @@ export default function App() {
                   <div className="sp-comments-list">
                     {scraped.comments.slice(0, 15).map((c, idx) => (
                       <div key={idx} className="sp-comment-item">
-                        <span className="sp-comment-user">@{c.author_username || 'người dùng'}:</span>
+                        <span className="sp-comment-user">@{c.author_username || 'người dùng'}</span>
                         <span className="sp-comment-snippet">{c.text}</span>
+                        <span className="sp-comment-meta">
+                          {c.like_count > 0 && `♥ ${c.like_count.toLocaleString('vi-VN')}`}
+                          {c.like_count > 0 && c.posted_at ? ' · ' : ''}
+                          {c.posted_at ? new Date(c.posted_at * 1000).toLocaleDateString('vi-VN') : ''}
+                        </span>
                       </div>
                     ))}
                     {scraped.comments.length > 15 && (
-                      <span style={{ fontSize: 10.5, color: '#888', textAlign: 'center', marginTop: 4 }}>
+                      <span style={{ fontSize: 12, color: 'var(--ink-faint)', textAlign: 'center', marginTop: 4 }}>
                         ... và {scraped.comments.length - 15} bình luận khác (Tải JSON để xem hết)
                       </span>
                     )}
@@ -331,6 +362,33 @@ export default function App() {
         {error && (
           <div className="sp-error-alert">
             <Warning size={16} weight="fill" /> {error}
+          </div>
+        )}
+
+        {/* Debug Stats — chẩn đoán reply con */}
+        {lastStats && (
+          <div className="sp-debug-panel">
+            <div className="sp-debug-title">🔍 Debug Stats (chẩn đoán replies)</div>
+            <div className="sp-debug-grid">
+              <span title="Số message postMessage từ interceptor">📨 Interceptor msgs: <b>{lastStats.interceptedMessages}</b></span>
+              <span title="Tổng comment thô interceptor gửi lên">🗂 Raw comments: <b>{lastStats.totalInterceptedRaw}</b></span>
+              <span title="Comment đang nằm trong buffer">🗃 Buffer: <b>{lastStats.bufferSize}</b></span>
+              <span title="Reply con (có parent_id) trong buffer">🧵 Replies in buffer: <b>{lastStats.bufferedWithReplies}</b></span>
+              <span title="Số comment lấy từ GraphQL">📡 GraphQL used: <b>{lastStats.graphQLComments}</b></span>
+              <span title="Số comment bổ sung từ DOM">🖥 DOM used: <b>{lastStats.domComments}</b></span>
+              <span title="Tổng link author trên trang">🔗 Author links: <b>{lastStats.totalAuthorLinks}</b></span>
+              <span title="Số link bị bỏ vì nằm trong mainPostContainer">🎯 Skipped inMain: <b>{lastStats.skippedInMain}</b></span>
+              <span title="Số link bị bỏ vì nằm phía trên bài chính">⬆ Skipped aboveMain: <b>{lastStats.skippedAboveMain}</b></span>
+              <span title="Số link bị bỏ vì sidebar/header">📦 Skipped sidebar: <b>{lastStats.skippedSidebar}</b></span>
+              <span title="Số link bị bỏ vì không có card/text/trùng">🚫 Skipped noCard/noText/dup: <b>{lastStats.skippedNoCard}/{lastStats.skippedNoText}/{lastStats.skippedDup}</b></span>
+              <span title="Container bài chính đang xác định là gì">🏷 Main post: <b>{lastStats.mainPostContainerTag}</b></span>
+              <span title="Số nút N câu trả lời trên trang">🔘 Expanders found: <b>{lastStats.expandersFound}</b></span>
+              <span title="Số nút đã click mở">👆 Expanders clicked: <b>{lastStats.expandersClicked}</b></span>
+              <span title="Số phần tử DOM trông như reply">🔢 DOM replies counted: <b>{lastStats.repliesCounted}</b></span>
+            </div>
+            <div className="sp-debug-hint">
+              Gợi ý: nếu interceptor msgs = 0 → GraphQL không bị bắt (thử F5). Nếu replies in buffer = 0 → API không trả parent_id. Nếu expanders found &gt; 0 mà clicked = 0 → nút reply không click được (selector sai).
+            </div>
           </div>
         )}
 

@@ -1,4 +1,6 @@
 import { runBatch } from './engine';
+import './tabBridge'; // đăng ký listener tab cho popup/iframe sidebar
+import './alarms'; // đăng ký alarm listener + side panel behavior
 
 // Chạy một vòng batch trong nền (từ chrome.alarms). Không cần UI — log vào storage để popup đọc được.
 export async function runBackgroundBatch(): Promise<void> {
