@@ -18,6 +18,8 @@ interface RawComment {
   parent_id: string | null; // id của comment cha — khác null tức là reply con
   reply_to_username: string | null;
   pageUrl: string | null; // URL trang đang mở khi bắt được — để lọc tránh trộn bài
+  code?: string | null;
+  direct_reply_count?: number;
 }
 
 (function () {
@@ -78,6 +80,8 @@ interface RawComment {
           parent_id: parentPk,
           reply_to_username: replyToUser,
           pageUrl: window.location.href,
+          code: node.code ? String(node.code) : null,
+          direct_reply_count: typeof textPostInfo.direct_reply_count === 'number' ? textPostInfo.direct_reply_count : 0,
         });
       }
     }

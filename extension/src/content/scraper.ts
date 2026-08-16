@@ -396,6 +396,160 @@ function collectCommentsFromDom(
   return comments;
 }
 
+// Giải mã chuỗi JSON từ Meta (xử lý prefix `for (;;);` và stream chunk)
+function parseJsonPayloads(text: string): Record<string, any>[] {
+  if (!text || typeof text !== 'string') return [];
+  const clean = text.replace(/^\s*for\s*\(\s*;\s*;\s*\)\s*;?/, '').trim();
+  if (!clean) return [];
+
+  try {
+    const parsed = JSON.parse(clean);
+    return [parsed];
+  } catch {
+    const results: Record<string, any>[] = [];
+    const lines = clean.split('\n');
+    for (const line of lines) {
+      const trimmed = line.trim().replace(/^\s*for\s*\(\s*;\s*;\s*\)\s*;?/, '').trim();
+      if (!trimmed || (!trimmed.startsWith('{') && !trimmed.startsWith('['))) continue;
+      try {
+        results.push(JSON.parse(trimmed));
+      } catch {}
+    }
+    return results;
+  }
+}
+
+function unwrapPost(obj: Record<string, any>): Record<string, any> {
+  if (obj.post && typeof obj.post === 'object' && (obj.post.caption || obj.post.user || obj.post.text)) {
+    return obj.post;
+  }
+  return obj;
+}
+
+function extractCommentNode(obj: Record<string, any>, out: ScrapedComment[]) {
+  if (!obj || typeof obj !== 'object') return;
+  const node = unwrapPost(obj);
+
+  const text =
+    node.text ||
+    (node.caption && (typeof node.caption === 'string' ? node.caption : node.caption.text)) ||
+    (typeof node.body === 'string' ? node.body : null);
+  const user = node.user || node.owner || node.author;
+  if (typeof text === 'string' && text.trim().length > 0 && user && typeof user === 'object') {
+    const username = user.username || user.handle || null;
+    const fullName = user.full_name || user.name || null;
+    if (username) {
+      const likes =
+        typeof node.like_count === 'number' ? node.like_count :
+        typeof node.comment_like_count === 'number' ? node.comment_like_count : 0;
+      const takenAt =
+        typeof node.taken_at === 'number' ? node.taken_at :
+        typeof node.created_at === 'number' ? node.created_at : null;
+      const pk = node.id || node.pk || null;
+
+      const textPostInfo = node.text_post_app_info || {};
+      const parentPk =
+        typeof node.parent_id === 'string' || typeof node.parent_id === 'number' ? String(node.parent_id) :
+        node.parent && (node.parent.id || node.parent.pk) ? String(node.parent.id || node.parent.pk) :
+        node.comment_parent_id ? String(node.comment_parent_id) :
+        textPostInfo.parent_post_id ? String(textPostInfo.parent_post_id) : null;
+
+      const replyToUser =
+        (node.reply_to_username ? String(node.reply_to_username) : null) ||
+        (textPostInfo.reply_to_author?.username ? String(textPostInfo.reply_to_author.username) : null) ||
+        (node.parent && (node.parent.user?.username || node.parent.user?.handle) ? String(node.parent.user?.username || node.parent.user?.handle) : null);
+
+      out.push({
+        external_id: pk ? String(pk) : null,
+        author_username: String(username),
+        author_name: fullName ? String(fullName) : null,
+        text: text.trim(),
+        like_count: likes,
+        posted_at: takenAt,
+        parent_id: parentPk,
+        reply_to_username: replyToUser,
+        code: node.code ? String(node.code) : null,
+        direct_reply_count: typeof textPostInfo.direct_reply_count === 'number' ? textPostInfo.direct_reply_count : 0,
+      });
+    }
+  }
+
+  for (const key in obj) {
+    if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
+    const val = obj[key];
+    if (!val || typeof val !== 'object') continue;
+    if (Array.isArray(val)) {
+      for (const item of val) extractCommentNode(item, out);
+    } else {
+      extractCommentNode(val, out);
+    }
+  }
+}
+
+// Tự động quét sâu các comment có câu trả lời con (Sub-replies Deep Scraper)
+async function fetchNestedReplies(
+  parentComments: ScrapedComment[],
+  seenKeys: Set<string>,
+  maxParents: number = 30
+): Promise<ScrapedComment[]> {
+  const nestedComments: ScrapedComment[] = [];
+  const parentsWithReplies = parentComments.filter(
+    (c) => c.direct_reply_count && c.direct_reply_count > 0 && c.code
+  );
+
+  const targets = parentsWithReplies.slice(0, maxParents);
+  if (targets.length === 0) return nestedComments;
+
+  const chunkSize = 5;
+  for (let i = 0; i < targets.length; i += chunkSize) {
+    const chunk = targets.slice(i, i + chunkSize);
+    const promises = chunk.map(async (parent) => {
+      try {
+        const targetUrl = `https://www.threads.net/t/${parent.code}`;
+        const res = await fetch(targetUrl, { credentials: 'include' });
+        if (!res.ok) return;
+        const html = await res.text();
+
+        const scriptMatches = html.match(/<script[^>]*>([\s\S]*?)<\/script>/gi) || [];
+        for (const s of scriptMatches) {
+          const match = s.match(/<script[^>]*>([\s\S]*?)<\/script>/i);
+          if (!match || !match[1]) continue;
+          const payloads = parseJsonPayloads(match[1]);
+          for (const p of payloads) {
+            const extracted: ScrapedComment[] = [];
+            extractCommentNode(p, extracted);
+            for (const sub of extracted) {
+              if (!sub.text || !sub.author_username) continue;
+              if (sub.external_id && sub.external_id === parent.external_id) continue;
+              if (sub.author_username === parent.author_username && sub.text === parent.text) continue;
+
+              const key = `${sub.author_username.toLowerCase()}:${sub.text}`;
+              if (seenKeys.has(key)) continue;
+              seenKeys.add(key);
+
+              nestedComments.push({
+                external_id: sub.external_id,
+                author_username: sub.author_username,
+                author_name: sub.author_name,
+                text: sub.text,
+                like_count: sub.like_count,
+                posted_at: sub.posted_at,
+                parent_id: sub.parent_id || parent.external_id,
+                reply_to_username: sub.reply_to_username || parent.author_username,
+                code: sub.code,
+                direct_reply_count: sub.direct_reply_count,
+              });
+            }
+          }
+        }
+      } catch {}
+    });
+    await Promise.all(promises);
+  }
+
+  return nestedComments;
+}
+
 export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: number }): Promise<ScrapedThread> {
   const currentUrl = doc.location?.href ?? doc.defaultView?.location.href ?? '';
   const { author: mainAuthorUrl, postCode: currentPostCode } = parseThreadsUrl(currentUrl);
@@ -439,6 +593,8 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
       posted_at: gc.posted_at,
       parent_id: gc.parent_id,
       reply_to_username: gc.reply_to_username,
+      code: gc.code,
+      direct_reply_count: gc.direct_reply_count,
     });
 
     if (comments.length >= (opts?.maxComments ?? MAX_COMMENTS)) break;
@@ -458,8 +614,14 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
     comments.push(...domComments);
   }
 
+  // 3. Tự động cào sâu toàn bộ các câu trả lời con (Sub-replies) của các comment có replies
+  const nestedReplies = await fetchNestedReplies(comments, seenKeys, 30);
+  if (nestedReplies.length > 0) {
+    comments.push(...nestedReplies);
+  }
+
   debugStats.bufferSize = interceptedCommentsBuffer.length;
-  debugStats.bufferedWithReplies = interceptedCommentsBuffer.filter(
+  debugStats.bufferedWithReplies = comments.filter(
     (c) => c.parent_id != null || c.reply_to_username != null
   ).length;
   debugStats.graphQLComments = comments.length - domComments.length;
@@ -542,7 +704,13 @@ export async function testScrapeAndHighlight(doc: Document, limit: number = 5): 
     comments.push(...domComments);
   }
 
-  // 3. Highlight trực quan các card tương ứng trên DOM
+  // 3. Tự động cào sâu câu trả lời con cho các comment có replies
+  const nestedReplies = await fetchNestedReplies(comments, seenKeys, limit);
+  if (nestedReplies.length > 0) {
+    comments.push(...nestedReplies);
+  }
+
+  // 4. Highlight trực quan các card tương ứng trên DOM
   const authorLinks = Array.from(doc.querySelectorAll('a[href*="/@"]')).filter(
     (l) => !l.closest('#ts-sidebar-container, header, nav, [role="navigation"]')
   );
