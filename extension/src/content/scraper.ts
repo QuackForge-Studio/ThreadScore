@@ -617,7 +617,13 @@ export async function testScrapeAndHighlight(doc: Document, limit: number = 5): 
 }
 
 function setupInjectedSidebar(): void {
-  if (typeof document === 'undefined' || document.getElementById('ts-sidebar-container')) return;
+  if (typeof document === 'undefined' || typeof window === 'undefined') return;
+  // Tuyệt đối KHÔNG inject sidebar bên trong iframe (chỉ chạy ở top frame của trang web)
+  if (window.top !== window.self) return;
+
+  // Dọn sạch mọi container / toggle-btn cũ từ các lần inject trước
+  const oldNodes = document.querySelectorAll('#ts-sidebar-container, #ts-sidebar-toggle-btn, #ts-sidebar-panel');
+  oldNodes.forEach((el) => el.remove());
 
   const container = document.createElement('div');
   container.id = 'ts-sidebar-container';
@@ -708,11 +714,15 @@ function setupInjectedSidebar(): void {
     isOpen = forceState ?? !isOpen;
     if (isOpen) {
       panelWrapper.style.transform = 'translateX(0)';
-      toggleBtn.style.transform = 'translateX(-380px)';
+      toggleBtn.style.opacity = '0';
+      toggleBtn.style.pointerEvents = 'none';
+      toggleBtn.style.transform = 'translateX(50px)';
       document.body.style.transition = 'margin-right 0.28s cubic-bezier(0.16, 1, 0.3, 1)';
       document.body.style.marginRight = '380px';
     } else {
       panelWrapper.style.transform = 'translateX(100%)';
+      toggleBtn.style.opacity = '1';
+      toggleBtn.style.pointerEvents = 'auto';
       toggleBtn.style.transform = 'translateX(0)';
       document.body.style.marginRight = '0px';
     }
