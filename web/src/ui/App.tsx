@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import { GoogleLogo, GithubLogo, Sun, Moon, Globe, EnvelopeSimple, Coffee, Heart } from '@phosphor-icons/react';
+import { GoogleLogo, GithubLogo, Sun, Moon, Globe, EnvelopeSimple, Coffee, Heart, ShieldCheck } from '@phosphor-icons/react';
 import HomePage from './pages/HomePage';
 import ThreadPage from './pages/ThreadPage';
 import AdminPage from './pages/AdminPage';
+import PrivacyPage from './pages/PrivacyPage';
 import DonateModal from './components/DonateModal';
 import { ThemeProvider, useTheme } from './theme';
 import { I18nProvider, useI18n } from './i18n';
@@ -100,6 +101,7 @@ function AppContent() {
             <Route path="/" element={<HomePage />} />
             <Route path="/t/:id" element={<ThreadPage />} />
             <Route path="/admin" element={<AdminPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
           </Routes>
         </main>
 
@@ -146,7 +148,12 @@ function AppContent() {
             </div>
           </div>
           <div className="footer-bottom">
-            <span>© {new Date().getFullYear()} ThreadScore</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+              <span>© {new Date().getFullYear()} ThreadScore</span>
+              <Link to="/privacy" className="footer-credit-link" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <ShieldCheck size={14} /> {lang === 'vi' ? 'Chính sách bảo mật' : 'Privacy Policy'}
+              </Link>
+            </div>
 
             {/* Language Switcher */}
             <div className="footer-lang-switcher">
