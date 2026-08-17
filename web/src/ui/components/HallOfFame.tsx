@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Trophy, Heart, Coffee, Sparkle, Fire } from '@phosphor-icons/react';
 import { Reveal } from './motion';
 import { useI18n } from '../i18n';
@@ -48,12 +49,31 @@ export const DEFAULT_SUPPORTERS: Supporter[] = [
   },
 ];
 
+export function getStoredSupporters(): Supporter[] {
+  if (typeof window === 'undefined') return DEFAULT_SUPPORTERS;
+  try {
+    const raw = localStorage.getItem('ts_supporters');
+    if (!raw) return DEFAULT_SUPPORTERS;
+    const parsed = JSON.parse(raw) as Supporter[];
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_SUPPORTERS;
+  } catch {
+    return DEFAULT_SUPPORTERS;
+  }
+}
+
 interface HallOfFameProps {
   onOpenDonate?: () => void;
 }
 
 export default function HallOfFame({ onOpenDonate }: HallOfFameProps) {
   const { lang } = useI18n();
+  const [supporters, setSupporters] = useState<Supporter[]>(getStoredSupporters);
+
+  useEffect(() => {
+    const handleStorage = () => setSupporters(getStoredSupporters());
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
 
   return (
     <section className="section" id="hall-of-fame">
@@ -76,7 +96,7 @@ export default function HallOfFame({ onOpenDonate }: HallOfFameProps) {
         </Reveal>
 
         <div className="hof-grid">
-          {DEFAULT_SUPPORTERS.map((supporter, idx) => (
+          {supporters.map((supporter, idx) => (
             <Reveal key={supporter.id} delay={idx * 0.08}>
               <div className={`hof-card hof-${supporter.tier}`}>
                 <div className="hof-card-head">
