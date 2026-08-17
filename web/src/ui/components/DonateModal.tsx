@@ -44,9 +44,9 @@ export default function DonateModal({ isOpen, onClose }: DonateModalProps) {
         <div className="modal-body">
           <div className="donate-box">
             <div className="donate-qr-wrapper">
-              {/* VietQR Quick Image Generator */}
+              {/* VietQR MB Bank */}
               <img
-                src="https://img.vietqr.io/image/MB-0348731110-compact2.png?amount=0&addInfo=ThreadScore%20Donate&accountName=LUONG%20DUY%20KHANG"
+                src="https://img.vietqr.io/image/MB-0943505127-compact2.png?amount=0&addInfo=ThreadScore%20Donate&accountName=LUONG%20DUY%20KHANG"
                 alt="VietQR Donate"
                 className="donate-qr-img"
               />
@@ -61,13 +61,13 @@ export default function DonateModal({ isOpen, onClose }: DonateModalProps) {
                 <span className="donate-val">MB Bank (Quân Đội)</span>
               </div>
               <div className="donate-info-item">
-                <span className="donate-label">{lang === 'vi' ? 'Số tài khoản' : 'Account Number'}</span>
+                <span className="donate-label">{lang === 'vi' ? 'Số tài khoản / SĐT' : 'Account Number'}</span>
                 <div className="donate-val-row">
-                  <span className="donate-val mono">0348731110</span>
+                  <span className="donate-val mono">0943505127</span>
                   <button
                     type="button"
                     className="copy-btn"
-                    onClick={() => copyToClipboard('0348731110', 'stk')}
+                    onClick={() => copyToClipboard('0943505127', 'stk')}
                     title="Copy số tài khoản"
                   >
                     {copiedField === 'stk' ? <Check size={14} color="var(--calm-ink)" /> : <Copy size={14} />}
