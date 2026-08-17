@@ -361,33 +361,59 @@ button { font-family: var(--font-sans); }
 .lang-btn:hover { color: var(--ink); }
 .lang-btn.active { color: #FFFFFF; background: var(--accent); }
 
-/* ===== Hero ===== */
+/* ===== Hero Redesign ===== */
 .hero {
   position: relative;
-  padding: var(--space-9) var(--space-5) var(--space-7);
+  padding: var(--space-8) var(--space-5) var(--space-7);
   overflow: hidden;
 }
 
 .hero-grid {
   display: grid;
-  grid-template-columns: minmax(0, 11fr) minmax(0, 9fr);
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
   gap: var(--space-8);
   align-items: center;
   max-width: var(--maxw);
   margin: 0 auto;
 }
 
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: var(--space-4);
+}
+.hero-eyebrow-icon {
+  color: var(--ember);
+}
+
 .hero-title {
   margin: 0 0 var(--space-4);
-  max-width: 15ch;
-  font-size: clamp(2.4rem, 5.2vw, 4.3rem);
+  font-size: clamp(2.3rem, 4.4vw, 3.8rem);
   font-weight: 900;
-  line-height: 1.04;
+  line-height: 1.1;
   letter-spacing: -0.04em;
   color: var(--ink);
   text-wrap: balance;
 }
-.hero-title .accent {
+
+.hero-title-accent {
   color: var(--ember);
   position: relative;
   display: inline-block;
@@ -395,129 +421,167 @@ button { font-family: var(--font-sans); }
 
 .hero-subtitle {
   margin: 0 0 var(--space-6);
-  max-width: 46ch;
+  max-width: 48ch;
   color: var(--muted);
-  font-size: 17px;
-  line-height: 1.65;
+  font-size: 16.5px;
+  line-height: 1.6;
 }
 
 .hero-cta { display: flex; gap: var(--space-3); flex-wrap: wrap; }
-.hero-cta .btn { font-size: 16px; padding: 14px 28px; border-radius: var(--radius-pill); }
+.hero-cta .btn { font-size: 15.5px; padding: 13px 26px; border-radius: var(--radius-pill); }
 
-/* Hero right: live heat console */
-.hero-console {
+/* Hero Flame Visual Card (Minimalist single metric) */
+.hero-flame-card {
   position: relative;
-  background: var(--bg-deep);
-  border: 1px solid rgba(255, 253, 248, 0.08);
-  border-radius: 24px;
-  padding: 22px 22px 18px;
-  box-shadow: var(--shadow-pop);
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 28px;
+  padding: 36px 28px 30px;
+  box-shadow: var(--shadow-card);
   overflow: hidden;
-  color: #FBF7F0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: transform 240ms ease, box-shadow 240ms ease;
 }
-.hero-console::before {
-  content: '';
+.hero-flame-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+}
+
+.hero-flame-glow {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(420px 220px at 85% -20%, rgba(240, 90, 40, 0.28), transparent 70%),
-    radial-gradient(320px 180px at 0% 110%, rgba(42, 111, 142, 0.18), transparent 70%);
   pointer-events: none;
+  border-radius: inherit;
+  transition: opacity 300ms ease;
 }
-.console-head {
+
+/* Theme Glows by Tier */
+.hero-flame-card.theme-low {
+  --flame-color: var(--calm);
+  --flame-ink: var(--calm-ink);
+  --flame-glow: rgba(42, 111, 142, 0.12);
+  --flame-ring: rgba(42, 111, 142, 0.2);
+}
+.hero-flame-card.theme-mid {
+  --flame-color: var(--ember);
+  --flame-ink: var(--ember);
+  --flame-glow: rgba(240, 90, 40, 0.14);
+  --flame-ring: rgba(240, 90, 40, 0.22);
+}
+.hero-flame-card.theme-high {
+  --flame-color: var(--anger);
+  --flame-ink: var(--anger-ink);
+  --flame-glow: rgba(229, 72, 77, 0.18);
+  --flame-ring: rgba(229, 72, 77, 0.28);
+}
+
+.hero-flame-glow {
+  background: radial-gradient(circle at 50% 40%, var(--flame-glow), transparent 70%);
+}
+
+.hero-flame-inner {
   position: relative;
+  z-index: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: rgba(255, 253, 248, 0.6);
+  width: 100%;
 }
-.console-head .mono { letter-spacing: 0.08em; font-size: 11px; }
-.console-big {
-  position: relative;
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-.console-big .num {
+
+.hero-flame-label {
   font-family: var(--font-mono);
+  font-size: 11.5px;
   font-weight: 800;
-  font-size: 74px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+/* Center Flame Illustration & Ring */
+.hero-flame-visual-wrap {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 16px;
+}
+
+.hero-flame-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px dashed var(--flame-ring);
+  animation: ring-rotate 24s linear infinite;
+}
+
+.hero-flame-icon-box {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 6px 16px var(--flame-glow));
+  animation: flame-breathe 3.6s ease-in-out infinite;
+}
+
+.hero-flame-svg {
+  width: 100%;
+  height: 100%;
+  transition: transform 300ms ease;
+}
+
+@keyframes flame-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06) translateY(-2px); }
+}
+
+@keyframes ring-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-flame-ring { animation: none; }
+  .hero-flame-icon-box { animation: none; }
+}
+
+.hero-flame-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 12px;
+}
+
+.hero-flame-num {
+  font-family: var(--font-mono);
+  font-weight: 900;
+  font-size: clamp(3.8rem, 6vw, 4.8rem);
   line-height: 1;
   letter-spacing: -0.05em;
-  color: var(--ember);
+  color: var(--flame-ink);
 }
-.console-big .unit { font-size: 14px; color: rgba(255, 253, 248, 0.55); font-weight: 600; }
-.console-track {
-  position: relative;
-  height: 12px;
-  border-radius: 6px;
-  background: linear-gradient(90deg, #2A6F8E 0%, #9A8A78 32%, #F05A28 68%, #E5484D 100%);
-  margin: 14px 0 6px;
-}
-.console-ticks {
-  position: relative;
-  display: flex;
-  justify-content: space-between;
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  color: rgba(255, 253, 248, 0.4);
-}
-.console-cols {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 16px;
-}
-.console-chip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255, 253, 248, 0.06);
-  border: 1px solid rgba(255, 253, 248, 0.12);
-  border-radius: 12px;
-  padding: 10px 12px;
-}
-.console-chip .t { font-size: 11.5px; color: rgba(255, 253, 248, 0.65); font-weight: 600; }
-.console-chip .v { margin-left: auto; font-family: var(--font-mono); font-weight: 800; font-size: 15px; color: #FBF7F0; }
-.console-chip .v.anger { color: var(--anger-ink); }
-.console-chip .v.neutral { color: var(--neutral-ink); }
-.console-chip .v.calm { color: var(--calm-ink); }
-.console-chip .n { font-family: var(--font-mono); font-size: 11px; color: rgba(255, 253, 248, 0.45); }
-[data-theme="dark"] .console-chip .v.anger { color: #FF858A; }
-[data-theme="dark"] .console-chip .v.calm { color: #70BCD8; }
-[data-theme="dark"] .console-chip .v.neutral { color: #D1C5B8; }
 
-/* Spectrum legend pills under hero */
-.spectrum {
-  display: flex;
-  justify-content: center;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-  margin: var(--space-6) 0 0;
+.hero-flame-unit {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: -0.01em;
 }
-.spectrum-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px 6px 12px;
-  border-radius: var(--radius-pill);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
-  font-size: 13px;
+
+.hero-flame-desc {
+  margin: 4px 0 0;
+  font-size: 13.5px;
   font-weight: 600;
   color: var(--ink-2);
+  max-width: 32ch;
+  line-height: 1.45;
 }
-.spectrum-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.spectrum-dot.anger { background: var(--anger); }
-.spectrum-dot.neutral { background: var(--neutral); }
-.spectrum-dot.calm { background: var(--calm); }
-.spectrum-range { font-family: var(--font-mono); font-size: 11px; color: var(--faint); }
 
 /* ===== Section scaffolding ===== */
 .section { padding: var(--space-9) var(--space-5); position: relative; }

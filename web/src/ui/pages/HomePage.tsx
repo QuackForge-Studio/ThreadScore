@@ -54,84 +54,99 @@ export default function HomePage() {
   }, []);
 
   const avg = stats?.avg_anger ?? null;
+  const heatTier: 'low' | 'mid' | 'high' = avg == null ? 'mid' : avg < 30 ? 'low' : avg < 70 ? 'mid' : 'high';
+  const statusText = avg == null
+    ? t('hero.flameNoData')
+    : avg < 30
+    ? t('hero.flameStatusLow')
+    : avg < 70
+    ? t('hero.flameStatusMid')
+    : t('hero.flameStatusHigh');
 
   return (
     <div className="page">
-      {/* 1. HERO SECTION - split copy + live heat console */}
+      {/* 1. HERO SECTION - Minimalist single flame heat metric */}
       <section className="hero" style={{ paddingTop: 'var(--space-8)', paddingBottom: 'var(--space-7)' }}>
         <div className="hero-grid">
+          {/* Cột trái: Giới thiệu & CTA */}
           <Reveal>
-            <div>
+            <div className="hero-content">
+              <div className="hero-eyebrow">
+                <Fire size={14} weight="fill" className="hero-eyebrow-icon" />
+                <span>{t('hero.eyebrow')}</span>
+              </div>
+
               <h1 className="hero-title">
-                {lang === 'vi' ? (
-                  <>Đo nhiệt độ &amp; cảm xúc <span className="accent">thảo luận</span> trên Threads</>
-                ) : (
-                  <>Measure sentiment &amp; <span className="accent">flame</span> on Threads</>
-                )}
+                {t('hero.headlineStart')}{' '}
+                <span className="hero-title-accent">{t('hero.headlineAccent')}</span>{' '}
+                {t('hero.headlineEnd')}
               </h1>
-              <p className="hero-subtitle">{t('hero.subtitle')}</p>
+
+              <p className="hero-subtitle">
+                {t('hero.desc')}
+              </p>
+
               <div className="hero-cta">
                 <a className="btn btn-primary" href="#explore">
-                  <Fire weight="fill" aria-hidden="true" /> {t('hero.ctaExplore')}
+                  <Fire weight="fill" aria-hidden="true" size={18} /> {t('hero.ctaExplore')}
                 </a>
               </div>
             </div>
           </Reveal>
 
+          {/* Cột phải: Visual ngọn lửa lớn & Điểm nóng duy nhất */}
           <Reveal delay={0.08}>
-            <div className="hero-console" aria-hidden={stats == null}>
-              <div className="console-head">
-                <span>{t('hero.consoleLive')}</span>
-                <span className="mono">{t('hero.consoleUpdated')}</span>
-              </div>
-              <div className="console-big">
-                <span className="num">{avg != null ? <CountUp to={Math.round(avg)} /> : '--'}</span>
-                <span className="unit">/100 {t('hero.consolePoints')}</span>
-              </div>
-              <div className="console-track" role="presentation" />
-              <div className="console-ticks">
-                <span>0</span>
-                <span>30</span>
-                <span>70</span>
-                <span>100</span>
-              </div>
-              <div className="console-cols">
-                <div className="console-chip">
-                  <span className="t">{t('stats.bang')}</span>
-                  <span className="v anger">{stats ? stats.breakdown.bang_no : '--'}</span>
+            <div className={`hero-flame-card theme-${heatTier}`}>
+              <div className="hero-flame-glow" />
+
+              <div className="hero-flame-inner">
+                <span className="hero-flame-label">{t('hero.flameLabel')}</span>
+
+                {/* Visual Ngọn lửa trung tâm với vòng ring mảnh */}
+                <div className="hero-flame-visual-wrap">
+                  <div className="hero-flame-ring" />
+                  <div className="hero-flame-icon-box">
+                    <svg className="hero-flame-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <defs>
+                        <linearGradient id="flameGradHot" x1="0%" y1="100%" x2="0%" y2="0%">
+                          <stop offset="0%" stopColor={heatTier === 'low' ? '#2A6F8E' : heatTier === 'mid' ? '#F05A28' : '#E5484D'} />
+                          <stop offset="60%" stopColor={heatTier === 'low' ? '#3B8FB5' : heatTier === 'mid' ? '#E5484D' : '#FF453A'} />
+                          <stop offset="100%" stopColor={heatTier === 'low' ? '#70BCD8' : heatTier === 'mid' ? '#FFD166' : '#FFA26B'} />
+                        </linearGradient>
+                      </defs>
+                      <path
+                        d="M32 4C32 4 37 14 34 22C38 18 42 12 42 12C42 12 52 24 50 38C48 51 38 58 32 58C26 58 16 51 14 38C12 26 22 14 26 10C26 10 24 18 28 22C30 14 32 4 32 4Z"
+                        fill="url(#flameGradHot)"
+                      />
+                      <path
+                        d="M32 26C32 26 36 32 34 38C37 35 39 31 39 31C39 31 44 38 42 46C40 53 35 56 32 56C29 56 24 53 22 46C20 40 26 33 28 30C28 30 27 34 29 36C30 32 32 26 32 26Z"
+                        fill="#FFF4E0"
+                        opacity="0.88"
+                      />
+                    </svg>
+                  </div>
                 </div>
-                <div className="console-chip">
-                  <span className="t">{t('stats.trunglap')}</span>
-                  <span className="v neutral">{stats ? stats.breakdown.trung_lap : '--'}</span>
+
+                {/* Số điểm nóng duy nhất [HOT_SCORE]/100 */}
+                <div className="hero-flame-metric">
+                  <span className="hero-flame-num">
+                    {avg != null ? <CountUp to={Math.round(avg)} /> : '--'}
+                  </span>
+                  <span className="hero-flame-unit">{t('hero.flameUnit')}</span>
                 </div>
-                <div className="console-chip">
-                  <span className="t">{t('stats.vuive')}</span>
-                  <span className="v calm">{stats ? stats.breakdown.vui_ve : '--'}</span>
-                </div>
-                <div className="console-chip">
-                  <span className="t">{t('hero.consoleComments')}</span>
-                  <span className="v">{stats ? <CountUp to={stats.comments} /> : '--'}</span>
-                </div>
+
+                {/* Mô tả ngắn một dòng */}
+                <p className="hero-flame-desc">
+                  {statusText}
+                </p>
               </div>
             </div>
           </Reveal>
         </div>
 
-        <div className="spectrum">
-          <span className="spectrum-item">
-            <span className="spectrum-dot anger" /> {t('stats.bang')} <span className="spectrum-range">70-100</span>
-          </span>
-          <span className="spectrum-item">
-            <span className="spectrum-dot neutral" /> {t('stats.trunglap')} <span className="spectrum-range">30-69</span>
-          </span>
-          <span className="spectrum-item">
-            <span className="spectrum-dot calm" /> {t('stats.vuive')} <span className="spectrum-range">0-29</span>
-          </span>
-        </div>
-
         {/* Thanh tìm kiếm & Dán link bài viết Threads */}
         <Reveal delay={0.12}>
-          <div style={{ padding: '0 var(--space-5)', maxWidth: '820px', margin: '0 auto' }}>
+          <div style={{ padding: '0 var(--space-5)', maxWidth: '820px', margin: 'var(--space-6) auto 0' }}>
             <SearchBox />
           </div>
         </Reveal>
