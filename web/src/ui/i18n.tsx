@@ -89,6 +89,9 @@ export const translations = {
     'feed.empty': 'Chưa có bài viết nào được quét.',
     'feed.emptyHint': 'Dán liên kết Threads bất kỳ vào ô tìm kiếm ở trên để gửi yêu cầu đo nhiệt độ bài viết đầu tiên!',
     'feed.error': 'Lỗi tải danh sách',
+    'feed.prevPage': 'Trang trước',
+    'feed.nextPage': 'Trang sau',
+    'feed.pageInfo': 'Trang {page} / {totalPages} ({total} bài viết)',
 
     // ThreadCard
     'tc.pending': 'Đang chờ chấm điểm',
@@ -269,6 +272,9 @@ export const translations = {
     'feed.empty': 'No threads have been scanned yet.',
     'feed.emptyHint': 'Paste any Threads post link into the search box above to measure its sentiment temperature!',
     'feed.error': 'Failed to load feed',
+    'feed.prevPage': 'Previous',
+    'feed.nextPage': 'Next',
+    'feed.pageInfo': 'Page {page} of {totalPages} ({total} posts)',
 
     // ThreadCard
     'tc.pending': 'Pending AI Scoring',

@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react';
-import { WarningCircle, Fire, ChatCircleDots, Lightning } from '@phosphor-icons/react';
+import {
+  WarningCircle,
+  Fire,
+  ChatCircleDots,
+  Lightning,
+  CaretLeft,
+  CaretRight,
+} from '@phosphor-icons/react';
 import { apiGet } from '../api';
 import SearchBox from '../components/SearchBox';
 import ThreadCard from '../components/ThreadCard';
@@ -10,21 +17,49 @@ import { Reveal, CountUp } from '../components/motion';
 import { useI18n } from '../i18n';
 import type { ThreadRecord, OverallStats } from '../../shared/types';
 
+const PAGE_SIZE = 10;
+
 export default function HomePage() {
   const { t, lang } = useI18n();
   const [threads, setThreads] = useState<ThreadRecord[]>([]);
   const [stats, setStats] = useState<OverallStats | null>(null);
   const [sort, setSort] = useState<'newest' | 'hottest' | 'most_comments'>('hottest');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDonateOpen, setIsDonateOpen] = useState(false);
 
+  // Khi đổi sort thì reset về trang 1
+  function handleSortChange(newSort: 'newest' | 'hottest' | 'most_comments') {
+    if (newSort !== sort) {
+      setSort(newSort);
+      setPage(1);
+    }
+  }
+
+  function handlePageChange(newPage: number) {
+    if (newPage < 1 || newPage > totalPages || newPage === page) return;
+    setPage(newPage);
+    const el = document.getElementById('explore');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
   useEffect(() => {
     let cancelled = false;
-    apiGet<{ threads: ThreadRecord[] }>(`/api/threads?sort=${sort}`)
+    setLoading(true);
+    setError(null);
+    apiGet<{ threads: ThreadRecord[]; total?: number; totalPages?: number }>(
+      `/api/threads?sort=${sort}&page=${page}&limit=${PAGE_SIZE}`
+    )
       .then((r) => {
         if (!cancelled) {
           setThreads(r.threads);
+          if (r.totalPages !== undefined) setTotalPages(r.totalPages);
+          if (r.total !== undefined) setTotalCount(r.total);
           setLoading(false);
         }
       })
@@ -37,7 +72,7 @@ export default function HomePage() {
     return () => {
       cancelled = true;
     };
-  }, [sort, lang, t]);
+  }, [sort, page, lang, t]);
 
   useEffect(() => {
     let cancelled = false;
@@ -62,6 +97,23 @@ export default function HomePage() {
     : avg < 70
     ? t('hero.flameStatusMid')
     : t('hero.flameStatusHigh');
+
+  // Tạo danh sách số trang thông minh
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (page > 3) pages.push('...');
+      const start = Math.max(2, page - 1);
+      const end = Math.min(totalPages - 1, page + 1);
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (page < totalPages - 2) pages.push('...');
+      pages.push(totalPages);
+    }
+    return pages;
+  };
 
   return (
     <div className="page">
@@ -144,7 +196,7 @@ export default function HomePage() {
                 role="tab"
                 aria-selected={sort === s}
                 className={`sort-tab${sort === s ? ' active' : ''}`}
-                onClick={() => setSort(s)}
+                onClick={() => handleSortChange(s)}
               >
                 {s === 'hottest'
                   ? t('feed.sort.hottest')
@@ -180,6 +232,62 @@ export default function HomePage() {
                   </div>
                   <p className="empty-title">{t('feed.empty')}</p>
                   <p className="empty-subtitle">{t('feed.emptyHint')}</p>
+                </div>
+              )}
+
+              {/* Thanh phân trang Pagination */}
+              {totalPages > 1 && (
+                <div className="feed-pagination">
+                  <div className="pagination-info">
+                    {t('feed.pageInfo')
+                      .replace('{page}', String(page))
+                      .replace('{totalPages}', String(totalPages))
+                      .replace('{total}', String(totalCount))}
+                  </div>
+
+                  <div className="pagination-controls">
+                    <button
+                      type="button"
+                      className="btn-page btn-page-nav"
+                      disabled={page <= 1 || loading}
+                      onClick={() => handlePageChange(page - 1)}
+                      title={t('feed.prevPage')}
+                    >
+                      <CaretLeft size={16} weight="bold" />
+                      <span>{t('feed.prevPage')}</span>
+                    </button>
+
+                    <div className="pagination-numbers">
+                      {getPageNumbers().map((p, idx) =>
+                        typeof p === 'number' ? (
+                          <button
+                            key={`page-${p}`}
+                            type="button"
+                            className={`btn-page btn-page-num${p === page ? ' active' : ''}`}
+                            onClick={() => handlePageChange(p)}
+                            disabled={loading}
+                          >
+                            {p}
+                          </button>
+                        ) : (
+                          <span key={`ellipsis-${idx}`} className="pagination-ellipsis">
+                            ...
+                          </span>
+                        )
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      className="btn-page btn-page-nav"
+                      disabled={page >= totalPages || loading}
+                      onClick={() => handlePageChange(page + 1)}
+                      title={t('feed.nextPage')}
+                    >
+                      <span>{t('feed.nextPage')}</span>
+                      <CaretRight size={16} weight="bold" />
+                    </button>
+                  </div>
                 </div>
               )}
             </>

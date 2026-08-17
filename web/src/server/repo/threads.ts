@@ -35,6 +35,11 @@ export async function listThreads(db: D1Database, opts: { sort: 'newest' | 'hott
   return results ?? [];
 }
 
+export async function countThreads(db: D1Database): Promise<number> {
+  const row = await db.prepare('SELECT COUNT(*) as count FROM threads').first<{ count: number }>();
+  return row?.count ?? 0;
+}
+
 export async function listPendingScoring(db: D1Database, limit: number): Promise<ThreadRecord[]> {
   // Include 'scoring' threads so a worker that crashed (or a prior pass that hit the
   // MAX_WORKER_BATCHES ceiling) can be resumed on the next run.
