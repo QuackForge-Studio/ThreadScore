@@ -2,6 +2,20 @@ import type { Env } from '../../../src/server/db';
 import { ZodError } from 'zod';
 import { isAdminAuthorized } from '../../../src/server/services/adminKey';
 
+export const onRequestOptions: PagesFunction = async (context) => {
+  const origin = context.request.headers.get('Origin') || '*';
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': origin,
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+      'Access-Control-Allow-Headers': '*',
+      'Access-Control-Max-Age': '86400',
+      'Vary': 'Origin',
+    },
+  });
+};
+
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   if (!isAdminAuthorized(context.request, context.env)) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });

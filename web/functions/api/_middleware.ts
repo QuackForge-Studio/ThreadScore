@@ -1,4 +1,4 @@
-// CORS + security headers cho toàn bộ API (cho phép extension và mọi origin gọi)
+// CORS + security headers cho toàn bộ /api/* routes
 export const onRequest: PagesFunction = async (context) => {
   const origin = context.request.headers.get('Origin') || '*';
 
