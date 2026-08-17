@@ -503,6 +503,7 @@ async function fetchNestedReplies(
 
   const chunkSize = 5;
   for (let i = 0; i < targets.length; i += chunkSize) {
+    if (isScrapeAborted()) break;
     const chunk = targets.slice(i, i + chunkSize);
     const promises = chunk.map(async (parent) => {
       try {
@@ -1016,18 +1017,39 @@ if (typeof document !== 'undefined' && typeof chrome !== 'undefined' && typeof c
   }
 }
 
+let scrapeAbortRequested = false;
+
+export function isScrapeAborted(): boolean {
+  return scrapeAbortRequested;
+}
+
+export function resetScrapeAbort(): void {
+  scrapeAbortRequested = false;
+}
+
+export function requestScrapeAbort(): void {
+  scrapeAbortRequested = true;
+}
+
 if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
   chrome.runtime.onMessage.addListener((message: { type?: string; limit?: number }, _sender, sendResponse) => {
     if (message.type === 'TS_SCRAPE') {
+      resetScrapeAbort();
       scrapeCurrentThread(document)
         .then((result) => sendResponse(result))
         .catch((e) => sendResponse({ error: e instanceof Error ? e.message : 'Scrape lỗi' }));
       return true;
     }
     if (message.type === 'TS_TEST_SCRAPE') {
+      resetScrapeAbort();
       testScrapeAndHighlight(document, message.limit ?? 5)
         .then((result) => sendResponse(result))
         .catch((e) => sendResponse({ error: e instanceof Error ? e.message : 'Test scrape lỗi' }));
+      return true;
+    }
+    if (message.type === 'TS_STOP_SCRAPE') {
+      requestScrapeAbort();
+      sendResponse({ ok: true });
       return true;
     }
     return false;

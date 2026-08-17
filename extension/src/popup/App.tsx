@@ -15,9 +15,10 @@ import {
   Flask,
   MagnifyingGlassPlus,
   Funnel,
+  StopCircle,
 } from '@phosphor-icons/react';
 import { getConfig, setConfig, type ExtensionConfig } from '../lib/storage';
-import { scrapeActiveTab, scrapeTestActiveTab } from './manual';
+import { scrapeActiveTab, scrapeTestActiveTab, stopActiveTabScrape } from './manual';
 import { runBatchFromPopup } from './batch';
 import { pushImport } from '../lib/api';
 import type { ScrapedThread, ScrapedComment } from '../content/scraper';
@@ -281,9 +282,35 @@ export default function App() {
             </div>
 
             <div style={{ display: 'flex', gap: 8, flexDirection: 'column' }}>
-              <button className="sp-btn sp-btn-accent sp-btn-block" onClick={doScrape} disabled={busy}>
-                <Browser size={18} weight="bold" /> {busy ? 'Đang quét...' : 'Lấy bài + comments'}
-              </button>
+              {!busy ? (
+                <button className="sp-btn sp-btn-accent sp-btn-block" onClick={doScrape}>
+                  <Browser size={18} weight="bold" /> Lấy bài + comments
+                </button>
+              ) : (
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button className="sp-btn sp-btn-accent sp-flex-1" disabled style={{ opacity: 0.9 }}>
+                    <Browser size={18} weight="bold" /> Đang quét trang Threads...
+                  </button>
+                  <button
+                    type="button"
+                    className="sp-btn sp-btn-secondary"
+                    onClick={async () => {
+                      log('Đang gửi lệnh dừng quét bài...');
+                      await stopActiveTabScrape();
+                    }}
+                    title="Ngừng cuộn và lấy ngay kết quả hiện có"
+                    style={{
+                      background: 'linear-gradient(135deg, #E5484D, #B23A15)',
+                      color: '#FFF',
+                      border: 'none',
+                      whiteSpace: 'nowrap',
+                      padding: '10px 14px',
+                    }}
+                  >
+                    <StopCircle size={18} weight="fill" /> Dừng quét
+                  </button>
+                </div>
+              )}
             </div>
 
             {scraped && (

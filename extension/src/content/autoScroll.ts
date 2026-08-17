@@ -1,6 +1,32 @@
 // Auto-scroll orchestrator: Cuộn trang kiên trì, nhận diện & mở rộng toàn bộ câu trả lời con (sub-replies).
 
 import { debugStats } from './debug';
+import { isScrapeAborted } from './scraper';
+
+// Kiểm tra xem đã chạm đến thông báo chân trang Threads (Đã ẩn một số thread trả lời / hidden_replies) hay chưa
+export function isEndOfCommentsReached(doc: Document): boolean {
+  // 1. Kiểm tra link chứa /hidden_replies
+  const hiddenLink = doc.querySelector('a[href*="/hidden_replies"], a[href*="hidden_replies"]');
+  if (hiddenLink) return true;
+
+  // 2. Kiểm tra các phần tử văn bản thông báo chân trang
+  const clickables = Array.from(doc.querySelectorAll('span, div, p, a, [role="button"]'));
+  for (const el of clickables) {
+    const txt = (el.textContent ?? '').trim().toLowerCase();
+    if (!txt || txt.length > 120) continue;
+    if (
+      txt.includes('đã ẩn một số thread trả lời') ||
+      txt.includes('đã ẩn một số phản hồi') ||
+      txt.includes('đã ẩn một số câu trả lời') ||
+      txt.includes('some replies were hidden') ||
+      txt.includes('some replies may be hidden') ||
+      txt.includes('hidden_replies')
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
 
 function isRealSubReplyExpander(el: HTMLElement): boolean {
   if (el.closest('#ts-sidebar-container, header, nav, [role="navigation"], [role="menu"], [role="dialog"], [role="listbox"]')) {
@@ -111,17 +137,23 @@ function countReplies(doc: Document): number {
 }
 
 export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?: number; maxScrolls?: number }): Promise<void> {
-  const maxScrolls = opts?.maxScrolls ?? 60;
+  const maxScrolls = opts?.maxScrolls ?? 100;
   let stableCount = 0;
   let lastCount = -1;
   let totalExpandersFound = 0;
   let totalExpandersClicked = 0;
 
   for (let i = 0; i < maxScrolls; i++) {
+    // 0. Kiểm tra nếu người dùng bấm dừng hoặc đã chạm đến thông báo chân trang ("Đã ẩn một số thread trả lời")
+    if (isScrapeAborted()) break;
+    if (isEndOfCommentsReached(doc)) break;
+
     // 1. Quét và bấm mở rộng tất cả các câu trả lời con thực sự
     const { found, clicked } = await expandSubReplies(doc);
     totalExpandersFound += found;
     totalExpandersClicked += clicked;
+
+    if (isScrapeAborted()) break;
 
     // 2. Cuộn phần tử cuối cùng vào viewport để kích hoạt IntersectionObserver của Threads
     const allCommentCards = Array.from(
@@ -141,11 +173,11 @@ export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?
     if (w) {
       const scrollH = Math.max(doc.body?.scrollHeight || 0, doc.documentElement?.scrollHeight || 0);
 
-      // Nếu đang bị chững lại, cuộn nhấp nhả (jitter) ngược lên 350px rồi cuộn xuống để kích hoạt lại trigger nạp của Threads
+      // Nếu đang bị chững lại, cuộn nhấp nhả (jitter) ngược lên 400px rồi cuộn xuống để kích hoạt lại trigger nạp của Threads
       if (stableCount >= 2) {
         try {
-          w.scrollBy(0, -350);
-          await new Promise((r) => setTimeout(r, 180));
+          w.scrollBy(0, -400);
+          await new Promise((r) => setTimeout(r, 220));
         } catch {}
       }
 
@@ -159,7 +191,7 @@ export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?
 
       try {
         if (typeof w.scrollBy === 'function') {
-          w.scrollBy(0, 2000);
+          w.scrollBy(0, 1500);
         }
       } catch {}
 
@@ -179,19 +211,22 @@ export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?
       });
 
       try {
+        w.dispatchEvent(new WheelEvent('wheel', { deltaY: 1000, bubbles: true }));
         w.dispatchEvent(new Event('scroll'));
       } catch {}
     }
 
-    // Chờ mạng nạp dữ liệu: 500ms - 750ms (đủ thời gian cho GraphQL pagination phản hồi)
-    const waitTime = clicked > 0 ? 650 : 500 + Math.floor(Math.random() * 250);
+    // Chờ mạng nạp dữ liệu: 700ms - 1100ms (đủ thời gian cho GraphQL pagination phản hồi ổn định)
+    const waitTime = clicked > 0 ? 800 : 700 + Math.floor(Math.random() * 400);
     await new Promise((r) => setTimeout(r, waitTime));
+
+    if (isScrapeAborted() || isEndOfCommentsReached(doc)) break;
 
     const count = countReplies(doc);
     if (count === lastCount && clicked === 0) {
       stableCount++;
-      // Cần 6 lần liên tiếp (~4-5 giây) hoàn toàn không có thêm comment mới mới dừng
-      if (stableCount >= 6) break;
+      // Chờ tới 8 lần kiểm tra (~7-8 giây) hoàn toàn không có thêm comment mới mới dừng
+      if (stableCount >= 8) break;
     } else {
       stableCount = 0;
     }
