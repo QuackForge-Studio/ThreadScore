@@ -507,7 +507,8 @@ async function fetchNestedReplies(
     const chunk = targets.slice(i, i + chunkSize);
     const promises = chunk.map(async (parent) => {
       try {
-        const targetUrl = `https://www.threads.net/t/${parent.code}`;
+        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.threads.net';
+        const targetUrl = `${origin}/t/${parent.code}`;
         const res = await fetch(targetUrl, { credentials: 'include' });
         if (!res.ok) return;
         const html = await res.text();

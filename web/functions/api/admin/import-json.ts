@@ -19,6 +19,6 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if (e instanceof ZodError) {
       return Response.json({ error: e.message }, { status: 400 });
     }
-    return Response.json({ error: 'Internal error' }, { status: 500 });
+    return Response.json({ error: e instanceof Error ? e.message : 'Internal error' }, { status: 500 });
   }
 };
