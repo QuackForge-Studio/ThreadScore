@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, type FormEvent, type KeyboardEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { MagnifyingGlass, WarningCircle } from '@phosphor-icons/react';
 import { searchThreads, requestThread, ApiError } from '../api';
+import { useI18n } from '../i18n';
 
 export default function SearchBox() {
+  const { t, tf } = useI18n();
   const [q, setQ] = useState('');
   const [result, setResult] = useState<{ kind: string; state?: string; thread?: { id: string }; threads?: { id: string; url: string; title: string | null; author_username: string | null }[]; message: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -16,61 +18,73 @@ export default function SearchBox() {
       const r = await searchThreads(q.trim());
       if (r.kind === 'url') {
         if (r.state === 'scored' && r.thread) { navigate(`/t/${r.thread.id}`); return; }
-        if (r.state === 'pending') { setResult({ kind: 'url', state: 'pending', message: 'Bài viết này đang được xử lý. Quay lại sau nhé.' }); return; }
-        setResult({ kind: 'url', state: 'unknown', message: 'Bài viết này chưa có trên ThreadScore.' });
+        if (r.state === 'pending') { setResult({ kind: 'url', state: 'pending', message: t('sb.pending') }); return; }
+        setResult({ kind: 'url', state: 'unknown', message: t('sb.unknown') });
       } else {
-        setResult({ kind: 'keyword', threads: r.threads, message: `Tìm thấy ${r.threads.length} bài viết.` });
+        setResult({ kind: 'keyword', threads: r.threads, message: tf('sb.found', { n: r.threads.length }) });
       }
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'Lỗi tìm kiếm');
+      setError(e instanceof ApiError ? e.message : t('sb.error'));
     }
   }
 
   async function onRequest() {
     try {
       await requestThread(q.trim());
-      setResult({ kind: 'url', state: 'pending', message: 'Đã gửi request. Chủ sở hữu sẽ import bài này sớm.' });
+      setResult({ kind: 'url', state: 'pending', message: t('sb.requestSent') });
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'Lỗi gửi request');
+      setError(e instanceof ApiError ? e.message : t('sb.requestError'));
     }
   }
 
+  function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    onSearch();
+  }
+
+  function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') onSearch();
+  }
+
   return (
-    <div className="searchbox">
+    <form className="searchbox" onSubmit={handleSubmit} role="search">
       <div className="searchbox-row">
         <div className="searchbox-input-wrap">
           <MagnifyingGlass className="searchbox-icon" aria-hidden="true" />
           <input
             id="searchbox-input"
             className="searchbox-input"
-            placeholder="Tìm bài viết hoặc dán link Threads..."
+            type="search"
+            placeholder={t('sb.placeholder')}
             value={q}
             onChange={e => setQ(e.target.value)}
+            onKeyDown={handleKeyDown}
+            aria-label={t('sb.placeholder')}
           />
         </div>
-        <button className="btn btn-primary" onClick={onSearch}>Tìm</button>
+        <button type="submit" className="btn btn-primary">{t('sb.search')}</button>
       </div>
       {result && <p className="searchbox-result" data-testid="search-result">{result.message}</p>}
       {result?.kind === 'keyword' && (result.threads?.length ?? 0) > 0 && (
         <ul className="search-results">
-          {result.threads!.map(t => (
-            <li key={t.id} className="search-results-item">
-              <Link to={`/t/${t.id}`} className="search-results-link">
-                {t.title ?? 'Bài viết Threads'}
+          {result.threads!.map(tItem => (
+            <li key={tItem.id} className="search-results-item">
+              <Link to={`/t/${tItem.id}`} className="search-results-link">
+                {tItem.title ?? t('sb.fallback')}
               </Link>
-              {t.author_username && <span className="search-results-author">@{t.author_username}</span>}
+              {tItem.author_username && <span className="search-results-author">@{tItem.author_username}</span>}
             </li>
           ))}
         </ul>
       )}
       {result?.kind === 'url' && result.state === 'unknown' && (
-        <button className="btn btn-primary searchbox-request" onClick={onRequest}>Request bài viết</button>
+        <button type="button" className="btn btn-primary searchbox-request" onClick={onRequest}>{t('sb.requestBtn')}</button>
       )}
       {error && (
         <p className="error-text" role="alert">
           <WarningCircle aria-hidden="true" /> {error}
         </p>
       )}
-    </div>
+    </form>
   );
 }

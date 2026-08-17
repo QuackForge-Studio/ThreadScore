@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { WarningCircle, ArrowLeft } from '@phosphor-icons/react';
+import { WarningCircle, ArrowLeft, ArrowSquareOut } from '@phosphor-icons/react';
 import { apiGet } from '../api';
 import CommentCard from '../components/CommentCard';
 import DiscussionBox from '../components/DiscussionBox';
 import HeatGauge from '../components/HeatGauge';
 import { Reveal } from '../components/motion';
 import { formatRelativeTime } from '../format';
+import { useI18n } from '../i18n';
 import type { ThreadRecord, CommentRecord, AiScoreRecord, UserCommentRecord } from '../../shared/types';
 
 type ThreadDetail = {
@@ -19,9 +20,9 @@ type ThreadDetail = {
 
 export default function ThreadPage() {
   const { id } = useParams<{ id: string }>();
+  const { t } = useI18n();
   const [data, setData] = useState<ThreadDetail | null>(null);
   const [filter, setFilter] = useState<'all' | 'BÙNG NỔ' | 'TRUNG LẬP' | 'VUI VẺ'>('all');
-  const [scoreFilter, setScoreFilter] = useState<'all' | '70-100' | '30-69' | '0-29'>('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,7 +30,7 @@ export default function ThreadPage() {
     try {
       setData(await apiGet<ThreadDetail>(`/api/threads/${id}`));
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Lỗi tải bài viết');
+      setError(e instanceof Error ? e.message : t('tp.loadError'));
     }
   }
 
@@ -39,10 +40,10 @@ export default function ThreadPage() {
     setError(null);
     apiGet<ThreadDetail>(`/api/threads/${id}`)
       .then(d => { if (!cancelled) setData(d); })
-      .catch(e => { if (!cancelled) setError(e instanceof Error ? e.message : 'Lỗi tải bài viết'); })
+      .catch(e => { if (!cancelled) setError(e instanceof Error ? e.message : t('tp.loadError')); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [id]);
+  }, [id, t]);
 
   if (loading) {
     return (
@@ -64,7 +65,7 @@ export default function ThreadPage() {
           <div className="error-banner" role="alert">
             <WarningCircle aria-hidden="true" /> {error}
           </div>
-          <Link to="/" className="btn btn-ghost"><ArrowLeft aria-hidden="true" /> Về trang chủ</Link>
+          <Link to="/" className="btn btn-ghost"><ArrowLeft aria-hidden="true" /> {t('tp.home')}</Link>
         </div>
       </div>
     );
@@ -76,7 +77,7 @@ export default function ThreadPage() {
     ? data.thread.title
     : data.thread.content
     ? (data.thread.content.length > 140 ? data.thread.content.slice(0, 140) + '...' : data.thread.content)
-    : 'Bài viết Threads';
+    : t('tp.postFallback');
 
   const showFullContent = data.thread.content && data.thread.content.trim() !== displayTitle.trim();
 
@@ -102,15 +103,14 @@ export default function ThreadPage() {
       <div className="thread-page-inner">
         <Reveal>
           <Link to="/" className="thread-back">
-            <ArrowLeft size={16} aria-hidden="true" /> Bảng nhiệt
+            <ArrowLeft size={16} aria-hidden="true" /> {t('tp.back')}
           </Link>
 
-          {/* Post Header with Author & Title */}
-          <div className="thread-post-card" style={{ background: 'var(--surface)', padding: '24px', borderRadius: 'var(--radius-lg, 16px)', border: '1px solid var(--border)', marginBottom: '20px' }}>
+          <div className="thread-post-card">
             <h1 className="thread-title" style={{ fontSize: '22px', fontWeight: '800', lineHeight: '1.4', margin: '0 0 12px', color: 'var(--ink)' }}>
               {displayTitle}
             </h1>
-            
+
             {showFullContent && (
               <p className="thread-content" style={{ fontSize: '15px', color: 'var(--ink-2)', lineHeight: '1.6', margin: '0 0 16px', whiteSpace: 'pre-wrap' }}>
                 {data.thread.content}
@@ -118,29 +118,28 @@ export default function ThreadPage() {
             )}
 
             <p className="thread-meta" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', fontSize: '13px', color: 'var(--muted)' }}>
-              <span style={{ fontWeight: '700', color: 'var(--ink)' }}>@{data.thread.author_username ?? 'unknown'}</span>
-              {data.thread.posted_at != null && <span>• {formatRelativeTime(data.thread.posted_at)}</span>}
-              <span>• {data.thread.total_comments} bình luận</span>
-              <a href={data.thread.url} target="_blank" rel="noreferrer" className="thread-link" style={{ color: 'var(--accent)', fontWeight: '600' }}>
-                Xem trên Threads ↗
+              <span style={{ fontWeight: '700', color: 'var(--ink)' }}>@{data.thread.author_username ?? t('tp.anon')}</span>
+              {data.thread.posted_at != null && <span>· {formatRelativeTime(data.thread.posted_at)}</span>}
+              <span>· {data.thread.total_comments} {t('tp.commentsCount')}</span>
+              <a href={data.thread.url} target="_blank" rel="noreferrer" className="thread-link" style={{ color: 'var(--accent)', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                {t('tp.onThreads')} <ArrowSquareOut size={13} />
               </a>
             </p>
           </div>
         </Reveal>
 
-        {/* AI Score Summary Gauge */}
         {data.thread.scoring_status === 'scored' && data.breakdown && (
           <Reveal>
             <div className="thread-summary" style={{ marginBottom: '24px' }}>
               <HeatGauge breakdown={data.breakdown} />
               <div className="thread-summary-stats">
-                <span className="stat-chip anger">Bùng nổ <span className="stat-n">{data.breakdown.bang_no}</span></span>
-                <span className="stat-chip neutral">Trung lập <span className="stat-n">{data.breakdown.trung_lap}</span></span>
-                <span className="stat-chip calm">Vui vẻ <span className="stat-n">{data.breakdown.vui_ve}</span></span>
+                <span className="stat-chip anger">{t('tp.hot')} <span className="stat-n">{data.breakdown.bang_no}</span></span>
+                <span className="stat-chip neutral">{t('tp.neutral')} <span className="stat-n">{data.breakdown.trung_lap}</span></span>
+                <span className="stat-chip calm">{t('tp.calm')} <span className="stat-n">{data.breakdown.vui_ve}</span></span>
               </div>
               {data.thread.avg_anger_score != null && (
                 <p className="thread-avg">
-                  Điểm cảm xúc tức giận trung bình:
+                  {t('tp.avgLabel')}
                   <strong className="mono thread-avg-value" style={{ marginLeft: '8px' }}>
                     {data.thread.avg_anger_score.toFixed(1)}/100
                   </strong>
@@ -150,17 +149,15 @@ export default function ThreadPage() {
           </Reveal>
         )}
 
-        {/* Community Discussion Box: Placed conveniently right above comments list */}
         <Reveal>
           <div style={{ marginBottom: '28px' }}>
             <DiscussionBox threadId={data.thread.id} userComments={data.user_comments} onPosted={load} />
           </div>
         </Reveal>
 
-        {/* Top Highlights */}
         {topBangNo.length > 0 && (
           <section className="ranking-section bang">
-            <h2 className="ranking-title">Top Bùng nổ tiêu biểu</h2>
+            <h2 className="ranking-title">{t('tp.topHot')}</h2>
             {topBangNo.map(c => (
               <div key={c.id} className="ranking-item">
                 <span className="ranking-text">{c.text}</span>
@@ -172,7 +169,7 @@ export default function ThreadPage() {
 
         {topVuiVe.length > 0 && (
           <section className="ranking-section vui">
-            <h2 className="ranking-title">Top Vui vẻ tiêu biểu</h2>
+            <h2 className="ranking-title">{t('tp.topCalm')}</h2>
             {topVuiVe.map(c => (
               <div key={c.id} className="ranking-item">
                 <span className="ranking-text">{c.text}</span>
@@ -182,28 +179,26 @@ export default function ThreadPage() {
           </section>
         )}
 
-        {/* Clean Filter Tabs */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '24px 0 16px', flexWrap: 'wrap', gap: '12px' }}>
           <h2 style={{ fontSize: '18px', fontWeight: '800', margin: 0 }}>
-            Tất cả bình luận ({visible.length})
+            {t('tp.allComments')} ({visible.length})
           </h2>
-          <div className="filter-tabs" style={{ margin: 0 }}>
-            <button className={`filter-tab${filter === 'all' ? ' active' : ''}`} onClick={() => setFilter('all')}>
-              Tất cả ({data.comments.length})
+          <div className="filter-tabs" style={{ margin: 0 }} role="tablist">
+            <button className={`filter-tab${filter === 'all' ? ' active' : ''}`} role="tab" aria-selected={filter === 'all'} onClick={() => setFilter('all')}>
+              {t('tp.all')} ({data.comments.length})
             </button>
-            <button className={`filter-tab${filter === 'BÙNG NỔ' ? ' active' : ''}`} onClick={() => setFilter('BÙNG NỔ')}>
-              Bùng nổ ({countBangNo})
+            <button className={`filter-tab${filter === 'BÙNG NỔ' ? ' active' : ''}`} role="tab" aria-selected={filter === 'BÙNG NỔ'} onClick={() => setFilter('BÙNG NỔ')}>
+              {t('tp.hot')} ({countBangNo})
             </button>
-            <button className={`filter-tab${filter === 'TRUNG LẬP' ? ' active' : ''}`} onClick={() => setFilter('TRUNG LẬP')}>
-              Trung lập ({countTrungLap})
+            <button className={`filter-tab${filter === 'TRUNG LẬP' ? ' active' : ''}`} role="tab" aria-selected={filter === 'TRUNG LẬP'} onClick={() => setFilter('TRUNG LẬP')}>
+              {t('tp.neutral')} ({countTrungLap})
             </button>
-            <button className={`filter-tab${filter === 'VUI VẺ' ? ' active' : ''}`} onClick={() => setFilter('VUI VẺ')}>
-              Vui vẻ ({countVuiVe})
+            <button className={`filter-tab${filter === 'VUI VẺ' ? ' active' : ''}`} role="tab" aria-selected={filter === 'VUI VẺ'} onClick={() => setFilter('VUI VẺ')}>
+              {t('tp.calm')} ({countVuiVe})
             </button>
           </div>
         </div>
 
-        {/* Comment Cards with individual AI accuracy Voting */}
         {visible.map((c, i) => (
           <Reveal key={c.id} delay={(i % 3) * 0.04}>
             <CommentCard comment={c} voteCounts={data.vote_counts[c.id] ?? { correct: 0, incorrect: 0 }} />
@@ -212,8 +207,8 @@ export default function ThreadPage() {
 
         {visible.length === 0 && (
           <div className="empty-state">
-            <p className="empty-title">Không có bình luận nào trong danh mục này</p>
-            <p className="empty-subtitle">Thử chuyển sang bộ lọc khác để xem bình luận.</p>
+            <p className="empty-title">{t('tp.noComments')}</p>
+            <p className="empty-subtitle">{t('tp.tryOther')}</p>
           </div>
         )}
       </div>

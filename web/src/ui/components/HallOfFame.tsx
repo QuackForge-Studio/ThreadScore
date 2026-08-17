@@ -66,7 +66,7 @@ interface HallOfFameProps {
 }
 
 export default function HallOfFame({ onOpenDonate }: HallOfFameProps) {
-  const { lang } = useI18n();
+  const { t } = useI18n();
   const [supporters, setSupporters] = useState<Supporter[]>(getStoredSupporters);
 
   useEffect(() => {
@@ -82,16 +82,10 @@ export default function HallOfFame({ onOpenDonate }: HallOfFameProps) {
           <div className="section-head">
             <span className="section-eyebrow">
               <Trophy size={16} weight="fill" color="var(--accent)" />{' '}
-              {lang === 'vi' ? 'Bảng Vinh Danh' : 'Hall of Fame'}
+              {t('hof.eyebrow')}
             </span>
-            <h2 className="section-title">
-              {lang === 'vi' ? 'Những Người Tiếp Lửa Cho ThreadScore' : 'ThreadScore Flame Keepers'}
-            </h2>
-            <p className="section-subtitle">
-              {lang === 'vi'
-                ? 'Lời cảm ơn chân thành tới những người bạn và mạnh thường quân đã ủng hộ duy trì máy chủ & chi phí AI.'
-                : 'Heartfelt thanks to the wonderful supporters keeping our servers and AI models running.'}
-            </p>
+            <h2 className="section-title">{t('hof.title')}</h2>
+            <p className="section-subtitle">{t('hof.subtitle')}</p>
           </div>
         </Reveal>
 
@@ -116,7 +110,7 @@ export default function HallOfFame({ onOpenDonate }: HallOfFameProps) {
                     </span>
                   </div>
                 </div>
-                {supporter.message && <p className="hof-message">"{supporter.message}"</p>}
+                {supporter.message && <p className="hof-message">“{supporter.message}”</p>}
                 <div className="hof-footer">
                   <span className="hof-date">{supporter.date}</span>
                 </div>
@@ -127,15 +121,10 @@ export default function HallOfFame({ onOpenDonate }: HallOfFameProps) {
 
         <Reveal delay={0.3}>
           <div className="hof-cta-box">
-            <p>
-              {lang === 'vi'
-                ? 'Bạn muốn có tên trên Bảng Vinh Danh này?'
-                : 'Want your name featured on the Flame Keepers wall?'}
-            </p>
+            <p>{t('hof.cta')}</p>
             {onOpenDonate && (
               <button type="button" className="btn btn-primary" onClick={onOpenDonate}>
-                <Heart size={16} weight="fill" />{' '}
-                {lang === 'vi' ? 'Tiếp lửa ngay' : 'Support the project'}
+                <Heart size={16} weight="fill" /> {t('hof.ctaBtn')}
               </button>
             )}
           </div>

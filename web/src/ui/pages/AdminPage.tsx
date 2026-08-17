@@ -272,18 +272,16 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="page admin-page" style={{ padding: 'var(--space-6) var(--space-4) var(--space-9)' }}>
-      <div className="container" style={{ maxWidth: '860px', margin: '0 auto' }}>
+    <div className="page admin-page">
+      <div className="container">
         <Reveal>
-          <div className="admin-header" style={{ marginBottom: 'var(--space-6)' }}>
+          <div className="admin-header">
             <span className="section-eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
               <ShieldCheck size={18} weight="fill" color="var(--accent)" />
               Quản Trị Hệ Thống
             </span>
-            <h1 className="section-title" style={{ fontSize: 'clamp(2rem, 5vw, 2.6rem)', marginTop: '6px' }}>
-              ThreadScore Admin
-            </h1>
-            <p style={{ color: 'var(--muted)', fontSize: '14px', marginTop: '4px' }}>
+            <h1 className="section-title">ThreadScore Admin</h1>
+            <p>
               Bảng điều khiển quản trị hàng đợi cào dữ liệu, kích hoạt AI scoring và tinh chỉnh Bảng Vinh Danh.
             </p>
           </div>
@@ -296,21 +294,7 @@ export default function AdminPage() {
           </div>
         )}
         {successMsg && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              background: 'var(--calm-soft)',
-              color: 'var(--calm-ink)',
-              border: '1px solid rgba(42, 111, 142, 0.25)',
-              borderRadius: 'var(--radius-input)',
-              padding: '12px 16px',
-              fontSize: '14px',
-              fontWeight: '600',
-              marginBottom: 'var(--space-4)',
-            }}
-          >
+          <div className="admin-notice">
             <CheckCircle size={20} weight="fill" /> {successMsg}
           </div>
         )}
@@ -320,74 +304,36 @@ export default function AdminPage() {
         {/* ========================================================= */}
         {!isAuthenticated ? (
           <Reveal delay={0.05}>
-            <div
-              className="admin-card"
-              style={{
-                background: 'var(--surface)',
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-card)',
-                padding: 'var(--space-6)',
-                boxShadow: 'var(--shadow-card)',
-                maxWidth: '520px',
-                margin: '0 auto',
-                textAlign: 'center',
-              }}
-            >
-              <div
-                style={{
-                  width: '54px',
-                  height: '54px',
-                  borderRadius: '50%',
-                  background: 'var(--anger-soft)',
-                  color: 'var(--accent)',
-                  display: 'grid',
-                  placeItems: 'center',
-                  margin: '0 auto 16px',
-                }}
-              >
+            <div className="admin-login-card">
+              <div className="admin-login-icon">
                 <Lock size={28} weight="duotone" />
               </div>
-              <h2 style={{ fontSize: '20px', fontWeight: '800', margin: '0 0 8px', color: 'var(--ink)' }}>
-                Xác Thực Quyền Quản Trị
-              </h2>
-              <p style={{ fontSize: '13.5px', color: 'var(--muted)', margin: '0 0 20px', lineHeight: '1.5' }}>
+              <h2>Xác Thực Quyền Quản Trị</h2>
+              <p>
                 Vui lòng nhập <b>Admin Secret Key</b> để mở khóa các công cụ quản trị hệ thống và Bảng Vinh Danh.
               </p>
 
               <form
+                className="admin-login-form"
                 onSubmit={(e) => {
                   e.preventDefault();
                   verifyKey(key);
                 }}
-                style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}
               >
-                <div style={{ position: 'relative' }}>
+                <div className="admin-key-wrap">
                   <input
-                    className="field-input mono"
+                    className="field-input mono admin-key-input"
                     type={showKey ? 'text' : 'password'}
                     placeholder="Nhập secret key quản trị..."
                     value={key}
                     onChange={(e) => setKey(e.target.value)}
-                    style={{ width: '100%', height: '46px', paddingRight: '44px', fontSize: '14px' }}
                     autoFocus
                   />
                   <button
                     type="button"
+                    className="admin-eye-btn"
                     onClick={() => setShowKey(!showKey)}
                     title={showKey ? 'Ẩn key' : 'Hiện key'}
-                    style={{
-                      position: 'absolute',
-                      right: '10px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'none',
-                      border: 'none',
-                      color: 'var(--muted)',
-                      cursor: 'pointer',
-                      display: 'grid',
-                      placeItems: 'center',
-                      padding: '4px',
-                    }}
                   >
                     {showKey ? <EyeSlash size={18} /> : <Eye size={18} />}
                   </button>
@@ -408,22 +354,11 @@ export default function AdminPage() {
           /* ========================================================= */
           /* VIEW 2: ĐÃ XÁC THỰC THÀNH CÔNG -> HIỆN TOÀN BỘ DASHBOARD */
           /* ========================================================= */
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
             {/* Active Session Bar */}
             <Reveal delay={0.02}>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  background: 'var(--surface-raised)',
-                  border: '1px solid var(--border-soft)',
-                  borderRadius: 'var(--radius-sm)',
-                  padding: '10px 16px',
-                  fontSize: '13px',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div className="admin-session-bar">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                   <CheckCircle size={16} weight="fill" color="var(--calm-ink)" />
                   <span style={{ color: 'var(--ink)' }}>Phiên quản trị đang hoạt động</span>
                   <span className="mono" style={{ color: 'var(--muted)', fontSize: '12px' }}>
@@ -443,33 +378,13 @@ export default function AdminPage() {
 
             {/* Card 1: Scraping Queue & Scoring Worker */}
             <Reveal delay={0.06}>
-              <div
-                className="admin-card"
-                style={{
-                  background: 'var(--surface)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 'var(--radius-card)',
-                  padding: 'var(--space-5)',
-                  boxShadow: 'var(--shadow-sm)',
-                }}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginBottom: '14px',
-                    flexWrap: 'wrap',
-                    gap: '10px',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div className="admin-card">
+                <div className="admin-card-head">
+                  <h3 className="admin-card-title">
                     <Queue size={20} weight="bold" color="var(--calm-ink)" />
-                    <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '800', color: 'var(--ink)' }}>
-                      Hàng Đợi Yêu Cầu &amp; Chấm Điểm AI
-                    </h3>
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                    Hàng Đợi Yêu Cầu &amp; Chấm Điểm AI
+                  </h3>
+                  <div className="admin-btn-row">
                     <button
                       type="button"
                       className="btn btn-ghost"
@@ -502,42 +417,14 @@ export default function AdminPage() {
                     Các bài viết đang chờ cào ({pending.length}):
                   </div>
                   {pending.length === 0 ? (
-                    <div
-                      style={{
-                        padding: '16px',
-                        textAlign: 'center',
-                        background: 'var(--surface-sunk)',
-                        borderRadius: 'var(--radius-sm)',
-                        color: 'var(--faint)',
-                        fontSize: '13px',
-                      }}
-                    >
+                    <div className="admin-queue-empty">
                       Không có bài viết nào đang chờ trong hàng đợi.
                     </div>
                   ) : (
-                    <div
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '6px',
-                        maxHeight: '180px',
-                        overflowY: 'auto',
-                      }}
-                    >
+                    <div className="admin-queue-list">
                       {pending.map((r) => (
-                        <div
-                          key={r.id}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            padding: '8px 12px',
-                            background: 'var(--surface-sunk)',
-                            borderRadius: 'var(--radius-sm)',
-                            fontSize: '12.5px',
-                          }}
-                        >
-                          <span className="mono" style={{ color: 'var(--ink)' }}>
+                        <div key={r.id} className="admin-queue-item">
+                          <span className="mono" style={{ color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {r.url}
                           </span>
                           <span className="pill" style={{ fontSize: '11px', padding: '2px 8px' }}>
@@ -553,23 +440,14 @@ export default function AdminPage() {
 
             {/* Card 2: Manual JSON Import */}
             <Reveal delay={0.1}>
-              <div
-                className="admin-card"
-                style={{
-                  background: 'var(--surface)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 'var(--radius-card)',
-                  padding: 'var(--space-5)',
-                  boxShadow: 'var(--shadow-sm)',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                  <UploadSimple size={20} weight="bold" color="var(--accent)" />
-                  <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '800', color: 'var(--ink)' }}>
+              <div className="admin-card">
+                <div className="admin-card-head">
+                  <h3 className="admin-card-title">
+                    <UploadSimple size={20} weight="bold" color="var(--accent)" />
                     Upload JSON Thủ Công
                   </h3>
                 </div>
-                <p style={{ fontSize: '13px', color: 'var(--muted)', margin: '0 0 12px' }}>
+                <p className="admin-card-sub">
                   Dán file JSON trích xuất từ Chrome Extension (hoặc file backup) để nạp thẳng bài viết &amp; bình luận
                   lên cơ sở dữ liệu.
                 </p>
@@ -579,21 +457,12 @@ export default function AdminPage() {
                   placeholder='{"url": "https://www.threads.com/@user/post/...", "comments": [...]}'
                   value={jsonText}
                   onChange={(e) => setJsonText(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    borderRadius: 'var(--radius-input)',
-                    border: '1px solid var(--border)',
-                    background: 'var(--surface-sunk)',
-                    fontSize: '12px',
-                  }}
                 />
                 <button
                   type="button"
                   className="btn btn-primary"
                   onClick={uploadJson}
                   disabled={uploadingJson}
-                  style={{ marginTop: '10px' }}
                 >
                   <UploadSimple size={16} /> {uploadingJson ? 'Đang import...' : 'Import JSON Lên Database'}
                 </button>
@@ -602,32 +471,12 @@ export default function AdminPage() {
 
             {/* Card 3: Hall of Fame Manager (With Add & Edit) */}
             <Reveal delay={0.14}>
-              <div
-                className="admin-card"
-                style={{
-                  background: 'var(--surface)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 'var(--radius-card)',
-                  padding: 'var(--space-5)',
-                  boxShadow: 'var(--shadow-sm)',
-                }}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginBottom: '14px',
-                    flexWrap: 'wrap',
-                    gap: '8px',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div className="admin-card">
+                <div className="admin-card-head">
+                  <h3 className="admin-card-title">
                     <Trophy size={20} weight="bold" color="#F05A28" />
-                    <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '800', color: 'var(--ink)' }}>
-                      Quản Lý Bảng Vinh Danh (Hall of Fame)
-                    </h3>
-                  </div>
+                    Quản Lý Bảng Vinh Danh (Hall of Fame)
+                  </h3>
                   <button
                     type="button"
                     className="btn btn-ghost"
@@ -637,7 +486,7 @@ export default function AdminPage() {
                     Khôi phục mặc định
                   </button>
                 </div>
-                <p style={{ fontSize: '13px', color: 'var(--muted)', margin: '0 0 16px' }}>
+                <p className="admin-card-sub">
                   Thêm, chỉnh sửa thông tin hoặc xóa các mạnh thường quân xuất hiện ở phần Bảng Vinh Danh dưới chân trang
                   Landing.
                 </p>
@@ -646,27 +495,11 @@ export default function AdminPage() {
                 <form
                   id="supporter-form"
                   onSubmit={handleSaveSupporter}
-                  style={{
-                    background: 'var(--surface-sunk)',
-                    padding: '16px',
-                    borderRadius: 'var(--radius-input)',
-                    marginBottom: '18px',
-                    border: editingId ? '1.5px solid var(--accent)' : '1px solid var(--border-soft)',
-                    transition: 'border-color 200ms ease',
-                  }}
+                  className={`admin-form-box${editingId ? ' editing' : ''}`}
                 >
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      marginBottom: '12px',
-                    }}
-                  >
+                  <div className="admin-form-head">
                     <div
                       style={{
-                        fontWeight: '700',
-                        fontSize: '13.5px',
                         color: editingId ? 'var(--accent-strong)' : 'var(--ink)',
                         display: 'flex',
                         alignItems: 'center',
@@ -684,68 +517,28 @@ export default function AdminPage() {
                       )}
                     </div>
                     {editingId && (
-                      <button
-                        type="button"
-                        onClick={cancelEdit}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: 'var(--muted)',
-                          fontSize: '12px',
-                          cursor: 'pointer',
-                          textDecoration: 'underline',
-                        }}
-                      >
+                      <button type="button" className="admin-link-btn" onClick={cancelEdit}>
                         Hủy chỉnh sửa
                       </button>
                     )}
                   </div>
 
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                      gap: '10px',
-                      marginBottom: '10px',
-                    }}
-                  >
+                  <div className="admin-form-grid">
                     <div>
-                      <label
-                        style={{
-                          fontSize: '11.5px',
-                          fontWeight: '600',
-                          color: 'var(--muted)',
-                          display: 'block',
-                          marginBottom: '4px',
-                        }}
-                      >
-                        Tên / Nickname
-                      </label>
+                      <label className="admin-form-label">Tên / Nickname</label>
                       <input
-                        className="field-input"
+                        className="field-input admin-form-input"
                         placeholder="Ví dụ: Nguyễn Văn A"
                         value={supporterName}
                         onChange={(e) => setSupporterName(e.target.value)}
-                        style={{ width: '100%', height: '36px', fontSize: '13px' }}
                       />
                     </div>
                     <div>
-                      <label
-                        style={{
-                          fontSize: '11.5px',
-                          fontWeight: '600',
-                          color: 'var(--muted)',
-                          display: 'block',
-                          marginBottom: '4px',
-                        }}
-                      >
-                        Cấp độ (Tier)
-                      </label>
+                      <label className="admin-form-label">Cấp độ (Tier)</label>
                       <select
-                        className="field-input"
+                        className="field-input admin-form-input"
                         value={supporterTier}
                         onChange={(e) => setSupporterTier(e.target.value as 'legend' | 'hero' | 'backer')}
-                        style={{ width: '100%', height: '36px', fontSize: '13px' }}
                       >
                         <option value="legend">🔥 Legend (Đối tác / Sáng lập)</option>
                         <option value="hero">✨ Hero (Mạnh thường quân)</option>
@@ -753,45 +546,23 @@ export default function AdminPage() {
                       </select>
                     </div>
                     <div>
-                      <label
-                        style={{
-                          fontSize: '11.5px',
-                          fontWeight: '600',
-                          color: 'var(--muted)',
-                          display: 'block',
-                          marginBottom: '4px',
-                        }}
-                      >
-                        Mức đóng góp / Cà phê
-                      </label>
+                      <label className="admin-form-label">Mức đóng góp / Cà phê</label>
                       <input
-                        className="field-input"
+                        className="field-input admin-form-input"
                         placeholder="Ví dụ: 10 ☕ Cà phê hoặc 200.000đ"
                         value={supporterAmount}
                         onChange={(e) => setSupporterAmount(e.target.value)}
-                        style={{ width: '100%', height: '36px', fontSize: '13px' }}
                       />
                     </div>
                   </div>
 
                   <div style={{ marginBottom: '12px' }}>
-                    <label
-                      style={{
-                        fontSize: '11.5px',
-                        fontWeight: '600',
-                        color: 'var(--muted)',
-                        display: 'block',
-                        marginBottom: '4px',
-                      }}
-                    >
-                      Lời nhắn tri ân
-                    </label>
+                    <label className="admin-form-label">Lời nhắn tri ân</label>
                     <input
-                      className="field-input"
+                      className="field-input admin-form-input"
                       placeholder="Ví dụ: Ủng hộ team phát triển công cụ mở cho cộng đồng!"
                       value={supporterMessage}
                       onChange={(e) => setSupporterMessage(e.target.value)}
-                      style={{ width: '100%', height: '36px', fontSize: '13px' }}
                     />
                   </div>
 
@@ -828,18 +599,9 @@ export default function AdminPage() {
                   {supporters.map((s) => (
                     <div
                       key={s.id}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '10px 14px',
-                        background: editingId === s.id ? 'var(--surface-raised)' : 'var(--surface-sunk)',
-                        borderRadius: 'var(--radius-sm)',
-                        border: editingId === s.id ? '1px solid var(--accent)' : '1px solid var(--border-soft)',
-                        gap: '10px',
-                      }}
+                      className={`admin-supporter-item${editingId === s.id ? ' editing' : ''}`}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
+                      <div className="admin-supporter-main">
                         {s.tier === 'legend' ? (
                           <Fire size={18} weight="fill" color="#F05A28" />
                         ) : s.tier === 'hero' ? (
@@ -847,32 +609,22 @@ export default function AdminPage() {
                         ) : (
                           <Coffee size={18} weight="fill" color="var(--calm-ink)" />
                         )}
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <div className="admin-supporter-text">
+                          <div className="admin-supporter-meta-row">
                             <span style={{ fontWeight: '700', fontSize: '13.5px', color: 'var(--ink)' }}>{s.name}</span>
                             <span style={{ fontSize: '12px', color: 'var(--accent-strong)' }}>
                               ({s.amount || s.tier})
                             </span>
                           </div>
                           {s.message && (
-                            <div
-                              style={{
-                                fontSize: '12px',
-                                color: 'var(--muted)',
-                                fontStyle: 'italic',
-                                marginTop: '2px',
-                                textOverflow: 'ellipsis',
-                                overflow: 'hidden',
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
+                            <div className="admin-supporter-msg">
                               "{s.message}"
                             </div>
                           )}
                         </div>
                       </div>
 
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+                      <div className="admin-supporter-actions">
                         <button
                           type="button"
                           className="btn btn-ghost"

@@ -1,7 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import ThreadPage from '../pages/ThreadPage';
+import { I18nProvider } from '../i18n';
 
 vi.mock('../api', () => ({
   apiGet: vi.fn(async (path: string) => {
@@ -30,18 +31,36 @@ vi.mock('../api', () => ({
   postUserComment: vi.fn(),
 }));
 
-describe('ThreadPage', () => {
-  it('renders thread title, average score and comment with score', async () => {
-    render(
-      <MemoryRouter initialEntries={['/t/t1']}>
+function renderPage(lang: 'vi' | 'en' = 'vi') {
+  localStorage.setItem('ts_lang', lang);
+  return render(
+    <MemoryRouter initialEntries={['/t/t1']}>
+      <I18nProvider>
         <Routes>
           <Route path="/t/:id" element={<ThreadPage />} />
         </Routes>
-      </MemoryRouter>
-    );
+      </I18nProvider>
+    </MemoryRouter>
+  );
+}
+
+describe('ThreadPage', () => {
+  afterEach(() => localStorage.clear());
+
+  it('renders thread title, average score and comment with score', async () => {
+    renderPage();
     await waitFor(() => expect(screen.getByText('Chủ đề test')).toBeTruthy());
     expect(screen.getByText('85.0/100')).toBeTruthy();
     expect(screen.getAllByText('Tôi ghét điều này').length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Bùng nổ/).length).toBeGreaterThan(0);
+  });
+
+  it('renders English UI when language is English', async () => {
+    renderPage('en');
+    await waitFor(() => expect(screen.getByText('Chủ đề test')).toBeTruthy());
+    expect(screen.getByText('85.0/100')).toBeTruthy();
+    expect(screen.getByText(/Average anger score:/i)).toBeTruthy();
+    expect(screen.getByText(/All comments/i)).toBeTruthy();
+    expect(screen.getByText(/Discussion/i)).toBeTruthy();
   });
 });
