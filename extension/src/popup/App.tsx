@@ -13,13 +13,15 @@ import {
   SlidersHorizontal,
   TerminalWindow,
   Flask,
+  MagnifyingGlassPlus,
+  Funnel,
 } from '@phosphor-icons/react';
 import { getConfig, setConfig, type ExtensionConfig } from '../lib/storage';
 import { scrapeActiveTab, scrapeTestActiveTab } from './manual';
 import { runBatchFromPopup } from './batch';
 import { pushImport } from '../lib/api';
-import type { ScrapedThread } from '../content/scraper';
-import { debugStats, type DebugStats } from '../content/scraper';
+import type { ScrapedThread, ScrapedComment } from '../content/scraper';
+import { debugStats, type DebugStats, isSubReplyComment } from '../content/scraper';
 import { getUsage, isCooldownActive, getCooldownReason, POLICY } from './shared';
 
 export default function App() {
@@ -31,6 +33,12 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showConfig, setShowConfig] = useState(false);
+
+  // Debug Inspector State
+  const [showInspector, setShowInspector] = useState(false);
+  const [debugFilter, setDebugFilter] = useState<'all' | 'root' | 'subreply' | 'graphql' | 'dom'>('all');
+  const [expandedCommentIdx, setExpandedCommentIdx] = useState<number | null>(null);
+
   const [usageInfo, setUsageInfo] = useState<{ hour: number; day: number; cooldown: boolean; reason: string | null }>({
     hour: 0,
     day: 0,
@@ -113,20 +121,19 @@ export default function App() {
     }
   }
 
-  async function doTestScrape() {
+  async function doHighlightOnPage() {
     setBusy(true);
     setError(null);
     try {
-      log('🧪 Bắt đầu TEST & HIGHLIGHT: Đang quét ~5 bình luận đầu + phản hồi con...');
-      const s = await scrapeTestActiveTab(5);
+      log('🧪 Bắt đầu HIGHLIGHT phần tử trực tiếp trên trang Threads...');
+      const s = await scrapeTestActiveTab(15);
       const stats = s.debugStats || debugStats;
       setScraped(s);
       setLastStats({ ...stats });
-      log(`Đã highlight trực tiếp ${s.comments.length} phần tử (viền đỏ & badge) trên trang Threads!`);
-      log(`🔍 Debug: ${formatDebugStats(stats)}`);
+      log(`Đã viền đỏ & đánh số trực tiếp các comment trên tab Threads đang mở!`);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Lỗi test quét bài');
-      log(`Lỗi test: ${e instanceof Error ? e.message : 'Lỗi không xác định'}`);
+      setError(e instanceof Error ? e.message : 'Lỗi highlight trang');
+      log(`Lỗi highlight: ${e instanceof Error ? e.message : 'Lỗi không xác định'}`);
     } finally {
       setBusy(false);
     }
@@ -172,6 +179,21 @@ export default function App() {
       setBusy(false);
     }
   }
+
+  const replyCount =
+    scraped?.comments.filter((c) => isSubReplyComment(c, scraped.author_username, scraped.main_post_id)).length ?? 0;
+  const rootCount = (scraped?.comments.length ?? 0) - replyCount;
+  const graphqlCount = scraped?.comments.filter((c) => c.external_id != null).length ?? 0;
+  const domCount = (scraped?.comments.length ?? 0) - graphqlCount;
+
+  const filteredComments = (scraped?.comments || []).filter((c) => {
+    const isSub = isSubReplyComment(c, scraped?.author_username ?? null, scraped?.main_post_id ?? null);
+    if (debugFilter === 'root') return !isSub;
+    if (debugFilter === 'subreply') return isSub;
+    if (debugFilter === 'graphql') return c.external_id != null;
+    if (debugFilter === 'dom') return c.external_id == null;
+    return true;
+  });
 
   return (
     <div className="sp-root">
@@ -262,36 +284,47 @@ export default function App() {
               <button className="sp-btn sp-btn-accent sp-btn-block" onClick={doScrape} disabled={busy}>
                 <Browser size={18} weight="bold" /> {busy ? 'Đang quét...' : 'Lấy bài + comments'}
               </button>
-              <button
-                className="sp-btn sp-btn-secondary sp-btn-block"
-                onClick={doTestScrape}
-                disabled={busy}
-                style={{ borderColor: 'rgba(217, 72, 31, 0.4)', color: 'var(--ember)' }}
-              >
-                <Flask size={16} weight="bold" color="var(--ember)" /> Test 5 Comment & Highlight
-              </button>
             </div>
 
             {scraped && (
               <div className="sp-result-box">
                 <div className="sp-result-meta">
-                  <span className="sp-result-title">{scraped.title || 'Bài viết Threads'}</span>
-                  <span className="sp-result-count">{scraped.comments.length} bình luận (đã gom cả phản hồi con)</span>
+                  <span className="sp-result-title">{scraped.title || scraped.content || 'Bài viết Threads'}</span>
+                  <span className="sp-result-count">
+                    {scraped.comments.length} bình luận ({rootCount} gốc · {replyCount} phản hồi con)
+                  </span>
                 </div>
 
                 {scraped.comments.length > 0 && (
                   <div className="sp-comments-list">
-                    {scraped.comments.slice(0, 15).map((c, idx) => (
-                      <div key={idx} className="sp-comment-item">
-                        <span className="sp-comment-user">@{c.author_username || 'người dùng'}</span>
-                        <span className="sp-comment-snippet">{c.text}</span>
-                        <span className="sp-comment-meta">
-                          {c.like_count > 0 && `♥ ${c.like_count.toLocaleString('vi-VN')}`}
-                          {c.like_count > 0 && c.posted_at ? ' · ' : ''}
-                          {c.posted_at ? new Date(c.posted_at * 1000).toLocaleDateString('vi-VN') : ''}
-                        </span>
-                      </div>
-                    ))}
+                    {scraped.comments.slice(0, 15).map((c, idx) => {
+                      const isReply = isSubReplyComment(c, scraped.author_username, scraped.main_post_id);
+                      const childRepliesCount = c.external_id
+                        ? scraped.comments.filter((sub) => sub.parent_id === c.external_id).length
+                        : 0;
+                      const replyNum = Math.max(c.direct_reply_count ?? 0, childRepliesCount);
+
+                      return (
+                        <div key={idx} className={`sp-comment-item ${isReply ? 'sp-comment-reply' : ''}`}>
+                          <div className="sp-comment-header">
+                            <span className="sp-comment-user">@{c.author_username || 'người dùng'}</span>
+                            {isReply && c.reply_to_username && (
+                              <span className="sp-comment-reply-to">
+                                ↳ trả lời <b>@{c.reply_to_username}</b>
+                              </span>
+                            )}
+                          </div>
+                          <span className="sp-comment-snippet">{c.text}</span>
+                          <span className="sp-comment-meta">
+                            {c.like_count > 0 && <span>♥ {c.like_count.toLocaleString('vi-VN')}</span>}
+                            {c.like_count > 0 && (replyNum > 0 || c.posted_at) ? ' · ' : ''}
+                            {replyNum > 0 && <span className="sp-reply-badge">💬 {replyNum} reply</span>}
+                            {replyNum > 0 && c.posted_at ? ' · ' : ''}
+                            {c.posted_at ? new Date(c.posted_at * 1000).toLocaleDateString('vi-VN') : ''}
+                          </span>
+                        </div>
+                      );
+                    })}
                     {scraped.comments.length > 15 && (
                       <span style={{ fontSize: 12, color: 'var(--ink-faint)', textAlign: 'center', marginTop: 4 }}>
                         ... và {scraped.comments.length - 15} bình luận khác (Tải JSON để xem hết)
@@ -365,15 +398,26 @@ export default function App() {
           </div>
         )}
 
-        {/* Debug Stats — chẩn đoán reply con */}
+        {/* Debug Stats & Interactive Inspector Panel */}
         {lastStats && (
           <div className="sp-debug-panel">
-            <div className="sp-debug-title">🔍 Debug Stats (chẩn đoán replies)</div>
+            <div className="sp-debug-header-row">
+              <div className="sp-debug-title">🔍 DEBUG STATS &amp; CHẨN ĐOÁN CHI TIẾT</div>
+              <button
+                type="button"
+                className="sp-debug-toggle-btn"
+                onClick={() => setShowInspector(!showInspector)}
+              >
+                <MagnifyingGlassPlus size={14} weight="bold" />
+                {showInspector ? 'Ẩn Bảng Soi' : 'Soi Chi Tiết Comment'}
+              </button>
+            </div>
+
             <div className="sp-debug-grid">
               <span title="Số message postMessage từ interceptor">📨 Interceptor msgs: <b>{lastStats.interceptedMessages}</b></span>
               <span title="Tổng comment thô interceptor gửi lên">🗂 Raw comments: <b>{lastStats.totalInterceptedRaw}</b></span>
               <span title="Comment đang nằm trong buffer">🗃 Buffer: <b>{lastStats.bufferSize}</b></span>
-              <span title="Reply con (có parent_id) trong buffer">🧵 Replies in buffer: <b>{lastStats.bufferedWithReplies}</b></span>
+              <span title="Phản hồi con trong buffer">🧵 Sub-replies: <b>{lastStats.bufferedWithReplies}</b></span>
               <span title="Số comment lấy từ GraphQL">📡 GraphQL used: <b>{lastStats.graphQLComments}</b></span>
               <span title="Số comment bổ sung từ DOM">🖥 DOM used: <b>{lastStats.domComments}</b></span>
               <span title="Tổng link author trên trang">🔗 Author links: <b>{lastStats.totalAuthorLinks}</b></span>
@@ -382,13 +426,115 @@ export default function App() {
               <span title="Số link bị bỏ vì sidebar/header">📦 Skipped sidebar: <b>{lastStats.skippedSidebar}</b></span>
               <span title="Số link bị bỏ vì không có card/text/trùng">🚫 Skipped noCard/noText/dup: <b>{lastStats.skippedNoCard}/{lastStats.skippedNoText}/{lastStats.skippedDup}</b></span>
               <span title="Container bài chính đang xác định là gì">🏷 Main post: <b>{lastStats.mainPostContainerTag}</b></span>
-              <span title="Số nút N câu trả lời trên trang">🔘 Expanders found: <b>{lastStats.expandersFound}</b></span>
-              <span title="Số nút đã click mở">👆 Expanders clicked: <b>{lastStats.expandersClicked}</b></span>
-              <span title="Số phần tử DOM trông như reply">🔢 DOM replies counted: <b>{lastStats.repliesCounted}</b></span>
+              <span title="ID bài viết chính">🆔 Root Post ID: <b>{scraped?.main_post_id || 'Chưa bắt'}</b></span>
             </div>
-            <div className="sp-debug-hint">
-              Gợi ý: nếu interceptor msgs = 0 → GraphQL không bị bắt (thử F5). Nếu replies in buffer = 0 → API không trả parent_id. Nếu expanders found &gt; 0 mà clicked = 0 → nút reply không click được (selector sai).
-            </div>
+
+            {/* Visual Highlight Button */}
+            <button
+              type="button"
+              className="sp-btn sp-btn-secondary sp-btn-block"
+              onClick={doHighlightOnPage}
+              disabled={busy}
+              style={{ marginTop: 10, borderColor: 'rgba(217, 72, 31, 0.4)', color: 'var(--ember)' }}
+            >
+              <Flask size={16} weight="bold" color="var(--ember)" /> 🎯 Viền Đỏ Phần Tử Trực Tiếp Trên Trang Threads
+            </button>
+
+            {/* Detailed Comment Inspector Drawer */}
+            {showInspector && scraped && (
+              <div className="sp-inspector-container">
+                <div className="sp-inspector-head">
+                  <span><Funnel size={14} /> Lọc dữ liệu comment:</span>
+                  <div className="sp-filter-pills">
+                    <button
+                      className={`sp-pill ${debugFilter === 'all' ? 'active' : ''}`}
+                      onClick={() => setDebugFilter('all')}
+                    >
+                      Tất cả ({scraped.comments.length})
+                    </button>
+                    <button
+                      className={`sp-pill ${debugFilter === 'root' ? 'active' : ''}`}
+                      onClick={() => setDebugFilter('root')}
+                    >
+                      📌 Gốc ({rootCount})
+                    </button>
+                    <button
+                      className={`sp-pill ${debugFilter === 'subreply' ? 'active' : ''}`}
+                      onClick={() => setDebugFilter('subreply')}
+                    >
+                      ↳ Sub-reply ({replyCount})
+                    </button>
+                    <button
+                      className={`sp-pill ${debugFilter === 'graphql' ? 'active' : ''}`}
+                      onClick={() => setDebugFilter('graphql')}
+                    >
+                      📡 GraphQL ({graphqlCount})
+                    </button>
+                    <button
+                      className={`sp-pill ${debugFilter === 'dom' ? 'active' : ''}`}
+                      onClick={() => setDebugFilter('dom')}
+                    >
+                      🖥 DOM ({domCount})
+                    </button>
+                  </div>
+                </div>
+
+                <div className="sp-inspector-list">
+                  {filteredComments.length === 0 ? (
+                    <div className="sp-log-empty">Không có comment nào khớp bộ lọc.</div>
+                  ) : (
+                    filteredComments.map((c, i) => {
+                      const isSub = isSubReplyComment(c, scraped.author_username, scraped.main_post_id);
+                      const isExpanded = expandedCommentIdx === i;
+
+                      return (
+                        <div key={i} className="sp-inspector-item">
+                          <div
+                            className="sp-inspector-item-row"
+                            onClick={() => setExpandedCommentIdx(isExpanded ? null : i)}
+                          >
+                            <span className="sp-inspector-num">#{i + 1}</span>
+                            <span className={`sp-inspector-badge ${isSub ? 'sub' : 'root'}`}>
+                              {isSub ? '↳ SUB-REPLY' : '📌 GỐC'}
+                            </span>
+                            <span className="sp-inspector-source">
+                              {c.external_id ? '📡 GraphQL' : '🖥 DOM'}
+                            </span>
+                            <span className="sp-inspector-user">@{c.author_username}</span>
+                            <span className="sp-inspector-text">{c.text}</span>
+                          </div>
+
+                          {isExpanded && (
+                            <div className="sp-inspector-detail">
+                              <div className="sp-inspector-detail-row">
+                                <b>external_id (ID comment):</b> <code>{c.external_id || 'null (từ DOM)'}</code>
+                              </div>
+                              <div className="sp-inspector-detail-row">
+                                <b>parent_id (ID cha):</b>{' '}
+                                <code>
+                                  {c.parent_id || 'null'}
+                                  {c.parent_id === scraped.main_post_id ? ' (Trùng ID Bài Gốc -> GỐC)' : ''}
+                                </code>
+                              </div>
+                              <div className="sp-inspector-detail-row">
+                                <b>reply_to_username:</b> <code>{c.reply_to_username || 'null'}</code>
+                              </div>
+                              <div className="sp-inspector-detail-row">
+                                <b>direct_reply_count:</b> <code>{c.direct_reply_count ?? 0}</code>
+                              </div>
+                              <div className="sp-inspector-detail-row">
+                                <b>like_count / posted_at:</b>{' '}
+                                <code>{c.like_count} likes / {c.posted_at ? new Date(c.posted_at * 1000).toLocaleString('vi-VN') : 'null'}</code>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

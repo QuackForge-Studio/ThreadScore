@@ -25,6 +25,7 @@ export interface ScrapedThread {
   author_name: string | null;
   posted_at: number | null;
   comments: ScrapedComment[];
+  main_post_id?: string | null;
   debugStats?: typeof debugStats;
 }
 
@@ -550,6 +551,62 @@ async function fetchNestedReplies(
   return nestedComments;
 }
 
+// Kiểm tra xem một item có phải là bài viết gốc (Main Post) hay không để không lưu nhầm làm comment
+function isMainPostComment(
+  c: { author_username: string | null; text: string; code?: string | null; parent_id?: string | null },
+  mainAuthor: string | null,
+  mainTitleText: string,
+  mainContentText: string,
+  currentPostCode: string | null
+): boolean {
+  // 1. Nếu code của item trùng khớp với postCode của URL bài viết -> là Main Post
+  if (c.code && currentPostCode && c.code === currentPostCode) return true;
+
+  // 2. Nếu có parent_id khác null/empty -> chắc chắn là comment/reply
+  if (c.parent_id != null && c.parent_id !== '') return false;
+
+  // 3. Nếu author khớp với mainAuthor và text trùng với tiêu đề/nội dung bài gốc -> là Main Post
+  const authorMatch = !mainAuthor || (c.author_username && c.author_username.toLowerCase() === mainAuthor.toLowerCase());
+  const trimmed = c.text.trim();
+  if (authorMatch && trimmed.length > 0) {
+    if (mainContentText && (trimmed === mainContentText || mainContentText.startsWith(trimmed) || trimmed.startsWith(mainContentText))) {
+      return true;
+    }
+    if (mainTitleText && (trimmed === mainTitleText || mainTitleText.startsWith(trimmed) || trimmed.startsWith(mainTitleText))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+// Phân loại chính xác comment gốc (Top-level) vs Phản hồi con (Sub-reply)
+export function isSubReplyComment(
+  c: ScrapedComment,
+  mainAuthorUsername: string | null,
+  mainPostId?: string | null
+): boolean {
+  // 1. Nếu parent_id trùng với ID bài gốc (mainPostId) -> là Comment Gốc
+  if (c.parent_id != null && c.parent_id !== '') {
+    if (mainPostId && c.parent_id === mainPostId) {
+      return false;
+    }
+    // Nếu parent_id khác mainPostId -> chắc chắn là reply cho 1 comment khác
+    if (mainPostId && c.parent_id !== mainPostId) {
+      return true;
+    }
+  }
+
+  // 2. Nếu reply_to_username khác tác giả bài gốc -> chắc chắn là reply con cho 1 user khác
+  if (c.reply_to_username && mainAuthorUsername) {
+    if (c.reply_to_username.toLowerCase() !== mainAuthorUsername.toLowerCase()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: number }): Promise<ScrapedThread> {
   const currentUrl = doc.location?.href ?? doc.defaultView?.location.href ?? '';
   const { author: mainAuthorUrl, postCode: currentPostCode } = parseThreadsUrl(currentUrl);
@@ -566,11 +623,46 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
   const mainContentText = contentEl?.textContent?.trim() ?? '';
   const resolvedMainAuthor = mainAuthorUrl || cleanUsername(authorEl?.getAttribute('href') ?? authorEl?.textContent);
 
+  // Tìm ID bài gốc (mainPostId) từ GraphQL Buffer
+  let mainPostId: string | null = null;
+  for (const gc of interceptedCommentsBuffer) {
+    if (isMainPostComment(gc, resolvedMainAuthor, mainTitleText, mainContentText, currentPostCode)) {
+      if (gc.external_id) {
+        mainPostId = gc.external_id;
+        break;
+      }
+    }
+  }
+
+  // Nếu không thấy trực tiếp node main post, suy ra mainPostId từ parent_id phổ biến nhất trong buffer (tất cả comment gốc đều có parent_id = root post ID)
+  if (!mainPostId && interceptedCommentsBuffer.length > 0) {
+    const counts = new Map<string, number>();
+    for (const gc of interceptedCommentsBuffer) {
+      if (gc.parent_id) {
+        counts.set(gc.parent_id, (counts.get(gc.parent_id) || 0) + 1);
+      }
+    }
+    let max = 0;
+    for (const [pid, count] of counts.entries()) {
+      if (count > max) {
+        max = count;
+        mainPostId = pid;
+      }
+    }
+  }
+
   debugStats.mainPostContainerTag = mainPostContainer
     ? `${mainPostContainer.tagName.toLowerCase()}.${(mainPostContainer.className || '').toString().slice(0, 60)}`
     : 'null';
 
   const seenKeys = new Set<string>();
+
+  // Đưa tiêu đề & nội dung bài gốc vào seenKeys để loại trừ tuyệt đối khỏi danh sách comment
+  if (resolvedMainAuthor) {
+    if (mainContentText) seenKeys.add(`${resolvedMainAuthor.toLowerCase()}:${mainContentText}`);
+    if (mainTitleText) seenKeys.add(`${resolvedMainAuthor.toLowerCase()}:${mainTitleText}`);
+  }
+
   const comments: ScrapedComment[] = [];
 
   // 1. Comment từ GraphQL interceptor
@@ -580,6 +672,13 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
       const { postCode: bufPostCode } = parseThreadsUrl(gc.pageUrl);
       if (bufPostCode && bufPostCode !== currentPostCode) continue;
     }
+
+    // Bỏ qua nếu là bài viết gốc (Main Post)
+    if (isMainPostComment(gc, resolvedMainAuthor, mainTitleText, mainContentText, currentPostCode)) {
+      debugStats.skippedMainText++;
+      continue;
+    }
+
     const key = `${gc.author_username.toLowerCase()}:${gc.text}`;
     if (seenKeys.has(key)) continue;
     seenKeys.add(key);
@@ -622,7 +721,7 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
 
   debugStats.bufferSize = interceptedCommentsBuffer.length;
   debugStats.bufferedWithReplies = comments.filter(
-    (c) => c.parent_id != null || c.reply_to_username != null
+    (c) => isSubReplyComment(c, resolvedMainAuthor, mainPostId)
   ).length;
   debugStats.graphQLComments = comments.length - domComments.length;
   debugStats.domComments = domComments.length;
@@ -639,6 +738,7 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
     author_name: null,
     posted_at: parseTime(timeEl),
     comments,
+    main_post_id: mainPostId,
     debugStats: { ...debugStats },
   };
 }
@@ -675,6 +775,11 @@ export async function testScrapeAndHighlight(doc: Document, limit: number = 5): 
     : 'null';
 
   const seenKeys = new Set<string>();
+  if (resolvedMainAuthor) {
+    if (mainContentText) seenKeys.add(`${resolvedMainAuthor.toLowerCase()}:${mainContentText}`);
+    if (mainTitleText) seenKeys.add(`${resolvedMainAuthor.toLowerCase()}:${mainTitleText}`);
+  }
+
   const comments: ScrapedComment[] = [];
 
   // 1. Ưu tiên GraphQL buffer
@@ -685,6 +790,7 @@ export async function testScrapeAndHighlight(doc: Document, limit: number = 5): 
       const { postCode: bufPostCode } = parseThreadsUrl(gc.pageUrl);
       if (bufPostCode && bufPostCode !== currentPostCode) continue;
     }
+    if (isMainPostComment(gc, resolvedMainAuthor, mainTitleText, mainContentText, currentPostCode)) continue;
     const key = `${gc.author_username.toLowerCase()}:${gc.text}`;
     if (seenKeys.has(key)) continue;
     seenKeys.add(key);

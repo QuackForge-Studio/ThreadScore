@@ -76,33 +76,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="section" id="how">
-        <div className="container">
-          <Reveal>
-            <div className="section-head">
-              <span className="section-eyebrow">Cách hoạt động</span>
-              <h2 className="section-title">Từ liên kết đến nhiệt kế trong ba bước</h2>
-            </div>
-          </Reveal>
-          <div className="how-grid">
-            {[
-              { n: '01', t: 'Đăng nhập để gửi yêu cầu', d: 'Đăng nhập tài khoản để dán liên kết Threads bất kỳ và gửi yêu cầu phân tích bài viết mới.' },
-              { n: '02', t: 'Đợi admin duyệt & AI xử lý', d: 'Đơn yêu cầu sẽ được admin kiểm tra, duyệt và hệ thống AI tiến hành đọc, chấm điểm từng bình luận.' },
-              { n: '03', t: 'Xem bảng nhiệt & tương tác', d: 'Theo dõi điểm số trung bình, biểu đồ cảm xúc cộng đồng, xem bình luận tiêu biểu và vote đánh giá độ chính xác của AI.' },
-            ].map((s, i) => (
-              <Reveal key={s.n} delay={i * 0.12}>
-                <div className="how-step">
-                  <span className="step-num">Bước {s.n}</span>
-                  <h3>{s.t}</h3>
-                  <p>{s.d}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Bento stats */}
       <section className="section">
         <div className="container">
@@ -178,6 +151,45 @@ export default function HomePage() {
                 <p>Đọc những bình luận đại diện cho từng sắc thái.</p>
               </div>
             </Reveal>
+          </div>
+        </div>
+      </section>
+
+      {/* AI Scoring Algorithm Section */}
+      <section className="section" id="how">
+        <div className="container">
+          <Reveal>
+            <div className="section-head">
+              <span className="section-eyebrow">Thuật toán AI</span>
+              <h2 className="section-title">AI tính điểm &amp; đo nhiệt độ cảm xúc như thế nào?</h2>
+            </div>
+          </Reveal>
+          <div className="how-grid">
+            {[
+              {
+                n: '01',
+                t: 'Trích xuất ngữ cảnh & Bình luận',
+                d: 'Gom toàn bộ bình luận (gốc & phản hồi con) đính kèm nội dung bài viết gốc. Nhờ đó, AI hiểu rõ chủ đề câu chuyện để nhận diện đúng sắc thái mỉa mai (sarcasm) hay ẩn ý.',
+              },
+              {
+                n: '02',
+                t: 'Chấm điểm Cảm xúc 0–100 với LLM',
+                d: 'Mô hình AI LLM phân tích mức độ phẫn nộ trên thang 0-100 và gán nhãn: BÙNG NỔ (70-100), TRUNG LẬP (30-69), VUI VẺ (0-29) kèm câu giải thích. Có hệ thống từ điển Lexicon tự động dự phòng.',
+              },
+              {
+                n: '03',
+                t: 'Tổng hợp Chỉ số Nhiệt độ Bài viết',
+                d: 'Tính điểm phẫn nộ trung bình (Anger Index) cho toàn bài, thống kê biểu đồ tỷ lệ phần trăm phân bổ 3 nhóm cảm xúc và xếp hạng những bài viết đang làm bùng nổ mạng xã hội.',
+              },
+            ].map((s, i) => (
+              <Reveal key={s.n} delay={i * 0.12}>
+                <div className="how-step">
+                  <span className="step-num">Bước {s.n}</span>
+                  <h3>{s.t}</h3>
+                  <p>{s.d}</p>
+                </div>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
