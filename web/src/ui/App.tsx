@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import { GoogleLogo, GithubLogo, Sun, Moon, Globe } from '@phosphor-icons/react';
+import { GoogleLogo, GithubLogo, Sun, Moon, Globe, EnvelopeSimple, Coffee, Heart } from '@phosphor-icons/react';
 import HomePage from './pages/HomePage';
 import ThreadPage from './pages/ThreadPage';
 import AdminPage from './pages/AdminPage';
+import DonateModal from './components/DonateModal';
 import { ThemeProvider, useTheme } from './theme';
 import { I18nProvider, useI18n } from './i18n';
 
 function AppContent() {
   const [user, setUser] = useState<{ provider: string; name: string } | null>(null);
+  const [isDonateOpen, setIsDonateOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { lang, setLang, t } = useI18n();
 
@@ -39,6 +41,17 @@ function AppContent() {
             <span>ThreadScore</span>
           </Link>
           <nav className="site-nav">
+            {/* Donate Button in Navbar */}
+            <button
+              type="button"
+              className="nav-link"
+              onClick={() => setIsDonateOpen(true)}
+              title={lang === 'vi' ? 'Ủng hộ dự án' : 'Support Project'}
+            >
+              <Coffee size={16} weight="fill" color="var(--accent)" />
+              <span>{lang === 'vi' ? 'Ủng hộ' : 'Donate'}</span>
+            </button>
+
             {/* Dark / Light Theme Toggle */}
             <button
               type="button"
@@ -98,13 +111,38 @@ function AppContent() {
                 <span>ThreadScore</span>
               </span>
               <p>{t('footer.brandDesc')}</p>
+              
+              {/* Contact & Donate Row */}
+              <div className="footer-contact-row">
+                <a href="mailto:quackforge.studio@gmail.com" className="footer-contact-link">
+                  <EnvelopeSimple size={15} /> quackforge.studio@gmail.com
+                </a>
+              </div>
+
+              <div style={{ marginTop: '10px' }}>
+                <button
+                  type="button"
+                  className="footer-donate-btn"
+                  onClick={() => setIsDonateOpen(true)}
+                >
+                  <Heart size={14} weight="fill" /> {lang === 'vi' ? 'Ủng hộ tác giả' : 'Support Developer'}
+                </button>
+              </div>
             </div>
             <div className="footer-disclaimer">
               <h4>{t('footer.disclaimerTitle')}</h4>
               <p>{t('footer.disclaimer1')}</p>
               <p>{t('footer.disclaimer2')}</p>
               <p>{t('footer.disclaimer3')}</p>
-              <p>{t('footer.disclaimer4')}</p>
+              <p>
+                <b>{lang === 'vi' ? 'Quyền riêng tư & Gỡ bỏ:' : 'Privacy & Takedowns:'}</b>{' '}
+                {lang === 'vi'
+                  ? 'Chúng tôi tôn trọng quyền tác giả và quyền riêng tư. Chủ sở hữu nội dung có quyền yêu cầu ẩn hoặc gỡ bỏ thông tin bài viết liên quan bất cứ lúc nào qua email: '
+                  : 'We respect creator privacy and copyright. Content owners may request removal or masking of related thread data at any time via email: '}
+                <a href="mailto:quackforge.studio@gmail.com" className="footer-credit-link">
+                  quackforge.studio@gmail.com
+                </a>.
+              </p>
             </div>
           </div>
           <div className="footer-bottom">
@@ -142,6 +180,9 @@ function AppContent() {
             </div>
           </div>
         </footer>
+
+        {/* Global Donate Modal */}
+        <DonateModal isOpen={isDonateOpen} onClose={() => setIsDonateOpen(false)} />
       </div>
     </BrowserRouter>
   );
