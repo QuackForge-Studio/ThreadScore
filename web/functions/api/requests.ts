@@ -3,6 +3,13 @@ import { requestSchema } from '../../src/shared/schemas';
 import { isThreadsUrl, normalizeThreadsUrl } from '../../src/shared/threadUrl';
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
+  const ip = context.request.headers.get('CF-Connecting-IP') ?? 'anon';
+  const { checkRateLimit } = await import('../../src/server/services/rateLimit');
+  const rl = await checkRateLimit(context.env, `req:${ip}`, { windowSec: 60, max: 15 });
+  if (!rl.allowed) {
+    return Response.json({ error: 'Quá nhiều yêu cầu chấm điểm bài viết. Vui lòng chờ 1 phút.' }, { status: 429 });
+  }
+
   const body = await context.request.json().catch(() => null);
   const parsed = requestSchema.safeParse(body);
   if (!parsed.success || !isThreadsUrl(parsed.data.url)) {
