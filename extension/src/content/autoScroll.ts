@@ -111,7 +111,7 @@ function countReplies(doc: Document): number {
 }
 
 export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?: number; maxScrolls?: number }): Promise<void> {
-  const maxScrolls = opts?.maxScrolls ?? 30;
+  const maxScrolls = opts?.maxScrolls ?? 60;
   let stableCount = 0;
   let lastCount = -1;
   let totalExpandersFound = 0;
@@ -125,7 +125,7 @@ export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?
 
     // 2. Cuộn phần tử cuối cùng vào viewport để kích hoạt IntersectionObserver của Threads
     const allCommentCards = Array.from(
-      doc.querySelectorAll('div[data-pressable-container="true"], .reply-item, [role="article"]')
+      doc.querySelectorAll('div[data-pressable-container="true"], .reply-item, [role="article"], div[role="listitem"]')
     );
     if (allCommentCards.length > 0) {
       const lastCard = allCommentCards[allCommentCards.length - 1];
@@ -136,10 +136,19 @@ export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?
       }
     }
 
-    // 3. Cuộn trang window
+    // 3. Cuộn trang window & các container có thể cuộn
     const w = doc.defaultView;
     if (w) {
       const scrollH = Math.max(doc.body?.scrollHeight || 0, doc.documentElement?.scrollHeight || 0);
+
+      // Nếu đang bị chững lại, cuộn nhấp nhả (jitter) ngược lên 350px rồi cuộn xuống để kích hoạt lại trigger nạp của Threads
+      if (stableCount >= 2) {
+        try {
+          w.scrollBy(0, -350);
+          await new Promise((r) => setTimeout(r, 180));
+        } catch {}
+      }
+
       try {
         if (typeof w.scrollTo === 'function') {
           w.scrollTo(0, scrollH);
@@ -150,7 +159,7 @@ export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?
 
       try {
         if (typeof w.scrollBy === 'function') {
-          w.scrollBy(0, 1500);
+          w.scrollBy(0, 2000);
         }
       } catch {}
 
@@ -161,20 +170,28 @@ export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?
         doc.body.scrollTop = scrollH;
       }
 
+      // Cuộn cả thẻ main hoặc scroll container nội bộ nếu có
+      const scrollContainers = doc.querySelectorAll('main, [role="main"], div[style*="overflow-y"]');
+      scrollContainers.forEach((sc) => {
+        if (sc instanceof HTMLElement) {
+          sc.scrollTop = sc.scrollHeight;
+        }
+      });
+
       try {
         w.dispatchEvent(new Event('scroll'));
       } catch {}
     }
 
-    // Chờ mạng nạp dữ liệu: 350 - 550ms
-    const waitTime = clicked > 0 ? 500 : 350 + Math.floor(Math.random() * 150);
+    // Chờ mạng nạp dữ liệu: 500ms - 750ms (đủ thời gian cho GraphQL pagination phản hồi)
+    const waitTime = clicked > 0 ? 650 : 500 + Math.floor(Math.random() * 250);
     await new Promise((r) => setTimeout(r, waitTime));
 
     const count = countReplies(doc);
     if (count === lastCount && clicked === 0) {
       stableCount++;
-      // Chỉ cần 3 lần liên tiếp không có comment mới là dừng
-      if (stableCount >= 3) break;
+      // Cần 6 lần liên tiếp (~4-5 giây) hoàn toàn không có thêm comment mới mới dừng
+      if (stableCount >= 6) break;
     } else {
       stableCount = 0;
     }
