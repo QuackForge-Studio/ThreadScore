@@ -905,7 +905,12 @@ button { font-family: var(--font-sans); }
 .heatgauge-seg { height: 10px; transition: width 500ms ease; }
 
 /* ===== ThreadPage ===== */
-.thread-page { padding: var(--space-7) var(--space-5) var(--space-9); }
+.thread-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-7) var(--space-5) var(--space-9);
+  width: 100%;
+}
 .thread-page-inner { max-width: var(--maxw-tight); margin: 0 auto; }
 
 .thread-post-card {

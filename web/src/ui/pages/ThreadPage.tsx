@@ -90,7 +90,7 @@ export default function ThreadPage() {
   const countVuiVe = scoredComments.filter(c => c.score?.label === 'VUI VẺ').length;
 
   return (
-    <div className="page thread-page" style={{ maxWidth: '1240px' }}>
+    <div className="page thread-page">
       <div className="thread-detail-grid">
         {/* Cột trái (Chính): Chi tiết bài viết + Tóm tắt nhiệt độ + Danh sách bình luận */}
         <div className="thread-main-column">
