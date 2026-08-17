@@ -77,12 +77,18 @@ export default function App() {
               <p>Đo nhiệt độ cảm xúc của cộng đồng Threads bằng AI — từng bình luận, từng bài viết.</p>
             </div>
             <div className="footer-disclaimer">
-              <h4>Tuyên bố miễn trừ trách nhiệm</h4>
+              <h4>Tuyên bố miễn trừ trách nhiệm &amp; Pháp lý</h4>
               <p>
-                Dữ liệu bài viết và bình luận được trích xuất tự động qua Extension; do cơ chế phân trang và giới hạn hiển thị của mạng xã hội, số lượng dữ liệu thu thập có thể không bao quát 100% tất cả các phản hồi thực tế.
+                <b>Độc lập &amp; Phi liên kết:</b> ThreadScore là dự án nghiên cứu và phân tích dữ liệu độc lập, không trực thuộc, không được tài trợ, ủy quyền hay xác nhận bởi Meta Platforms, Inc. hoặc Threads. Tên gọi "Threads", logo và các nhãn hiệu liên quan thuộc toàn quyền sở hữu của Meta Platforms, Inc.
               </p>
               <p>
-                Chỉ số nhiệt độ và đánh giá cảm xúc được xử lý tự động bằng mô hình AI chỉ mang tính chất thống kê, tham khảo và nghiên cứu xu hướng cộng đồng, không cấu thành kết luận khẳng định tuyệt đối.
+                <b>Phạm vi dữ liệu:</b> Dữ liệu bài viết và bình luận được trích xuất từ các nguồn công khai phục vụ mục đích nghiên cứu xu hướng và phân tích dữ liệu mở; do cơ chế phân trang và thuật toán của bên thứ ba, dữ liệu có thể không bao quát 100% tất cả phản hồi thực tế.
+              </p>
+              <p>
+                <b>Đánh giá của AI:</b> Điểm số cảm xúc và phân loại nhiệt độ được mô hình ngôn ngữ lớn (LLM) tự động tính toán chỉ mang tính chất tham khảo, thống kê xu hướng, không cấu thành kết luận khẳng định hay ý kiến chủ quan về bất kỳ cá nhân, tổ chức nào.
+              </p>
+              <p>
+                <b>Quyền riêng tư &amp; Gỡ bỏ:</b> Chúng tôi tôn trọng quyền tác giả và quyền riêng tư. Chủ sở hữu nội dung có quyền yêu cầu ẩn hoặc gỡ bỏ thông tin bài viết liên quan bất cứ lúc nào qua kênh liên hệ của QuackForge Studio.
               </p>
             </div>
           </div>
