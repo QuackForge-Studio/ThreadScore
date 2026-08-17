@@ -263,11 +263,16 @@ export default function AdminPage() {
       }
 
       if (threadData?.thread) {
+        const rawTitle = threadData.thread.title?.trim() ?? '';
+        const rawContent = threadData.thread.content?.trim() ?? '';
+        // Nếu title bị gán là "Thread" hoặc rỗng, tự động lấy content làm title
+        const effectiveTitle = (!rawTitle || rawTitle === 'Thread') ? rawContent : rawTitle;
+
         setSelectedThread({
           id: threadData.thread.id,
           url: threadData.thread.url,
-          title: threadData.thread.title ?? '',
-          content: threadData.thread.content ?? '',
+          title: effectiveTitle,
+          content: rawContent,
           author_username: threadData.thread.author_username ?? '',
           author_name: threadData.thread.author_name ?? '',
         });
@@ -747,29 +752,52 @@ export default function AdminPage() {
                       ID: <span className="mono">{selectedThread.id}</span> · URL: <a href={selectedThread.url} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>{selectedThread.url}</a>
                     </div>
 
-                    {/* Title */}
+                    {/* Content (Nội dung chính của Threads) */}
                     <div className="admin-field">
-                      <label className="admin-label">Tiêu đề hiển thị (Title)</label>
-                      <input
-                        className="field-input"
-                        type="text"
-                        placeholder="Tiêu đề chính của bài viết..."
-                        value={selectedThread.title}
-                        onChange={(e) => setSelectedThread({ ...selectedThread, title: e.target.value })}
-                        style={{ fontWeight: '600' }}
-                      />
-                    </div>
-
-                    {/* Content */}
-                    <div className="admin-field">
-                      <label className="admin-label">Nội dung bài viết đầy đủ (Content)</label>
+                      <label className="admin-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span>Nội dung bài viết (Content / Caption)</span>
+                        <span style={{ fontSize: '11.5px', color: 'var(--muted)', fontWeight: 'normal' }}>* Bài viết Threads chỉ có nội dung này</span>
+                      </label>
                       <textarea
                         className="field-input"
                         rows={4}
                         placeholder="Nội dung hoặc caption bài viết..."
                         value={selectedThread.content}
-                        onChange={(e) => setSelectedThread({ ...selectedThread, content: e.target.value })}
+                        onChange={(e) => {
+                          const newContent = e.target.value;
+                          const isSync = !selectedThread.title || selectedThread.title === selectedThread.content || selectedThread.title === 'Thread';
+                          setSelectedThread({
+                            ...selectedThread,
+                            content: newContent,
+                            title: isSync ? newContent : selectedThread.title,
+                          });
+                        }}
                         style={{ resize: 'vertical', lineHeight: '1.5' }}
+                      />
+                    </div>
+
+                    {/* Title (Tiêu đề tóm tắt hiển thị ngoài trang chủ) */}
+                    <div className="admin-field">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <label className="admin-label" style={{ margin: 0 }}>
+                          Tiêu đề tóm tắt (Title - hiển thị ngoài trang chủ)
+                        </label>
+                        <button
+                          type="button"
+                          className="btn btn-ghost"
+                          onClick={() => setSelectedThread({ ...selectedThread, title: selectedThread.content })}
+                          style={{ fontSize: '11.5px', padding: '2px 8px', height: 'auto', color: 'var(--accent)' }}
+                        >
+                          Sao chép từ nội dung
+                        </button>
+                      </div>
+                      <input
+                        className="field-input"
+                        type="text"
+                        placeholder="Để trống sẽ tự động lấy toàn bộ nội dung bài viết..."
+                        value={selectedThread.title}
+                        onChange={(e) => setSelectedThread({ ...selectedThread, title: e.target.value })}
+                        style={{ fontWeight: '600' }}
                       />
                     </div>
 

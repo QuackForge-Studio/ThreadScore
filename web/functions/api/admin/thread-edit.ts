@@ -30,9 +30,17 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       ? body.author_username.replace(/^@+/, '').trim()
       : null;
 
+    const contentVal = body.content !== undefined ? (body.content ? body.content.trim() : null) : existing.content;
+
+    let titleVal = body.title !== undefined ? (body.title ? body.title.trim() : null) : existing.title;
+    // Nếu title rỗng hoặc là fallback "Thread", tự động lấy content làm title
+    if (!titleVal || titleVal === 'Thread') {
+      titleVal = contentVal ? (contentVal.length > 200 ? contentVal.slice(0, 200) : contentVal) : null;
+    }
+
     const patch = {
-      title: body.title !== undefined ? (body.title ? body.title.trim() : null) : existing.title,
-      content: body.content !== undefined ? (body.content ? body.content.trim() : null) : existing.content,
+      title: titleVal,
+      content: contentVal,
       author_username: cleanUsername !== undefined ? cleanUsername : existing.author_username,
       author_name: body.author_name !== undefined ? (body.author_name ? body.author_name.trim() : null) : existing.author_name,
     };
