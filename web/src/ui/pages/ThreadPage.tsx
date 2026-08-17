@@ -134,14 +134,18 @@ export default function ThreadPage() {
 
   return (
     <div className="page thread-page">
+      <Reveal>
+        <div style={{ marginBottom: '20px' }}>
+          <Link to="/" className="thread-back" style={{ margin: 0 }}>
+            <ArrowLeft size={18} weight="bold" aria-hidden="true" /> {t('tp.back')}
+          </Link>
+        </div>
+      </Reveal>
+
       <div className="thread-detail-grid">
         {/* Cột trái (Chính): Chi tiết bài viết + Tóm tắt nhiệt độ + Danh sách bình luận */}
         <div className="thread-main-column">
           <Reveal>
-            <Link to="/" className="thread-back">
-              <ArrowLeft size={18} weight="bold" aria-hidden="true" /> {t('tp.back')}
-            </Link>
-
             <div className="thread-post-card">
               <h1 className="thread-title" style={{ fontSize: '22px', fontWeight: '800', lineHeight: '1.4', margin: '0 0 12px', color: 'var(--ink)' }}>
                 {displayTitle}
@@ -298,7 +302,7 @@ export default function ThreadPage() {
         </div>
 
         {/* Cột phải (Phụ): Khung Thảo luận cộng đồng scroll độc lập dạng Sticky */}
-        <aside className="thread-discussion-sidebar" style={{ paddingTop: '52px' }}>
+        <aside className="thread-discussion-sidebar">
           <div className="thread-discussion-sticky">
             <DiscussionBox threadId={data.thread.id} userComments={data.user_comments} onPosted={load} />
           </div>
