@@ -44,11 +44,11 @@ function AppContent() {
             {/* Donate Button in Navbar */}
             <button
               type="button"
-              className="nav-link"
+              className="nav-link nav-donate-btn"
               onClick={() => setIsDonateOpen(true)}
               title={lang === 'vi' ? 'Ủng hộ dự án' : 'Support Project'}
             >
-              <Coffee size={16} weight="fill" color="var(--accent)" />
+              <Coffee size={15} weight="fill" color="var(--accent)" />
               <span>{lang === 'vi' ? 'Ủng hộ' : 'Donate'}</span>
             </button>
 
