@@ -3,7 +3,7 @@ import { defineManifest } from '@crxjs/vite-plugin';
 export default defineManifest({
   manifest_version: 3,
   name: 'ThreadScore Importer',
-  version: '0.2.1',
+  version: '0.2.2',
   description: 'Import bài viết + comments từ Threads vào ThreadScore',
   permissions: ['storage', 'activeTab', 'tabs', 'scripting', 'alarms', 'notifications', 'sidePanel'],
   host_permissions: [

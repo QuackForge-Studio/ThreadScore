@@ -248,18 +248,25 @@ const BADGE_TEXTS = new Set([
   'share',
   'đăng lại',
   'repost',
+  'bài viết threads',
+  'threads',
 ]);
 
-function isMetaOrBadgeText(text: string): boolean {
+export function isMetaOrBadgeText(text: string): boolean {
   const lower = text.trim().toLowerCase();
   if (!lower || lower.length === 0) return true;
   if (BADGE_TEXTS.has(lower)) return true;
-  if (/^\d+\s*(giờ|phút|giây|ngày|tuần|tháng|năm|h|m|s|d|w|lượt xem|views)$/i.test(lower)) return true;
+  // Lọc lượt xem, views, lượt thích, likes, lượt phát, v.v. (bao gồm số thập phân, K, M, B, dấu chấm/phẩy)
+  if (/^[\d.,\s]+[kKmMbB]?\s*(lượt xem|lượt xem bài viết|views|view|lượt thích|likes|like|lượt phát|plays|reposts|shares|bình luận|comments)$/i.test(lower)) return true;
+  if (/\b(lượt xem|views|lượt phát|plays)\b/i.test(lower) && lower.length < 35) return true;
+  if (/^[\d.,\s]+[kKmM]?\s*(giờ|phút|giây|ngày|tuần|tháng|năm|h|m|s|d|w|y|hr|hrs|min|mins|sec|secs|ago|trước)(\s*trước)?$/i.test(lower)) return true;
+  if (/^\d+[\s.,]*\d*\s*[kKmM]?\s*$/i.test(lower)) return true;
   if (/\d+\s*(câu\s+trả\s+lời|trả\s+lời|phản\s+hồi|replies|reply)/i.test(lower)) return true;
   if (/^xem\s+.*(câu\s+trả\s+lời|phản\s+hồi|replies)/i.test(lower)) return true;
   if (/^view\s+.*replies/i.test(lower)) return true;
   if (lower.startsWith('trả lời @') || lower.startsWith('reply to @')) return true;
   if (lower === '2/2' || /^\d+\/\d+$/.test(lower)) return true;
+  if (lower === 'đã chỉnh sửa' || lower === 'edited') return true;
   return false;
 }
 
@@ -620,32 +627,64 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
   const authorEl = doc.querySelector(SELECTORS.authorLink);
   const timeEl = doc.querySelector(SELECTORS.time);
 
-  const mainPostContainer = findMainPostContainer(doc, mainAuthorUrl);
+  const resolvedMainAuthor = mainAuthorUrl || cleanUsername(authorEl?.getAttribute('href') ?? authorEl?.textContent);
+
   let mainTitleText = titleEl?.textContent?.trim() ?? '';
   let mainContentText = contentEl?.textContent?.trim() ?? '';
 
-  // Fallback trích xuất nội dung bài viết gốc từ mainPostContainer nếu selector cũ không tìm thấy
-  if (!mainContentText && mainPostContainer) {
+  if (isMetaOrBadgeText(mainTitleText)) mainTitleText = '';
+  if (isMetaOrBadgeText(mainContentText)) mainContentText = '';
+
+  // 1. ƯU TIÊN SỐ 1: Trích xuất nội dung bài gốc chuẩn xác từ GraphQL Buffer nếu bắt được
+  let rootPostNode = interceptedCommentsBuffer.find(
+    (gc) => currentPostCode && gc.code === currentPostCode && gc.text && !isMetaOrBadgeText(gc.text)
+  );
+  if (!rootPostNode && resolvedMainAuthor) {
+    rootPostNode = interceptedCommentsBuffer.find(
+      (gc) =>
+        gc.author_username?.toLowerCase() === resolvedMainAuthor.toLowerCase() &&
+        (!gc.parent_id || gc.parent_id === '') &&
+        gc.text &&
+        !isMetaOrBadgeText(gc.text)
+    );
+  }
+  if (rootPostNode && rootPostNode.text) {
+    mainContentText = rootPostNode.text.trim();
+    if (!mainTitleText || isMetaOrBadgeText(mainTitleText)) {
+      mainTitleText = mainContentText.length > 140 ? mainContentText.slice(0, 140) + '...' : mainContentText;
+    }
+  }
+
+  // 2. ƯU TIÊN SỐ 2: Fallback từ DOM container của bài viết gốc (lọc sạch tuyệt đối mọi metadata/view count)
+  const mainPostContainer = findMainPostContainer(doc, mainAuthorUrl);
+  if ((!mainContentText || isMetaOrBadgeText(mainContentText)) && mainPostContainer) {
     const rawTexts = Array.from(mainPostContainer.querySelectorAll('span[dir="auto"], div[dir="auto"], p'))
-      .map(el => el.textContent?.trim() || '')
-      .filter(t => t.length > 0 && !BADGE_TEXTS.has(t.toLowerCase()) && !t.startsWith('@'));
+      .map((el) => el.textContent?.trim() || '')
+      .filter((t) => t.length > 0 && !isMetaOrBadgeText(t) && !t.startsWith('@'));
     if (rawTexts.length > 0) {
-      mainContentText = rawTexts.reduce((a, b) => a.length >= b.length ? a : b);
-      if (!mainTitleText) {
+      mainContentText = rawTexts.reduce((a, b) => (a.length >= b.length ? a : b));
+      if (!mainTitleText || isMetaOrBadgeText(mainTitleText)) {
         mainTitleText = mainContentText.length > 140 ? mainContentText.slice(0, 140) + '...' : mainContentText;
       }
     }
   }
 
-  const resolvedMainAuthor = mainAuthorUrl || cleanUsername(authorEl?.getAttribute('href') ?? authorEl?.textContent);
+  // Nếu title vẫn dính meta/badge text hoặc rỗng, làm sạch lần cuối
+  if (isMetaOrBadgeText(mainTitleText)) {
+    mainTitleText = mainContentText && !isMetaOrBadgeText(mainContentText)
+      ? (mainContentText.length > 140 ? mainContentText.slice(0, 140) + '...' : mainContentText)
+      : '';
+  }
 
   // Tìm ID bài gốc (mainPostId) từ GraphQL Buffer
-  let mainPostId: string | null = null;
-  for (const gc of interceptedCommentsBuffer) {
-    if (isMainPostComment(gc, resolvedMainAuthor, mainTitleText, mainContentText, currentPostCode)) {
-      if (gc.external_id) {
-        mainPostId = gc.external_id;
-        break;
+  let mainPostId: string | null = rootPostNode?.external_id ?? null;
+  if (!mainPostId) {
+    for (const gc of interceptedCommentsBuffer) {
+      if (isMainPostComment(gc, resolvedMainAuthor, mainTitleText, mainContentText, currentPostCode)) {
+        if (gc.external_id) {
+          mainPostId = gc.external_id;
+          break;
+        }
       }
     }
   }
