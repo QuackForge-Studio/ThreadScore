@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { WarningCircle, ArrowLeft, ArrowSquareOut, MagnifyingGlass, X } from '@phosphor-icons/react';
 import { apiGet } from '../api';
@@ -18,14 +18,19 @@ type ThreadDetail = {
   vote_counts: Record<string, { correct: number; incorrect: number }>;
 };
 
+const PAGE_SIZE = 15;
+
 export default function ThreadPage() {
   const { id } = useParams<{ id: string }>();
   const { t } = useI18n();
   const [data, setData] = useState<ThreadDetail | null>(null);
   const [filter, setFilter] = useState<'all' | 'BÙNG NỔ' | 'TRUNG LẬP' | 'VUI VẺ'>('all');
   const [commentSearch, setCommentSearch] = useState('');
+  const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const observerRef = useRef<HTMLDivElement | null>(null);
 
   async function load() {
     try {
@@ -45,6 +50,44 @@ export default function ThreadPage() {
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [id, t]);
+
+  // Reset displayCount khi đổi filter hoặc search để cuộn lại từ đầu
+  useEffect(() => {
+    setDisplayCount(PAGE_SIZE);
+  }, [filter, commentSearch]);
+
+  const searchLower = commentSearch.trim().toLowerCase();
+  const visible = data?.comments ? data.comments.filter(c => {
+    const matchFilter = filter === 'all' || c.score?.label === filter;
+    const matchSearch = !searchLower || (
+      c.text.toLowerCase().includes(searchLower) ||
+      (c.author_username && c.author_username.toLowerCase().includes(searchLower)) ||
+      (c.score?.reason && c.score.reason.toLowerCase().includes(searchLower))
+    );
+    return matchFilter && matchSearch;
+  }) : [];
+
+  const hasMore = displayCount < visible.length;
+  const renderedComments = visible.slice(0, displayCount);
+
+  // IntersectionObserver tự động load thêm khi scroll gần đến cuối danh sách (rootMargin 300px)
+  useEffect(() => {
+    if (!hasMore) return;
+    const target = observerRef.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setDisplayCount(prev => Math.min(prev + PAGE_SIZE, visible.length));
+        }
+      },
+      { rootMargin: '300px' }
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [hasMore, visible.length]);
 
   if (loading) {
     return (
@@ -83,17 +126,6 @@ export default function ThreadPage() {
   const showFullContent = data.thread.content && data.thread.content.trim() !== displayTitle.trim();
 
   const scoredComments = data.comments.filter(c => c.score != null);
-
-  const searchLower = commentSearch.trim().toLowerCase();
-  const visible = data.comments.filter(c => {
-    const matchFilter = filter === 'all' || c.score?.label === filter;
-    const matchSearch = !searchLower || (
-      c.text.toLowerCase().includes(searchLower) ||
-      (c.author_username && c.author_username.toLowerCase().includes(searchLower)) ||
-      (c.score?.reason && c.score.reason.toLowerCase().includes(searchLower))
-    );
-    return matchFilter && matchSearch;
-  });
 
   const countBangNo = scoredComments.filter(c => c.score?.label === 'BÙNG NỔ').length;
   const countTrungLap = scoredComments.filter(c => c.score?.label === 'TRUNG LẬP').length;
@@ -208,11 +240,26 @@ export default function ThreadPage() {
             </div>
           </div>
 
-          {visible.map((c, i) => (
-            <Reveal key={c.id} delay={(i % 3) * 0.04}>
+          {renderedComments.map((c, i) => (
+            <Reveal key={c.id} delay={(i % 3) * 0.03}>
               <CommentCard comment={c} voteCounts={data.vote_counts[c.id] ?? { correct: 0, incorrect: 0 }} />
             </Reveal>
           ))}
+
+          {/* Sentinel trigger tải thêm khi cuộn */}
+          {hasMore && (
+            <div ref={observerRef} style={{ padding: '16px 0', textAlign: 'center' }}>
+              <button
+                type="button"
+                onClick={() => setDisplayCount(prev => Math.min(prev + PAGE_SIZE, visible.length))}
+                className="btn btn-ghost"
+                style={{ fontSize: '13.5px', color: 'var(--muted)', margin: '0 auto', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+              >
+                <span>{t('tp.loadMore')}</span>
+                <span style={{ fontSize: '12px', opacity: 0.75 }}>({renderedComments.length}/{visible.length})</span>
+              </button>
+            </div>
+          )}
 
           {visible.length === 0 && (
             <div className="empty-state">
