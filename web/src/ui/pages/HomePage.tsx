@@ -66,36 +66,10 @@ export default function HomePage() {
   return (
     <div className="page">
       {/* 1. HERO SECTION - Minimalist single flame heat metric */}
-      <section className="hero" style={{ paddingTop: 'var(--space-8)', paddingBottom: 'var(--space-7)' }}>
-        <div className="hero-grid">
-          {/* Cột trái: Giới thiệu & CTA */}
-          <Reveal>
-            <div className="hero-content">
-              <div className="hero-eyebrow">
-                <Fire size={14} weight="fill" className="hero-eyebrow-icon" />
-                <span>{t('hero.eyebrow')}</span>
-              </div>
-
-              <h1 className="hero-title">
-                {t('hero.headlineStart')}{' '}
-                <span className="hero-title-accent">{t('hero.headlineAccent')}</span>{' '}
-                {t('hero.headlineEnd')}
-              </h1>
-
-              <p className="hero-subtitle">
-                {t('hero.desc')}
-              </p>
-
-              <div className="hero-cta">
-                <a className="btn btn-primary" href="#explore">
-                  <Fire weight="fill" aria-hidden="true" size={18} /> {t('hero.ctaExplore')}
-                </a>
-              </div>
-            </div>
-          </Reveal>
-
-          {/* Cột phải: Visual ngọn lửa lớn & Điểm nóng duy nhất */}
-          <Reveal delay={0.08}>
+      <section className="hero" style={{ paddingTop: 'var(--space-7)', paddingBottom: 'var(--space-6)' }}>
+        {/* Visual ngọn lửa lớn & Điểm nóng duy nhất căn giữa */}
+        <Reveal>
+          <div className="hero-flame-wrap">
             <div className={`hero-flame-card theme-${heatTier}`}>
               <div className="hero-flame-glow" />
 
@@ -141,12 +115,12 @@ export default function HomePage() {
                 </p>
               </div>
             </div>
-          </Reveal>
-        </div>
+          </div>
+        </Reveal>
 
         {/* Thanh tìm kiếm & Dán link bài viết Threads */}
-        <Reveal delay={0.12}>
-          <div style={{ padding: '0 var(--space-5)', maxWidth: '820px', margin: 'var(--space-6) auto 0' }}>
+        <Reveal delay={0.08}>
+          <div style={{ padding: '0 var(--space-5)', maxWidth: '780px', margin: 'var(--space-6) auto 0' }}>
             <SearchBox />
           </div>
         </Reveal>
