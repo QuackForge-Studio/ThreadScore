@@ -30,3 +30,19 @@ export async function scrapeTestActiveTab(limit: number = 5): Promise<ScrapedThr
 export async function stopActiveTabScrape(): Promise<void> {
   await chrome.runtime.sendMessage({ type: 'TS_STOP_SCRAPE_ACTIVE_TAB' }).catch(() => {});
 }
+
+export interface TabInfo {
+  title: string;
+  url: string;
+  isThreads: boolean;
+  username: string | null;
+}
+
+export async function getActiveTabInfo(): Promise<TabInfo> {
+  return requestBridge<TabInfo>('TS_GET_TAB_INFO').catch(() => ({
+    title: '',
+    url: '',
+    isThreads: true,
+    username: null,
+  }));
+}

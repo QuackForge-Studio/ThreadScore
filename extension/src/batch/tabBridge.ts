@@ -108,6 +108,26 @@ chrome.runtime.onMessage.addListener(
       });
       return true;
     }
+    if (message.type === 'TS_GET_TAB_INFO') {
+      getActiveTab().then((tab) => {
+        const isThreads = validateThreadsUrl(tab?.url);
+        let username: string | null = null;
+        if (tab?.url) {
+          const match = tab.url.match(/threads\.(?:net|com)\/@([^/?#]+)/i);
+          if (match) username = match[1];
+        }
+        sendResponse({
+          ok: true,
+          payload: {
+            title: tab?.title || '',
+            url: tab?.url || '',
+            isThreads,
+            username,
+          },
+        });
+      });
+      return true;
+    }
     return false;
   }
 );
