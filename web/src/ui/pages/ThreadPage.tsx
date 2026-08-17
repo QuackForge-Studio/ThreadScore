@@ -90,94 +90,98 @@ export default function ThreadPage() {
   const countVuiVe = scoredComments.filter(c => c.score?.label === 'VUI VẺ').length;
 
   return (
-    <div className="page thread-page">
-      <div className="thread-page-inner">
-        <Reveal>
-          <Link to="/" className="thread-back">
-            <ArrowLeft size={16} aria-hidden="true" /> {t('tp.back')}
-          </Link>
-
-          <div className="thread-post-card">
-            <h1 className="thread-title" style={{ fontSize: '22px', fontWeight: '800', lineHeight: '1.4', margin: '0 0 12px', color: 'var(--ink)' }}>
-              {displayTitle}
-            </h1>
-
-            {showFullContent && (
-              <p className="thread-content" style={{ fontSize: '15px', color: 'var(--ink-2)', lineHeight: '1.6', margin: '0 0 16px', whiteSpace: 'pre-wrap' }}>
-                {data.thread.content}
-              </p>
-            )}
-
-            <p className="thread-meta" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', fontSize: '13px', color: 'var(--muted)' }}>
-              <span style={{ fontWeight: '700', color: 'var(--ink)' }}>@{data.thread.author_username ?? t('tp.anon')}</span>
-              {data.thread.posted_at != null && <span>· {formatRelativeTime(data.thread.posted_at)}</span>}
-              <span>· {data.thread.total_comments} {t('tp.commentsCount')}</span>
-              <a href={data.thread.url} target="_blank" rel="noreferrer" className="thread-link" style={{ color: 'var(--accent)', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                {t('tp.onThreads')} <ArrowSquareOut size={13} />
-              </a>
-            </p>
-          </div>
-        </Reveal>
-
-        {data.thread.scoring_status === 'scored' && data.breakdown && (
+    <div className="page thread-page" style={{ maxWidth: '1240px' }}>
+      <div className="thread-detail-grid">
+        {/* Cột trái (Chính): Chi tiết bài viết + Tóm tắt nhiệt độ + Danh sách bình luận */}
+        <div className="thread-main-column">
           <Reveal>
-            <div className="thread-summary" style={{ marginBottom: '24px' }}>
-              <HeatGauge breakdown={data.breakdown} />
-              <div className="thread-summary-stats">
-                <span className="stat-chip anger">{t('tp.hot')} <span className="stat-n">{data.breakdown.bang_no}</span></span>
-                <span className="stat-chip neutral">{t('tp.neutral')} <span className="stat-n">{data.breakdown.trung_lap}</span></span>
-                <span className="stat-chip calm">{t('tp.calm')} <span className="stat-n">{data.breakdown.vui_ve}</span></span>
-              </div>
-              {data.thread.avg_anger_score != null && (
-                <p className="thread-avg">
-                  {t('tp.avgLabel')}
-                  <strong className="mono thread-avg-value" style={{ marginLeft: '8px' }}>
-                    {data.thread.avg_anger_score.toFixed(1)}/100
-                  </strong>
+            <Link to="/" className="thread-back">
+              <ArrowLeft size={16} aria-hidden="true" /> {t('tp.back')}
+            </Link>
+
+            <div className="thread-post-card">
+              <h1 className="thread-title" style={{ fontSize: '22px', fontWeight: '800', lineHeight: '1.4', margin: '0 0 12px', color: 'var(--ink)' }}>
+                {displayTitle}
+              </h1>
+
+              {showFullContent && (
+                <p className="thread-content" style={{ fontSize: '15px', color: 'var(--ink-2)', lineHeight: '1.6', margin: '0 0 16px', whiteSpace: 'pre-wrap' }}>
+                  {data.thread.content}
                 </p>
               )}
+
+              <p className="thread-meta" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', fontSize: '13px', color: 'var(--muted)' }}>
+                <span style={{ fontWeight: '700', color: 'var(--ink)' }}>@{data.thread.author_username ?? t('tp.anon')}</span>
+                {data.thread.posted_at != null && <span>· {formatRelativeTime(data.thread.posted_at)}</span>}
+                <span>· {data.thread.total_comments} {t('tp.commentsCount')}</span>
+                <a href={data.thread.url} target="_blank" rel="noreferrer" className="thread-link" style={{ color: 'var(--accent)', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  {t('tp.onThreads')} <ArrowSquareOut size={13} />
+                </a>
+              </p>
             </div>
           </Reveal>
-        )}
 
-        <Reveal>
-          <div style={{ marginBottom: '28px' }}>
-            <DiscussionBox threadId={data.thread.id} userComments={data.user_comments} onPosted={load} />
-          </div>
-        </Reveal>
+          {data.thread.scoring_status === 'scored' && data.breakdown && (
+            <Reveal>
+              <div className="thread-summary" style={{ marginBottom: '24px' }}>
+                <HeatGauge breakdown={data.breakdown} />
+                <div className="thread-summary-stats">
+                  <span className="stat-chip anger">{t('tp.hot')} <span className="stat-n">{data.breakdown.bang_no}</span></span>
+                  <span className="stat-chip neutral">{t('tp.neutral')} <span className="stat-n">{data.breakdown.trung_lap}</span></span>
+                  <span className="stat-chip calm">{t('tp.calm')} <span className="stat-n">{data.breakdown.vui_ve}</span></span>
+                </div>
+                {data.thread.avg_anger_score != null && (
+                  <p className="thread-avg">
+                    {t('tp.avgLabel')}
+                    <strong className="mono thread-avg-value" style={{ marginLeft: '8px' }}>
+                      {data.thread.avg_anger_score.toFixed(1)}/100
+                    </strong>
+                  </p>
+                )}
+              </div>
+            </Reveal>
+          )}
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '24px 0 16px', flexWrap: 'wrap', gap: '12px' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: '800', margin: 0 }}>
-            {t('tp.allComments')} ({visible.length})
-          </h2>
-          <div className="filter-tabs" style={{ margin: 0 }} role="tablist">
-            <button className={`filter-tab${filter === 'all' ? ' active' : ''}`} role="tab" aria-selected={filter === 'all'} onClick={() => setFilter('all')}>
-              {t('tp.all')} ({data.comments.length})
-            </button>
-            <button className={`filter-tab${filter === 'BÙNG NỔ' ? ' active' : ''}`} role="tab" aria-selected={filter === 'BÙNG NỔ'} onClick={() => setFilter('BÙNG NỔ')}>
-              {t('tp.hot')} ({countBangNo})
-            </button>
-            <button className={`filter-tab${filter === 'TRUNG LẬP' ? ' active' : ''}`} role="tab" aria-selected={filter === 'TRUNG LẬP'} onClick={() => setFilter('TRUNG LẬP')}>
-              {t('tp.neutral')} ({countTrungLap})
-            </button>
-            <button className={`filter-tab${filter === 'VUI VẺ' ? ' active' : ''}`} role="tab" aria-selected={filter === 'VUI VẺ'} onClick={() => setFilter('VUI VẺ')}>
-              {t('tp.calm')} ({countVuiVe})
-            </button>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '20px 0 14px', flexWrap: 'wrap', gap: '12px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: '800', margin: 0 }}>
+              {t('tp.allComments')} ({visible.length})
+            </h2>
+            <div className="filter-tabs" style={{ margin: 0 }} role="tablist">
+              <button className={`filter-tab${filter === 'all' ? ' active' : ''}`} role="tab" aria-selected={filter === 'all'} onClick={() => setFilter('all')}>
+                {t('tp.all')} ({data.comments.length})
+              </button>
+              <button className={`filter-tab${filter === 'BÙNG NỔ' ? ' active' : ''}`} role="tab" aria-selected={filter === 'BÙNG NỔ'} onClick={() => setFilter('BÙNG NỔ')}>
+                {t('tp.hot')} ({countBangNo})
+              </button>
+              <button className={`filter-tab${filter === 'TRUNG LẬP' ? ' active' : ''}`} role="tab" aria-selected={filter === 'TRUNG LẬP'} onClick={() => setFilter('TRUNG LẬP')}>
+                {t('tp.neutral')} ({countTrungLap})
+              </button>
+              <button className={`filter-tab${filter === 'VUI VẺ' ? ' active' : ''}`} role="tab" aria-selected={filter === 'VUI VẺ'} onClick={() => setFilter('VUI VẺ')}>
+                {t('tp.calm')} ({countVuiVe})
+              </button>
+            </div>
           </div>
+
+          {visible.map((c, i) => (
+            <Reveal key={c.id} delay={(i % 3) * 0.04}>
+              <CommentCard comment={c} voteCounts={data.vote_counts[c.id] ?? { correct: 0, incorrect: 0 }} />
+            </Reveal>
+          ))}
+
+          {visible.length === 0 && (
+            <div className="empty-state">
+              <p className="empty-title">{t('tp.noComments')}</p>
+              <p className="empty-subtitle">{t('tp.tryOther')}</p>
+            </div>
+          )}
         </div>
 
-        {visible.map((c, i) => (
-          <Reveal key={c.id} delay={(i % 3) * 0.04}>
-            <CommentCard comment={c} voteCounts={data.vote_counts[c.id] ?? { correct: 0, incorrect: 0 }} />
-          </Reveal>
-        ))}
-
-        {visible.length === 0 && (
-          <div className="empty-state">
-            <p className="empty-title">{t('tp.noComments')}</p>
-            <p className="empty-subtitle">{t('tp.tryOther')}</p>
+        {/* Cột phải (Phụ): Khung Thảo luận cộng đồng scroll độc lập dạng Sticky */}
+        <aside className="thread-discussion-sidebar">
+          <div className="thread-discussion-sticky">
+            <DiscussionBox threadId={data.thread.id} userComments={data.user_comments} onPosted={load} />
           </div>
-        )}
+        </aside>
       </div>
     </div>
   );

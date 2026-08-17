@@ -945,6 +945,58 @@ button { font-family: var(--font-sans); }
   transition: color 150ms ease, border-color 150ms ease, transform 150ms ease;
 }
 .thread-back:hover { color: var(--ink); border-color: var(--ink); transform: translateX(-2px); }
+
+/* ===== Thread Detail 2-Column Grid Layout ===== */
+.thread-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 390px;
+  gap: 32px;
+  align-items: start;
+}
+
+.thread-main-column {
+  min-width: 0;
+}
+
+.thread-discussion-sidebar {
+  position: sticky;
+  top: 80px;
+  max-height: calc(100vh - 100px);
+  display: flex;
+  flex-direction: column;
+}
+
+.thread-discussion-sticky {
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+.thread-discussion-sticky::-webkit-scrollbar {
+  width: 6px;
+}
+.thread-discussion-sticky::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}
+
+@media (max-width: 1060px) {
+  .thread-detail-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .thread-discussion-sidebar {
+    position: static;
+    max-height: none;
+  }
+  .thread-discussion-sticky {
+    max-height: none;
+    overflow-y: visible;
+  }
+}
+
 .thread-content {
   font-size: 15.5px;
   line-height: 1.7;
