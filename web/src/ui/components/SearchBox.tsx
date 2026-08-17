@@ -7,7 +7,7 @@ import { useI18n } from '../i18n';
 export default function SearchBox() {
   const { t, tf } = useI18n();
   const [q, setQ] = useState('');
-  const [result, setResult] = useState<{ kind: string; state?: string; thread?: { id: string }; threads?: { id: string; url: string; title: string | null; author_username: string | null }[]; message: string } | null>(null);
+  const [result, setResult] = useState<{ kind: string; state?: string; thread?: { id: string }; threads?: { id: string; url: string; title: string | null; content?: string | null; author_username: string | null }[]; message: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -67,14 +67,22 @@ export default function SearchBox() {
       {result && <p className="searchbox-result" data-testid="search-result">{result.message}</p>}
       {result?.kind === 'keyword' && (result.threads?.length ?? 0) > 0 && (
         <ul className="search-results">
-          {result.threads!.map(tItem => (
-            <li key={tItem.id} className="search-results-item">
-              <Link to={`/t/${tItem.id}`} className="search-results-link">
-                {tItem.title ?? t('sb.fallback')}
-              </Link>
-              {tItem.author_username && <span className="search-results-author">@{tItem.author_username}</span>}
-            </li>
-          ))}
+          {result.threads!.map(tItem => {
+            const displayTitle = (tItem.title && tItem.title !== 'Thread' && tItem.title.trim().length > 0)
+              ? tItem.title
+              : (tItem.content && tItem.content.trim().length > 0)
+              ? (tItem.content.length > 80 ? tItem.content.slice(0, 80) + '...' : tItem.content)
+              : (tItem.author_username ? `@${tItem.author_username}` : t('sb.fallback'));
+
+            return (
+              <li key={tItem.id} className="search-results-item">
+                <Link to={`/t/${tItem.id}`} className="search-results-link">
+                  {displayTitle}
+                </Link>
+                {tItem.author_username && <span className="search-results-author">@{tItem.author_username}</span>}
+              </li>
+            );
+          })}
         </ul>
       )}
       {result?.kind === 'url' && result.state === 'unknown' && (

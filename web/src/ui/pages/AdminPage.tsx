@@ -45,7 +45,7 @@ export default function AdminPage() {
   // Threads Editor State
   const [threadQuery, setThreadQuery] = useState('');
   const [searchingThread, setSearchingThread] = useState(false);
-  const [recentThreads, setRecentThreads] = useState<Array<{ id: string; title: string | null; url: string; author_username: string | null; total_comments: number }>>([]);
+  const [recentThreads, setRecentThreads] = useState<Array<{ id: string; title: string | null; content?: string | null; url: string; author_username: string | null; total_comments: number }>>([]);
   const [loadingRecent, setLoadingRecent] = useState(false);
   const [selectedThread, setSelectedThread] = useState<{
     id: string;
@@ -695,7 +695,11 @@ export default function AdminPage() {
                         >
                           <div style={{ minWidth: 0, flex: 1 }}>
                             <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {t.title || t.url}
+                              {(t.title && t.title !== 'Thread' && t.title.trim().length > 0)
+                                ? t.title
+                                : (t.content && t.content.trim().length > 0)
+                                ? (t.content.length > 85 ? t.content.slice(0, 85) + '...' : t.content)
+                                : t.url}
                             </div>
                             <div style={{ fontSize: '12px', color: 'var(--muted)' }}>
                               @{t.author_username ?? 'ẩn danh'} · {t.total_comments} bình luận
