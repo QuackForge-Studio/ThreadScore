@@ -76,34 +76,14 @@ export default function App() {
               </span>
               <p>Đo nhiệt độ cảm xúc của cộng đồng Threads bằng AI — từng bình luận, từng bài viết.</p>
             </div>
-            <div className="footer-links">
-              <div className="footer-col">
-                <h4>Sản phẩm</h4>
-                <Link to="/">Trang chủ</Link>
-                <a href="https://www.threads.net" target="_blank" rel="noreferrer">Threads</a>
-              </div>
-              <div className="footer-col">
-                <h4>Tài khoản</h4>
-                {user ? (
-                  <button
-                    type="button"
-                    className="nav-link"
-                    style={{ padding: '4px 0', color: 'inherit' }}
-                    onClick={() => {
-                      fetch('/api/auth/logout', { method: 'POST' }).finally(() => {
-                        window.location.href = '/';
-                      });
-                    }}
-                  >
-                    Đăng xuất
-                  </button>
-                ) : (
-                  <>
-                    <a href="/api/auth/google/login">Đăng nhập Google</a>
-                    <a href="/api/auth/github/login">Đăng nhập GitHub</a>
-                  </>
-                )}
-              </div>
+            <div className="footer-disclaimer">
+              <h4>Tuyên bố miễn trừ trách nhiệm</h4>
+              <p>
+                Dữ liệu bài viết và bình luận được trích xuất tự động qua Extension; do cơ chế phân trang và giới hạn hiển thị của mạng xã hội, số lượng dữ liệu thu thập có thể không bao quát 100% tất cả các phản hồi thực tế.
+              </p>
+              <p>
+                Chỉ số nhiệt độ và đánh giá cảm xúc được xử lý tự động bằng mô hình AI chỉ mang tính chất thống kê, tham khảo và nghiên cứu xu hướng cộng đồng, không cấu thành kết luận khẳng định tuyệt đối.
+              </p>
             </div>
           </div>
           <div className="footer-bottom">
