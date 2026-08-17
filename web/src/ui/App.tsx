@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import { GoogleLogo, GithubLogo, Sun, Moon, Globe, EnvelopeSimple, Coffee, Heart, ShieldCheck } from '@phosphor-icons/react';
+import { GoogleLogo, GithubLogo, Sun, Moon, EnvelopeSimple, Coffee, Heart, ShieldCheck } from '@phosphor-icons/react';
 import HomePage from './pages/HomePage';
 import ThreadPage from './pages/ThreadPage';
 import AdminPage from './pages/AdminPage';
@@ -41,25 +41,40 @@ function AppContent() {
             <img src="/ThreadScore.png?v=2" alt="ThreadScore Logo" className="logo-img" />
             <span>ThreadScore</span>
           </Link>
-          <nav className="site-nav">
-            {/* Donate Button in Navbar */}
+          <nav className="site-nav" aria-label="Main">
+            <div className="nav-lang" role="group" aria-label={t('nav.langLabel')}>
+              <button
+                type="button"
+                className={`lang-btn ${lang === 'vi' ? 'active' : ''}`}
+                onClick={() => setLang('vi')}
+              >
+                VI
+              </button>
+              <button
+                type="button"
+                className={`lang-btn ${lang === 'en' ? 'active' : ''}`}
+                onClick={() => setLang('en')}
+              >
+                EN
+              </button>
+            </div>
+
             <button
               type="button"
               className="nav-link nav-donate-btn"
               onClick={() => setIsDonateOpen(true)}
-              title={lang === 'vi' ? 'Ủng hộ dự án' : 'Support Project'}
+              title={t('nav.donateTitle')}
             >
               <Coffee size={15} weight="fill" color="var(--accent)" />
-              <span>{lang === 'vi' ? 'Ủng hộ' : 'Donate'}</span>
+              <span>{t('nav.donate')}</span>
             </button>
 
-            {/* Dark / Light Theme Toggle */}
             <button
               type="button"
               className="theme-toggle-btn"
               onClick={toggleTheme}
-              title={theme === 'dark' ? t('theme.toggleLight') : t('theme.toggleDark')}
-              aria-label="Toggle dark mode"
+              title={t('nav.themeTitle')}
+              aria-label={theme === 'dark' ? t('theme.toggleLight') : t('theme.toggleDark')}
             >
               {theme === 'dark' ? (
                 <Sun size={18} weight="bold" color="#FDB813" />
@@ -86,7 +101,7 @@ function AppContent() {
             ) : (
               <>
                 <a className="nav-link nav-google" href="/api/auth/google/login">
-                  <GoogleLogo weight="bold" size={17} /> {lang === 'vi' ? 'Google' : 'Google'}
+                  <GoogleLogo weight="bold" size={17} /> {t('nav.google')}
                 </a>
                 <a className="nav-link primary nav-github" href="/api/auth/github/login">
                   <GithubLogo weight="fill" size={17} /> GitHub
@@ -113,8 +128,7 @@ function AppContent() {
                 <span>ThreadScore</span>
               </span>
               <p>{t('footer.brandDesc')}</p>
-              
-              {/* Contact & Donate Row */}
+
               <div className="footer-contact-row">
                 <a href="mailto:quackforge.studio@gmail.com" className="footer-contact-link">
                   <EnvelopeSimple size={15} /> quackforge.studio@gmail.com
@@ -127,7 +141,7 @@ function AppContent() {
                   className="footer-donate-btn"
                   onClick={() => setIsDonateOpen(true)}
                 >
-                  <Heart size={14} weight="fill" /> {lang === 'vi' ? 'Ủng hộ tác giả' : 'Support Developer'}
+                  <Heart size={14} weight="fill" /> {t('footer.donate')}
                 </button>
               </div>
             </div>
@@ -137,10 +151,8 @@ function AppContent() {
               <p>{t('footer.disclaimer2')}</p>
               <p>{t('footer.disclaimer3')}</p>
               <p>
-                <b>{lang === 'vi' ? 'Quyền riêng tư & Gỡ bỏ:' : 'Privacy & Takedowns:'}</b>{' '}
-                {lang === 'vi'
-                  ? 'Chúng tôi tôn trọng quyền tác giả và quyền riêng tư. Chủ sở hữu nội dung có quyền yêu cầu ẩn hoặc gỡ bỏ thông tin bài viết liên quan bất cứ lúc nào qua email: '
-                  : 'We respect creator privacy and copyright. Content owners may request removal or masking of related thread data at any time via email: '}
+                <b>{t('footer.privacyTitle')}</b>{' '}
+                {t('footer.privacyBody')}{' '}
                 <a href="mailto:quackforge.studio@gmail.com" className="footer-credit-link">
                   quackforge.studio@gmail.com
                 </a>.
@@ -151,28 +163,8 @@ function AppContent() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
               <span>© {new Date().getFullYear()} ThreadScore</span>
               <Link to="/privacy" className="footer-credit-link" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                <ShieldCheck size={14} /> {lang === 'vi' ? 'Chính sách bảo mật' : 'Privacy Policy'}
+                <ShieldCheck size={14} /> {t('footer.privacy')}
               </Link>
-            </div>
-
-            {/* Language Switcher */}
-            <div className="footer-lang-switcher">
-              <Globe size={14} />
-              <button
-                type="button"
-                className={`lang-btn ${lang === 'vi' ? 'active' : ''}`}
-                onClick={() => setLang('vi')}
-              >
-                Tiếng Việt
-              </button>
-              <span className="lang-sep">·</span>
-              <button
-                type="button"
-                className={`lang-btn ${lang === 'en' ? 'active' : ''}`}
-                onClick={() => setLang('en')}
-              >
-                English
-              </button>
             </div>
 
             <div className="footer-credits">
@@ -188,7 +180,6 @@ function AppContent() {
           </div>
         </footer>
 
-        {/* Global Donate Modal */}
         <DonateModal isOpen={isDonateOpen} onClose={() => setIsDonateOpen(false)} />
       </div>
     </BrowserRouter>
