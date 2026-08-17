@@ -616,6 +616,30 @@ export function isSubReplyComment(
   return false;
 }
 
+function extractOgDescription(doc: Document): string | null {
+  const ogDesc = doc.querySelector('meta[property="og:description"]')?.getAttribute('content')?.trim() ||
+                 doc.querySelector('meta[name="description"]')?.getAttribute('content')?.trim() ||
+                 doc.querySelector('meta[property="twitter:description"]')?.getAttribute('content')?.trim();
+  if (!ogDesc) return null;
+  // Threads đặt og:description có dạng: "110 bình luận - Nội dung bài viết..." hoặc "Nội dung bài viết..."
+  let clean = ogDesc.replace(/^[\d.,\s]+[kKmMbB]?\s*(bình luận|comments|lượt thích|likes|views|lượt xem)\s*[-–—:•]\s*/i, '').trim();
+  if (clean && !isMetaOrBadgeText(clean)) {
+    return clean;
+  }
+  return null;
+}
+
+function extractFromDocumentTitle(doc: Document): string | null {
+  const rawTitle = doc.title || '';
+  // Threads doc.title có dạng: "username trên Threads: “Nội dung bài viết...”" hoặc "username on Threads: '...'"
+  const m = rawTitle.match(/[:：]\s*[“"']?([^"”']+)["”']?/);
+  if (m && m[1]) {
+    const text = m[1].trim();
+    if (text && !isMetaOrBadgeText(text)) return text;
+  }
+  return null;
+}
+
 export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: number }): Promise<ScrapedThread> {
   const currentUrl = doc.location?.href ?? doc.defaultView?.location.href ?? '';
   const { author: mainAuthorUrl, postCode: currentPostCode } = parseThreadsUrl(currentUrl);
@@ -635,27 +659,34 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
   if (isMetaOrBadgeText(mainTitleText)) mainTitleText = '';
   if (isMetaOrBadgeText(mainContentText)) mainContentText = '';
 
-  // 1. ƯU TIÊN SỐ 1: Trích xuất nội dung bài gốc chuẩn xác từ GraphQL Buffer nếu bắt được
+  // 1. ƯU TIÊN SỐ 1: Trích xuất trực tiếp từ Meta Tag og:description do chính Threads Server render (chuẩn xác 100% không thể dính comment)
+  const ogContent = extractOgDescription(doc);
+  if (ogContent) {
+    mainContentText = ogContent;
+    mainTitleText = ogContent.length > 140 ? ogContent.slice(0, 140) + '...' : ogContent;
+  }
+
+  // 2. ƯU TIÊN SỐ 2: Trích xuất từ Document Title nếu có quote nội dung
+  if (!mainContentText || isMetaOrBadgeText(mainContentText)) {
+    const titleContent = extractFromDocumentTitle(doc);
+    if (titleContent) {
+      mainContentText = titleContent;
+      mainTitleText = titleContent.length > 140 ? titleContent.slice(0, 140) + '...' : titleContent;
+    }
+  }
+
+  // 3. ƯU TIÊN SỐ 3: Trích xuất từ GraphQL Buffer (chỉ chấp nhận khi mã code khớp chính xác với currentPostCode)
   let rootPostNode = interceptedCommentsBuffer.find(
     (gc) => currentPostCode && gc.code === currentPostCode && gc.text && !isMetaOrBadgeText(gc.text)
   );
-  if (!rootPostNode && resolvedMainAuthor) {
-    rootPostNode = interceptedCommentsBuffer.find(
-      (gc) =>
-        gc.author_username?.toLowerCase() === resolvedMainAuthor.toLowerCase() &&
-        (!gc.parent_id || gc.parent_id === '') &&
-        gc.text &&
-        !isMetaOrBadgeText(gc.text)
-    );
-  }
-  if (rootPostNode && rootPostNode.text) {
+  if (rootPostNode && rootPostNode.text && (!mainContentText || isMetaOrBadgeText(mainContentText))) {
     mainContentText = rootPostNode.text.trim();
     if (!mainTitleText || isMetaOrBadgeText(mainTitleText)) {
       mainTitleText = mainContentText.length > 140 ? mainContentText.slice(0, 140) + '...' : mainContentText;
     }
   }
 
-  // 2. ƯU TIÊN SỐ 2: Fallback từ DOM container của bài viết gốc (lọc sạch tuyệt đối mọi metadata/view count)
+  // 4. ƯU TIÊN SỐ 4: Fallback từ DOM container của bài viết gốc (lọc sạch tuyệt đối mọi metadata/view count/author)
   const mainPostContainer = findMainPostContainer(doc, mainAuthorUrl);
   if ((!mainContentText || isMetaOrBadgeText(mainContentText)) && mainPostContainer) {
     const rawTexts = Array.from(mainPostContainer.querySelectorAll('span[dir="auto"], div[dir="auto"], p'))

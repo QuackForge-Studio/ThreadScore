@@ -42,6 +42,7 @@ export default function ThreadPage() {
 
   useEffect(() => {
     let cancelled = false;
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     setLoading(true);
     setError(null);
     apiGet<ThreadDetail>(`/api/threads/${id}`)
@@ -185,43 +186,69 @@ export default function ThreadPage() {
           )}
 
           {/* Header Bình luận + Search Box + Filter Tabs */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', margin: '20px 0 16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: '800', margin: 0 }}>
-                {t('tp.allComments')} ({visible.length})
-              </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', margin: '24px 0 18px' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: '800', margin: 0, color: 'var(--ink)' }}>
+              {t('tp.allComments')} ({visible.length})
+            </h2>
 
-              {/* Input tìm kiếm nhanh trong bình luận */}
-              <div style={{ position: 'relative', width: '100%', maxWidth: '280px' }}>
-                <MagnifyingGlass size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', pointerEvents: 'none' }} />
-                <input
-                  type="search"
-                  placeholder={t('tp.searchComments')}
-                  value={commentSearch}
-                  onChange={e => setCommentSearch(e.target.value)}
+            {/* Thanh tìm kiếm bình luận to, rộng, đẹp mắt và cân xứng */}
+            <div style={{ position: 'relative', width: '100%' }}>
+              <MagnifyingGlass
+                size={18}
+                weight="bold"
+                style={{
+                  position: 'absolute',
+                  left: '14px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'var(--muted)',
+                  pointerEvents: 'none',
+                }}
+              />
+              <input
+                type="search"
+                placeholder={t('tp.searchComments')}
+                value={commentSearch}
+                onChange={e => setCommentSearch(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '11px 40px 11px 42px',
+                  borderRadius: '14px',
+                  border: '1.5px solid var(--border)',
+                  background: 'var(--surface)',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: 'var(--ink)',
+                  outline: 'none',
+                  boxShadow: 'var(--shadow-sm)',
+                  boxSizing: 'border-box',
+                }}
+              />
+              {commentSearch && (
+                <button
+                  type="button"
+                  onClick={() => setCommentSearch('')}
                   style={{
-                    width: '100%',
-                    padding: '7px 32px 7px 34px',
-                    borderRadius: 'var(--radius-pill)',
-                    border: '1px solid var(--border)',
-                    background: 'var(--surface)',
-                    fontSize: '13.5px',
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'var(--border)',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '22px',
+                    height: '22px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
                     color: 'var(--ink)',
-                    outline: 'none',
-                    boxShadow: 'var(--shadow-sm)',
-                    boxSizing: 'border-box',
+                    padding: 0,
                   }}
-                />
-                {commentSearch && (
-                  <button
-                    type="button"
-                    onClick={() => setCommentSearch('')}
-                    style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: 0 }}
-                  >
-                    <X size={14} />
-                  </button>
-                )}
-              </div>
+                >
+                  <X size={12} weight="bold" />
+                </button>
+              )}
             </div>
 
             <div className="filter-tabs" style={{ margin: 0 }} role="tablist">
@@ -270,7 +297,7 @@ export default function ThreadPage() {
         </div>
 
         {/* Cột phải (Phụ): Khung Thảo luận cộng đồng scroll độc lập dạng Sticky */}
-        <aside className="thread-discussion-sidebar" style={{ paddingTop: '42px' }}>
+        <aside className="thread-discussion-sidebar" style={{ paddingTop: '52px' }}>
           <div className="thread-discussion-sticky">
             <DiscussionBox threadId={data.thread.id} userComments={data.user_comments} onPosted={load} />
           </div>
