@@ -139,29 +139,6 @@ export default function HomePage() {
                 <p>{lang === 'vi' ? 'Không phải lúc nào cũng nóng — vẫn có chốn bình yên.' : 'Not always fiery — calm spots still exist.'}</p>
               </div>
             </Reveal>
-            <Reveal className="bento-5" delay={0.12}>
-              <div className="bento-card bento-plain bento-featured-dark">
-                <div className="bento-body">
-                  <span className="bento-kicker">{lang === 'vi' ? 'Theo dõi' : 'Monitoring'}</span>
-                  <h3>{lang === 'vi' ? 'Nhiệt độ cập nhật liên tục' : 'Real-time Heat Index'}</h3>
-                  <p>{lang === 'vi' ? 'Mỗi đợt chấm điểm làm mới bức tranh cảm xúc.' : 'Fresh scoring batches update sentiment landscapes.'}</p>
-                </div>
-              </div>
-            </Reveal>
-            <Reveal className="bento-6" delay={0.16}>
-              <div className="bento-card bento-plain">
-                <Eye size={30} weight="duotone" color="var(--ember)" />
-                <h3>{lang === 'vi' ? 'Nhìn thấu tranh cãi' : 'Conflict Insights'}</h3>
-                <p>{lang === 'vi' ? 'Phát hiện sớm những cuộc tranh cãi đang leo thang.' : 'Identify escalating community disputes early.'}</p>
-              </div>
-            </Reveal>
-            <Reveal className="bento-7" delay={0.2}>
-              <div className="bento-card bento-plain">
-                <NewspaperClipping size={30} weight="duotone" color="var(--calm)" />
-                <h3>{lang === 'vi' ? 'Trích dẫn tiêu biểu' : 'Representative Quotes'}</h3>
-                <p>{lang === 'vi' ? 'Đọc những bình luận đại diện cho từng sắc thái.' : 'Discover benchmark comments across sentiment tones.'}</p>
-              </div>
-            </Reveal>
           </div>
         </div>
       </section>
