@@ -1748,3 +1748,124 @@ textarea.field-input { resize: vertical; }
   color: #FFFFFF;
   border-color: var(--accent);
 }
+
+/* ===== Hall of Fame ===== */
+.hof-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.hof-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-3);
+  transition: all 200ms ease;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.hof-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--accent);
+}
+
+.hof-legend {
+  border-color: rgba(240, 90, 40, 0.4);
+  background: linear-gradient(135deg, var(--surface), var(--surface-raised));
+}
+.hof-legend::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #F05A28, #E5484D);
+}
+
+.hof-hero {
+  border-color: rgba(229, 72, 77, 0.3);
+}
+
+.hof-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hof-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--surface-sunk);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-soft);
+}
+
+.hof-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hof-name {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.hof-tier-badge {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--accent-strong);
+}
+
+.hof-message {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.hof-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--faint);
+  border-top: 1px solid var(--border-soft);
+  padding-top: 8px;
+}
+
+.hof-cta-box {
+  margin-top: var(--space-7);
+  padding: var(--space-5);
+  background: var(--surface-sunk);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-card);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.hof-cta-box p {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-2);
+}

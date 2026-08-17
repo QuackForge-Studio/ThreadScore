@@ -4,6 +4,8 @@ import { apiGet } from '../api';
 import SearchBox from '../components/SearchBox';
 import ThreadCard from '../components/ThreadCard';
 import OverallHeat from '../components/OverallHeat';
+import HallOfFame from '../components/HallOfFame';
+import DonateModal from '../components/DonateModal';
 import { Reveal, CountUp } from '../components/motion';
 import { useI18n } from '../i18n';
 import type { ThreadRecord, OverallStats } from '../../shared/types';
@@ -15,6 +17,7 @@ export default function HomePage() {
   const [sort, setSort] = useState<'newest' | 'hottest' | 'most_comments'>('hottest');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDonateOpen, setIsDonateOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -202,6 +205,9 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* HALL OF FAME */}
+      <HallOfFame onOpenDonate={() => setIsDonateOpen(true)} />
+
       {/* ACTION — CTA */}
       <section className="section">
         <div className="container">
@@ -230,6 +236,8 @@ export default function HomePage() {
           </Reveal>
         </div>
       </section>
+
+      <DonateModal isOpen={isDonateOpen} onClose={() => setIsDonateOpen(false)} />
     </div>
   );
 }
