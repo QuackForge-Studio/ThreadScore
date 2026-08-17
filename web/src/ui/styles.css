@@ -1100,7 +1100,6 @@ button { font-family: var(--font-sans); }
 .commentcard {
   position: relative;
   border: 1px solid var(--border-soft);
-  border-left: 4px solid var(--border);
   border-radius: var(--radius-card);
   padding: var(--space-4) var(--space-5);
   margin-bottom: var(--space-3);

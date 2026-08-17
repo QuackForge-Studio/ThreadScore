@@ -25,7 +25,7 @@ export default function CommentCard({ comment, voteCounts }: Props) {
   const { t } = useI18n();
   const label = comment.score?.label ?? null;
   return (
-    <article className="commentcard" style={label ? { borderLeftColor: LABEL_COLORS[label] } : undefined}>
+    <article className="commentcard">
       <p className="commentcard-text">{comment.text}</p>
       <p className="commentcard-meta">
         @{comment.author_username ?? t('tp.anon')}

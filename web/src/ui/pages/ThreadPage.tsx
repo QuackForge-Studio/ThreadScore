@@ -89,15 +89,6 @@ export default function ThreadPage() {
   const countTrungLap = scoredComments.filter(c => c.score?.label === 'TRUNG LẬP').length;
   const countVuiVe = scoredComments.filter(c => c.score?.label === 'VUI VẺ').length;
 
-  const topBangNo = scoredComments
-    .filter(c => c.score!.label === 'BÙNG NỔ')
-    .sort((a, b) => b.score!.score - a.score!.score)
-    .slice(0, 3);
-  const topVuiVe = scoredComments
-    .filter(c => c.score!.label === 'VUI VẺ')
-    .sort((a, b) => a.score!.score - b.score!.score)
-    .slice(0, 3);
-
   return (
     <div className="page thread-page">
       <div className="thread-page-inner">
@@ -154,30 +145,6 @@ export default function ThreadPage() {
             <DiscussionBox threadId={data.thread.id} userComments={data.user_comments} onPosted={load} />
           </div>
         </Reveal>
-
-        {topBangNo.length > 0 && (
-          <section className="ranking-section bang">
-            <h2 className="ranking-title">{t('tp.topHot')}</h2>
-            {topBangNo.map(c => (
-              <div key={c.id} className="ranking-item">
-                <span className="ranking-text">{c.text}</span>
-                <span className="mono ranking-score">{c.score!.score.toFixed(0)}/100</span>
-              </div>
-            ))}
-          </section>
-        )}
-
-        {topVuiVe.length > 0 && (
-          <section className="ranking-section vui">
-            <h2 className="ranking-title">{t('tp.topCalm')}</h2>
-            {topVuiVe.map(c => (
-              <div key={c.id} className="ranking-item">
-                <span className="ranking-text">{c.text}</span>
-                <span className="mono ranking-score">{c.score!.score.toFixed(0)}/100</span>
-              </div>
-            ))}
-          </section>
-        )}
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '24px 0 16px', flexWrap: 'wrap', gap: '12px' }}>
           <h2 style={{ fontSize: '18px', fontWeight: '800', margin: 0 }}>
