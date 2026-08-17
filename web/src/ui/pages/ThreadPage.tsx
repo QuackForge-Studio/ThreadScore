@@ -72,19 +72,21 @@ export default function ThreadPage() {
 
   if (!data) return <div className="page thread-page" />;
 
+  const displayTitle = data.thread.title && data.thread.title !== 'Thread' && data.thread.title.trim().length > 0
+    ? data.thread.title
+    : data.thread.content
+    ? (data.thread.content.length > 140 ? data.thread.content.slice(0, 140) + '...' : data.thread.content)
+    : 'Bài viết Threads';
+
+  const showFullContent = data.thread.content && data.thread.content.trim() !== displayTitle.trim();
+
   const scoredComments = data.comments.filter(c => c.score != null);
 
-  const inScoreRange = (score: number): boolean => {
-    if (scoreFilter === '70-100') return score >= 70 && score <= 100;
-    if (scoreFilter === '30-69') return score >= 30 && score <= 69;
-    if (scoreFilter === '0-29') return score >= 0 && score <= 29;
-    return true;
-  };
+  const visible = data.comments.filter(c => filter === 'all' || c.score?.label === filter);
 
-  const visible = data.comments.filter(c =>
-    (filter === 'all' || (c.score?.label === filter)) &&
-    (c.score == null || inScoreRange(c.score.score)),
-  );
+  const countBangNo = scoredComments.filter(c => c.score?.label === 'BÙNG NỔ').length;
+  const countTrungLap = scoredComments.filter(c => c.score?.label === 'TRUNG LẬP').length;
+  const countVuiVe = scoredComments.filter(c => c.score?.label === 'VUI VẺ').length;
 
   const topBangNo = scoredComments
     .filter(c => c.score!.label === 'BÙNG NỔ')
@@ -102,20 +104,34 @@ export default function ThreadPage() {
           <Link to="/" className="thread-back">
             <ArrowLeft size={16} aria-hidden="true" /> Bảng nhiệt
           </Link>
-          <h1 className="thread-title">{data.thread.title ?? 'Bài viết Threads'}</h1>
-          <p className="thread-meta">
-            <span>@{data.thread.author_username ?? 'unknown'}</span>
-            {data.thread.posted_at != null && <span>• {formatRelativeTime(data.thread.posted_at)}</span>}
-            <span>• {data.thread.total_comments} bình luận</span>
-            <a href={data.thread.url} target="_blank" rel="noreferrer" className="thread-link">Xem trên Threads</a>
-          </p>
+
+          {/* Post Header with Author & Title */}
+          <div className="thread-post-card" style={{ background: 'var(--surface)', padding: '24px', borderRadius: 'var(--radius-lg, 16px)', border: '1px solid var(--border)', marginBottom: '20px' }}>
+            <h1 className="thread-title" style={{ fontSize: '22px', fontWeight: '800', lineHeight: '1.4', margin: '0 0 12px', color: 'var(--ink)' }}>
+              {displayTitle}
+            </h1>
+            
+            {showFullContent && (
+              <p className="thread-content" style={{ fontSize: '15px', color: 'var(--ink-2)', lineHeight: '1.6', margin: '0 0 16px', whiteSpace: 'pre-wrap' }}>
+                {data.thread.content}
+              </p>
+            )}
+
+            <p className="thread-meta" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', fontSize: '13px', color: 'var(--muted)' }}>
+              <span style={{ fontWeight: '700', color: 'var(--ink)' }}>@{data.thread.author_username ?? 'unknown'}</span>
+              {data.thread.posted_at != null && <span>• {formatRelativeTime(data.thread.posted_at)}</span>}
+              <span>• {data.thread.total_comments} bình luận</span>
+              <a href={data.thread.url} target="_blank" rel="noreferrer" className="thread-link" style={{ color: 'var(--accent)', fontWeight: '600' }}>
+                Xem trên Threads ↗
+              </a>
+            </p>
+          </div>
         </Reveal>
 
-        {data.thread.content && <p className="thread-content">{data.thread.content}</p>}
-
+        {/* AI Score Summary Gauge */}
         {data.thread.scoring_status === 'scored' && data.breakdown && (
           <Reveal>
-            <div className="thread-summary">
+            <div className="thread-summary" style={{ marginBottom: '24px' }}>
               <HeatGauge breakdown={data.breakdown} />
               <div className="thread-summary-stats">
                 <span className="stat-chip anger">Bùng nổ <span className="stat-n">{data.breakdown.bang_no}</span></span>
@@ -124,31 +140,27 @@ export default function ThreadPage() {
               </div>
               {data.thread.avg_anger_score != null && (
                 <p className="thread-avg">
-                  Điểm tức giận trung bình
-                  <strong className="mono thread-avg-value">{data.thread.avg_anger_score.toFixed(1)}/100</strong>
+                  Điểm cảm xúc tức giận trung bình:
+                  <strong className="mono thread-avg-value" style={{ marginLeft: '8px' }}>
+                    {data.thread.avg_anger_score.toFixed(1)}/100
+                  </strong>
                 </p>
               )}
             </div>
           </Reveal>
         )}
 
-        <div className="filter-controls">
-          <select
-            className="filter-select"
-            aria-label="Lọc theo điểm"
-            value={scoreFilter}
-            onChange={e => setScoreFilter(e.target.value as typeof scoreFilter)}
-          >
-            <option value="all">Tất cả mức điểm</option>
-            <option value="70-100">70-100 Bùng nổ</option>
-            <option value="30-69">30-69 Trung lập</option>
-            <option value="0-29">0-29 Vui vẻ</option>
-          </select>
-        </div>
+        {/* Community Discussion Box: Placed conveniently right above comments list */}
+        <Reveal>
+          <div style={{ marginBottom: '28px' }}>
+            <DiscussionBox threadId={data.thread.id} userComments={data.user_comments} onPosted={load} />
+          </div>
+        </Reveal>
 
+        {/* Top Highlights */}
         {topBangNo.length > 0 && (
           <section className="ranking-section bang">
-            <h2 className="ranking-title">Top Bùng nổ</h2>
+            <h2 className="ranking-title">Top Bùng nổ tiêu biểu</h2>
             {topBangNo.map(c => (
               <div key={c.id} className="ranking-item">
                 <span className="ranking-text">{c.text}</span>
@@ -160,7 +172,7 @@ export default function ThreadPage() {
 
         {topVuiVe.length > 0 && (
           <section className="ranking-section vui">
-            <h2 className="ranking-title">Top Vui vẻ</h2>
+            <h2 className="ranking-title">Top Vui vẻ tiêu biểu</h2>
             {topVuiVe.map(c => (
               <div key={c.id} className="ranking-item">
                 <span className="ranking-text">{c.text}</span>
@@ -170,27 +182,40 @@ export default function ThreadPage() {
           </section>
         )}
 
-        <div className="filter-tabs">
-          {(['all', 'BÙNG NỔ', 'TRUNG LẬP', 'VUI VẺ'] as const).map(f => (
-            <button key={f} className={`filter-tab${filter === f ? ' active' : ''}`} onClick={() => setFilter(f)}>
-              {f === 'all' ? 'Tất cả' : f === 'BÙNG NỔ' ? 'Bùng nổ' : f === 'TRUNG LẬP' ? 'Trung lập' : 'Vui vẻ'}
+        {/* Clean Filter Tabs */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '24px 0 16px', flexWrap: 'wrap', gap: '12px' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: '800', margin: 0 }}>
+            Tất cả bình luận ({visible.length})
+          </h2>
+          <div className="filter-tabs" style={{ margin: 0 }}>
+            <button className={`filter-tab${filter === 'all' ? ' active' : ''}`} onClick={() => setFilter('all')}>
+              Tất cả ({data.comments.length})
             </button>
-          ))}
+            <button className={`filter-tab${filter === 'BÙNG NỔ' ? ' active' : ''}`} onClick={() => setFilter('BÙNG NỔ')}>
+              Bùng nổ ({countBangNo})
+            </button>
+            <button className={`filter-tab${filter === 'TRUNG LẬP' ? ' active' : ''}`} onClick={() => setFilter('TRUNG LẬP')}>
+              Trung lập ({countTrungLap})
+            </button>
+            <button className={`filter-tab${filter === 'VUI VẺ' ? ' active' : ''}`} onClick={() => setFilter('VUI VẺ')}>
+              Vui vẻ ({countVuiVe})
+            </button>
+          </div>
         </div>
 
+        {/* Comment Cards with individual AI accuracy Voting */}
         {visible.map((c, i) => (
-          <Reveal key={c.id} delay={(i % 3) * 0.06}>
+          <Reveal key={c.id} delay={(i % 3) * 0.04}>
             <CommentCard comment={c} voteCounts={data.vote_counts[c.id] ?? { correct: 0, incorrect: 0 }} />
           </Reveal>
         ))}
+
         {visible.length === 0 && (
           <div className="empty-state">
-            <p className="empty-title">Không có bình luận nào</p>
-            <p className="empty-subtitle">Thử đổi bộ lọc để xem các sắc thái khác.</p>
+            <p className="empty-title">Không có bình luận nào trong danh mục này</p>
+            <p className="empty-subtitle">Thử chuyển sang bộ lọc khác để xem bình luận.</p>
           </div>
         )}
-
-        <DiscussionBox threadId={data.thread.id} userComments={data.user_comments} onPosted={load} />
       </div>
     </div>
   );

@@ -40,14 +40,16 @@ async function releaseScoringLock(env: Env): Promise<void> {
 }
 
 export async function runScoringWorker(env: Env): Promise<ScoringWorkerResult> {
-  // Atomic D1-based lock (600s). A concurrent worker that cannot acquire the
+  // Atomic D1-based lock (90s). A concurrent worker that cannot acquire the
   // lock returns immediately without touching any threads.
   if (!(await acquireScoringLock(env))) {
+    console.log('[ScoringWorker] Lock active by another execution, skipping.');
     return { processedThreads: 0, scoredComments: 0 };
   }
 
   try {
     const threads = await listPendingScoring(env.DB, 5);
+    console.log(`[ScoringWorker] Found ${threads.length} candidate threads to process.`);
     let scoredComments = 0;
 
     for (const thread of threads) {
@@ -60,6 +62,8 @@ export async function runScoringWorker(env: Env): Promise<ScoringWorkerResult> {
         ).bind(thread.id).all<{ comment_id: string }>();
         const scoredSet = new Set((scoredIds ?? []).map(r => r.comment_id));
         const pendingComments = allComments.filter(c => !scoredSet.has(c.id));
+
+        console.log(`[ScoringWorker] Thread ${thread.id}: total comments in DB = ${allComments.length}, pending = ${pendingComments.length}`);
 
         const context = `${thread.title ?? ''}\n${thread.content ?? ''}`.trim();
         let batchCount = 0;
@@ -97,9 +101,10 @@ export async function runScoringWorker(env: Env): Promise<ScoringWorkerResult> {
             avg_anger_score: avg,
             score_breakdown: JSON.stringify(breakdown),
           });
+          console.log(`[ScoringWorker] Thread ${thread.id} completed: avg = ${avg}, scored = ${rows.length}, status = scored`);
         }
-        // else: giữ 'scoring', lần chạy sau xử lý tiếp
-      } catch {
+      } catch (err) {
+        console.error(`[ScoringWorker] Error processing thread ${thread.id}:`, err);
         // Crash recovery: reset to pending_scoring so the next run re-picks it.
         await updateThread(env.DB, thread.id, { scoring_status: 'pending_scoring' });
       }
