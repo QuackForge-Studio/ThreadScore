@@ -128,6 +128,13 @@ export default function HomePage() {
             <span className="spectrum-dot calm" /> {t('stats.vuive')} <span className="spectrum-range">0-29</span>
           </span>
         </div>
+
+        {/* Thanh tìm kiếm & Dán link bài viết Threads */}
+        <Reveal delay={0.12}>
+          <div style={{ padding: '0 var(--space-5)', maxWidth: '820px', margin: '0 auto' }}>
+            <SearchBox />
+          </div>
+        </Reveal>
       </section>
 
       {/* 2. EXPLORE FEED - Thread Posts Feed */}
