@@ -938,18 +938,24 @@ button { font-family: var(--font-sans); }
 .thread-back {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--muted);
+  gap: 8px;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--ink);
   margin-bottom: var(--space-4);
-  padding: 6px 14px;
+  padding: 9px 18px;
   border: 1px solid var(--border);
   border-radius: var(--radius-pill);
   background: var(--surface);
-  transition: color 150ms ease, border-color 150ms ease, transform 150ms ease;
+  box-shadow: var(--shadow-sm);
+  transition: color 150ms ease, border-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
 }
-.thread-back:hover { color: var(--ink); border-color: var(--ink); transform: translateX(-2px); }
+.thread-back:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  transform: translateX(-3px);
+  box-shadow: var(--shadow-hover);
+}
 
 /* ===== Thread Detail 2-Column Grid Layout ===== */
 .thread-detail-grid {

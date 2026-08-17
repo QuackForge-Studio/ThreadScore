@@ -106,7 +106,7 @@ export default function ThreadPage() {
         <div className="thread-main-column">
           <Reveal>
             <Link to="/" className="thread-back">
-              <ArrowLeft size={16} aria-hidden="true" /> {t('tp.back')}
+              <ArrowLeft size={18} weight="bold" aria-hidden="true" /> {t('tp.back')}
             </Link>
 
             <div className="thread-post-card">

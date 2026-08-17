@@ -118,7 +118,7 @@ export const translations = {
     'sb.fallback': 'Bài viết Threads',
 
     // Thread detail page
-    'tp.back': 'Bảng nhiệt',
+    'tp.back': 'Quay lại trang chủ',
     'tp.home': 'Về trang chủ',
     'tp.loadError': 'Lỗi tải bài viết',
     'tp.postFallback': 'Bài viết Threads',
@@ -297,7 +297,7 @@ export const translations = {
     'sb.fallback': 'Threads Post',
 
     // Thread detail page
-    'tp.back': 'Heat board',
+    'tp.back': 'Back to Home',
     'tp.home': 'Back to home',
     'tp.loadError': 'Failed to load thread',
     'tp.postFallback': 'Threads Post',
