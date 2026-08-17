@@ -99,6 +99,15 @@ chrome.runtime.onMessage.addListener(
         .catch((e) => sendResponse({ ok: false, error: e instanceof Error ? e.message : 'Test scrape lỗi' }));
       return true;
     }
+    if (message.type === 'TS_STOP_SCRAPE_ACTIVE_TAB') {
+      getActiveTab().then((tab) => {
+        if (tab?.id) {
+          chrome.tabs.sendMessage(tab.id, { type: 'TS_STOP_SCRAPE' }, { frameId: 0 }, () => {});
+        }
+        sendResponse({ ok: true });
+      });
+      return true;
+    }
     return false;
   }
 );

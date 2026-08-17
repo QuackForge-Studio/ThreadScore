@@ -26,3 +26,7 @@ export async function scrapeActiveTab(): Promise<ScrapedThread> {
 export async function scrapeTestActiveTab(limit: number = 5): Promise<ScrapedThread> {
   return requestBridge<ScrapedThread>('TS_TEST_SCRAPE_ACTIVE_TAB', limit);
 }
+
+export async function stopActiveTabScrape(): Promise<void> {
+  await chrome.runtime.sendMessage({ type: 'TS_STOP_SCRAPE_ACTIVE_TAB' }).catch(() => {});
+}
