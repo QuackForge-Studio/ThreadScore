@@ -19,6 +19,10 @@ import {
   PencilSimple,
   SignOut,
   Lock,
+  MagnifyingGlass,
+  ArrowSquareOut,
+  FloppyDisk,
+  Article,
 } from '@phosphor-icons/react';
 import { getStoredSupporters, DEFAULT_SUPPORTERS, type Supporter } from '../components/HallOfFame';
 import { Reveal } from '../components/motion';
@@ -37,6 +41,23 @@ export default function AdminPage() {
   const [uploadingJson, setUploadingJson] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Threads Editor State
+  const [threadQuery, setThreadQuery] = useState('');
+  const [searchingThread, setSearchingThread] = useState(false);
+  const [recentThreads, setRecentThreads] = useState<Array<{ id: string; title: string | null; url: string; author_username: string | null; total_comments: number }>>([]);
+  const [loadingRecent, setLoadingRecent] = useState(false);
+  const [selectedThread, setSelectedThread] = useState<{
+    id: string;
+    url: string;
+    title: string;
+    content: string;
+    author_username: string;
+    author_name: string;
+  } | null>(null);
+  const [savingThread, setSavingThread] = useState(false);
+  const [threadEditSuccess, setThreadEditSuccess] = useState<string | null>(null);
+  const [threadEditError, setThreadEditError] = useState<string | null>(null);
 
   // Supporters Manager State
   const [supporters, setSupporters] = useState<Supporter[]>(getStoredSupporters);
@@ -185,6 +206,120 @@ export default function AdminPage() {
       setError(e instanceof Error ? e.message : 'Lỗi import JSON');
     } finally {
       setUploadingJson(false);
+    }
+  }
+
+  // Threads Editor Functions
+  async function loadRecentThreads() {
+    setLoadingRecent(true);
+    setThreadEditError(null);
+    try {
+      const r = await fetch('/api/threads?limit=15&sort=newest');
+      if (r.ok) {
+        const data = (await r.json()) as { threads?: Array<{ id: string; title: string | null; url: string; author_username: string | null; total_comments: number }> };
+        setRecentThreads(data.threads || []);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setLoadingRecent(false);
+    }
+  }
+
+  async function searchOrLoadThread(queryOverride?: string) {
+    const q = (queryOverride ?? threadQuery).trim();
+    if (!q) {
+      setThreadEditError('Vui lòng nhập URL Threads hoặc ID bài viết.');
+      return;
+    }
+    setSearchingThread(true);
+    setThreadEditError(null);
+    setThreadEditSuccess(null);
+
+    try {
+      // 1. Thử load trực tiếp theo id bài viết
+      let threadData: { thread?: { id: string; url: string; title: string | null; content: string | null; author_username: string | null; author_name: string | null } } | null = null;
+      try {
+        const resDirect = await fetch(`/api/threads/${encodeURIComponent(q)}`);
+        if (resDirect.ok) {
+          threadData = (await resDirect.json()) as typeof threadData;
+        }
+      } catch {}
+
+      // 2. Nếu không ra theo id, thử search theo URL/query
+      if (!threadData?.thread) {
+        const resSearch = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+        if (resSearch.ok) {
+          const searchData = (await resSearch.json()) as { matches?: Array<{ id: string; url: string; title: string | null; content: string | null; author_username: string | null; author_name: string | null }> };
+          if (searchData.matches && searchData.matches.length > 0) {
+            const first = searchData.matches[0];
+            // Fetch chi tiết bài viết đầu tiên tìm thấy
+            const resDetail = await fetch(`/api/threads/${first.id}`);
+            if (resDetail.ok) {
+              threadData = (await resDetail.json()) as typeof threadData;
+            }
+          }
+        }
+      }
+
+      if (threadData?.thread) {
+        setSelectedThread({
+          id: threadData.thread.id,
+          url: threadData.thread.url,
+          title: threadData.thread.title ?? '',
+          content: threadData.thread.content ?? '',
+          author_username: threadData.thread.author_username ?? '',
+          author_name: threadData.thread.author_name ?? '',
+        });
+        showSuccess('Đã tải thông tin bài viết vào form chỉnh sửa!');
+      } else {
+        throw new Error('Không tìm thấy bài viết phù hợp với liên kết hoặc ID đã nhập.');
+      }
+    } catch (e) {
+      setThreadEditError(e instanceof Error ? e.message : 'Lỗi tra cứu bài viết');
+    } finally {
+      setSearchingThread(false);
+    }
+  }
+
+  async function handleSaveThreadEdit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selectedThread) return;
+    setSavingThread(true);
+    setThreadEditError(null);
+    setThreadEditSuccess(null);
+
+    try {
+      const res = await fetch('/api/admin/thread-edit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Key': key,
+        },
+        body: JSON.stringify({
+          id: selectedThread.id,
+          title: selectedThread.title,
+          content: selectedThread.content,
+          author_username: selectedThread.author_username,
+          author_name: selectedThread.author_name,
+        }),
+      });
+
+      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error ?? 'Lưu thay đổi thất bại.');
+      }
+
+      setThreadEditSuccess('Đã cập nhật bài viết thành công vào hệ thống!');
+      showSuccess(`Đã cập nhật chi tiết bài viết "${selectedThread.title || selectedThread.id}"!`);
+      // Reload recent list if open
+      if (recentThreads.length > 0) {
+        loadRecentThreads();
+      }
+    } catch (err) {
+      setThreadEditError(err instanceof Error ? err.message : 'Lỗi cập nhật bài viết');
+    } finally {
+      setSavingThread(false);
     }
   }
 
@@ -469,7 +604,223 @@ export default function AdminPage() {
               </div>
             </Reveal>
 
-            {/* Card 3: Hall of Fame Manager (With Add & Edit) */}
+            {/* Card 3: Threads Detail Editor (Chỉnh Sửa Bài Viết Thủ Công) */}
+            <Reveal delay={0.12}>
+              <div className="admin-card">
+                <div className="admin-card-head">
+                  <h3 className="admin-card-title">
+                    <PencilSimple size={20} weight="bold" color="var(--accent)" />
+                    Quản Lý &amp; Chỉnh Sửa Chi Tiết Bài Viết
+                  </h3>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={loadRecentThreads}
+                    disabled={loadingRecent}
+                    style={{ fontSize: '12px', padding: '5px 12px' }}
+                  >
+                    <Article size={15} /> {loadingRecent ? 'Đang tải...' : 'Xem Bài Gần Đây'}
+                  </button>
+                </div>
+                <p className="admin-card-sub">
+                  Tìm kiếm bài viết bằng liên kết Threads hoặc ID bài viết để tinh chỉnh tiêu đề, nội dung và thông tin tác giả.
+                </p>
+
+                {/* Search / Lookup Bar */}
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    searchOrLoadThread();
+                  }}
+                  style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '16px' }}
+                >
+                  <div style={{ position: 'relative', flex: 1, minWidth: '240px' }}>
+                    <MagnifyingGlass size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }} />
+                    <input
+                      type="text"
+                      className="field-input"
+                      placeholder="Dán link Threads (vd: https://www.threads.net/@user/post/...) hoặc nhập ID..."
+                      value={threadQuery}
+                      onChange={(e) => setThreadQuery(e.target.value)}
+                      style={{ paddingLeft: '36px', height: '40px', fontSize: '13.5px' }}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={searchingThread}
+                    style={{ height: '40px', padding: '0 16px', fontSize: '13px' }}
+                  >
+                    {searchingThread ? 'Đang tìm...' : 'Tra Cứu Bài Viết'}
+                  </button>
+                </form>
+
+                {/* Notifications for Thread Editor */}
+                {threadEditError && (
+                  <div className="error-banner" role="alert" style={{ margin: '10px 0 16px' }}>
+                    <WarningCircle size={18} weight="fill" /> {threadEditError}
+                  </div>
+                )}
+                {threadEditSuccess && (
+                  <div className="admin-notice" style={{ margin: '10px 0 16px' }}>
+                    <CheckCircle size={18} weight="fill" /> {threadEditSuccess}
+                  </div>
+                )}
+
+                {/* Recent Threads List */}
+                {recentThreads.length > 0 && !selectedThread && (
+                  <div style={{ margin: '12px 0 20px', padding: '14px', borderRadius: '14px', background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                    <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--ink)', marginBottom: '10px' }}>
+                      Chọn bài viết gần đây để chỉnh sửa:
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '240px', overflowY: 'auto' }}>
+                      {recentThreads.map((t) => (
+                        <div
+                          key={t.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: '12px',
+                            padding: '8px 12px',
+                            borderRadius: '10px',
+                            background: 'var(--surface-raise)',
+                            border: '1px solid var(--border)',
+                          }}
+                        >
+                          <div style={{ minWidth: 0, flex: 1 }}>
+                            <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {t.title || t.url}
+                            </div>
+                            <div style={{ fontSize: '12px', color: 'var(--muted)' }}>
+                              @{t.author_username ?? 'ẩn danh'} · {t.total_comments} bình luận
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            className="btn btn-ghost"
+                            onClick={() => searchOrLoadThread(t.id)}
+                            style={{ fontSize: '12px', padding: '4px 10px', height: 'auto', color: 'var(--accent)' }}
+                          >
+                            <PencilSimple size={14} /> Sửa bài
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Edit Form when a thread is loaded */}
+                {selectedThread && (
+                  <form
+                    onSubmit={handleSaveThreadEdit}
+                    className="admin-form-box editing"
+                    style={{ marginTop: '12px' }}
+                  >
+                    <div className="admin-form-head">
+                      <div style={{ color: 'var(--accent-strong)', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '700' }}>
+                        <PencilSimple size={16} weight="bold" /> Đang Chỉnh Sửa Bài Viết
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <a
+                          href={`/thread/${selectedThread.id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="btn btn-ghost"
+                          style={{ fontSize: '12px', padding: '4px 10px', height: 'auto', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          <span>Xem trên web</span>
+                          <ArrowSquareOut size={13} />
+                        </a>
+                        <button
+                          type="button"
+                          className="btn btn-ghost"
+                          onClick={() => setSelectedThread(null)}
+                          style={{ fontSize: '12px', padding: '4px 8px', height: 'auto' }}
+                        >
+                          Đóng
+                        </button>
+                      </div>
+                    </div>
+
+                    <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '12px' }}>
+                      ID: <span className="mono">{selectedThread.id}</span> · URL: <a href={selectedThread.url} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>{selectedThread.url}</a>
+                    </div>
+
+                    {/* Title */}
+                    <div className="admin-field">
+                      <label className="admin-label">Tiêu đề hiển thị (Title)</label>
+                      <input
+                        className="field-input"
+                        type="text"
+                        placeholder="Tiêu đề chính của bài viết..."
+                        value={selectedThread.title}
+                        onChange={(e) => setSelectedThread({ ...selectedThread, title: e.target.value })}
+                        style={{ fontWeight: '600' }}
+                      />
+                    </div>
+
+                    {/* Content */}
+                    <div className="admin-field">
+                      <label className="admin-label">Nội dung bài viết đầy đủ (Content)</label>
+                      <textarea
+                        className="field-input"
+                        rows={4}
+                        placeholder="Nội dung hoặc caption bài viết..."
+                        value={selectedThread.content}
+                        onChange={(e) => setSelectedThread({ ...selectedThread, content: e.target.value })}
+                        style={{ resize: 'vertical', lineHeight: '1.5' }}
+                      />
+                    </div>
+
+                    {/* Author info */}
+                    <div className="admin-grid-2">
+                      <div className="admin-field">
+                        <label className="admin-label">Tác giả (@username)</label>
+                        <input
+                          className="field-input"
+                          type="text"
+                          placeholder="vd: kieuanhxinh0"
+                          value={selectedThread.author_username}
+                          onChange={(e) => setSelectedThread({ ...selectedThread, author_username: e.target.value })}
+                        />
+                      </div>
+                      <div className="admin-field">
+                        <label className="admin-label">Tên hiển thị (Author Name)</label>
+                        <input
+                          className="field-input"
+                          type="text"
+                          placeholder="Tên đầy đủ của tác giả..."
+                          value={selectedThread.author_name}
+                          onChange={(e) => setSelectedThread({ ...selectedThread, author_name: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="admin-form-actions">
+                      <button
+                        type="submit"
+                        className="btn btn-primary"
+                        disabled={savingThread}
+                        style={{ height: '38px', padding: '0 18px', fontSize: '13px' }}
+                      >
+                        <FloppyDisk size={16} /> {savingThread ? 'Đang lưu...' : 'Lưu Cập Nhật Bài Viết'}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-ghost"
+                        onClick={() => setSelectedThread(null)}
+                        style={{ height: '38px', fontSize: '13px' }}
+                      >
+                        Hủy
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            </Reveal>
+
+            {/* Card 4: Hall of Fame Manager (With Add & Edit) */}
             <Reveal delay={0.14}>
               <div className="admin-card">
                 <div className="admin-card-head">
