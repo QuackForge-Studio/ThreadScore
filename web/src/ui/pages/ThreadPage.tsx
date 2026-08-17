@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { WarningCircle, ArrowLeft, ArrowSquareOut } from '@phosphor-icons/react';
+import { WarningCircle, ArrowLeft, ArrowSquareOut, MagnifyingGlass, X } from '@phosphor-icons/react';
 import { apiGet } from '../api';
 import CommentCard from '../components/CommentCard';
 import DiscussionBox from '../components/DiscussionBox';
@@ -23,6 +23,7 @@ export default function ThreadPage() {
   const { t } = useI18n();
   const [data, setData] = useState<ThreadDetail | null>(null);
   const [filter, setFilter] = useState<'all' | 'BÙNG NỔ' | 'TRUNG LẬP' | 'VUI VẺ'>('all');
+  const [commentSearch, setCommentSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -83,7 +84,16 @@ export default function ThreadPage() {
 
   const scoredComments = data.comments.filter(c => c.score != null);
 
-  const visible = data.comments.filter(c => filter === 'all' || c.score?.label === filter);
+  const searchLower = commentSearch.trim().toLowerCase();
+  const visible = data.comments.filter(c => {
+    const matchFilter = filter === 'all' || c.score?.label === filter;
+    const matchSearch = !searchLower || (
+      c.text.toLowerCase().includes(searchLower) ||
+      (c.author_username && c.author_username.toLowerCase().includes(searchLower)) ||
+      (c.score?.reason && c.score.reason.toLowerCase().includes(searchLower))
+    );
+    return matchFilter && matchSearch;
+  });
 
   const countBangNo = scoredComments.filter(c => c.score?.label === 'BÙNG NỔ').length;
   const countTrungLap = scoredComments.filter(c => c.score?.label === 'TRUNG LẬP').length;
@@ -142,10 +152,46 @@ export default function ThreadPage() {
             </Reveal>
           )}
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '20px 0 14px', flexWrap: 'wrap', gap: '12px' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: '800', margin: 0 }}>
-              {t('tp.allComments')} ({visible.length})
-            </h2>
+          {/* Header Bình luận + Search Box + Filter Tabs */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', margin: '20px 0 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: '800', margin: 0 }}>
+                {t('tp.allComments')} ({visible.length})
+              </h2>
+
+              {/* Input tìm kiếm nhanh trong bình luận */}
+              <div style={{ position: 'relative', width: '100%', maxWidth: '280px' }}>
+                <MagnifyingGlass size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', pointerEvents: 'none' }} />
+                <input
+                  type="search"
+                  placeholder={t('tp.searchComments')}
+                  value={commentSearch}
+                  onChange={e => setCommentSearch(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '7px 32px 7px 34px',
+                    borderRadius: 'var(--radius-pill)',
+                    border: '1px solid var(--border)',
+                    background: 'var(--surface)',
+                    fontSize: '13.5px',
+                    color: 'var(--ink)',
+                    outline: 'none',
+                    boxShadow: 'var(--shadow-sm)',
+                    boxSizing: 'border-box',
+                  }}
+                />
+                {commentSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setCommentSearch('')}
+                    style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: 0 }}
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+            </div>
+
             <div className="filter-tabs" style={{ margin: 0 }} role="tablist">
               <button className={`filter-tab${filter === 'all' ? ' active' : ''}`} role="tab" aria-selected={filter === 'all'} onClick={() => setFilter('all')}>
                 {t('tp.all')} ({data.comments.length})
@@ -177,7 +223,7 @@ export default function ThreadPage() {
         </div>
 
         {/* Cột phải (Phụ): Khung Thảo luận cộng đồng scroll độc lập dạng Sticky */}
-        <aside className="thread-discussion-sidebar">
+        <aside className="thread-discussion-sidebar" style={{ paddingTop: '42px' }}>
           <div className="thread-discussion-sticky">
             <DiscussionBox threadId={data.thread.id} userComments={data.user_comments} onPosted={load} />
           </div>

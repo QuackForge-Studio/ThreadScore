@@ -621,8 +621,22 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
   const timeEl = doc.querySelector(SELECTORS.time);
 
   const mainPostContainer = findMainPostContainer(doc, mainAuthorUrl);
-  const mainTitleText = titleEl?.textContent?.trim() ?? '';
-  const mainContentText = contentEl?.textContent?.trim() ?? '';
+  let mainTitleText = titleEl?.textContent?.trim() ?? '';
+  let mainContentText = contentEl?.textContent?.trim() ?? '';
+
+  // Fallback trích xuất nội dung bài viết gốc từ mainPostContainer nếu selector cũ không tìm thấy
+  if (!mainContentText && mainPostContainer) {
+    const rawTexts = Array.from(mainPostContainer.querySelectorAll('span[dir="auto"], div[dir="auto"], p'))
+      .map(el => el.textContent?.trim() || '')
+      .filter(t => t.length > 0 && !BADGE_TEXTS.has(t.toLowerCase()) && !t.startsWith('@'));
+    if (rawTexts.length > 0) {
+      mainContentText = rawTexts.reduce((a, b) => a.length >= b.length ? a : b);
+      if (!mainTitleText) {
+        mainTitleText = mainContentText.length > 140 ? mainContentText.slice(0, 140) + '...' : mainContentText;
+      }
+    }
+  }
+
   const resolvedMainAuthor = mainAuthorUrl || cleanUsername(authorEl?.getAttribute('href') ?? authorEl?.textContent);
 
   // Tìm ID bài gốc (mainPostId) từ GraphQL Buffer
@@ -734,8 +748,8 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
 
   return {
     url: currentUrl,
-    title: titleEl?.textContent?.trim() ?? null,
-    content: contentEl?.textContent?.trim() ?? null,
+    title: mainTitleText || titleEl?.textContent?.trim() || null,
+    content: mainContentText || contentEl?.textContent?.trim() || null,
     author_username: resolvedMainAuthor,
     author_name: null,
     posted_at: parseTime(timeEl),
