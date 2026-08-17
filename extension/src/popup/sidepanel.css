@@ -364,9 +364,23 @@ body {
   gap: 2px;
   border-bottom: 1px dashed var(--line);
   padding-bottom: 6px;
+  transition: background 150ms ease;
+}
+
+.sp-comment-item.sp-comment-reply {
+  padding-left: 8px;
+  border-left: 2.5px solid var(--ember-glow);
+  margin-left: 4px;
 }
 
 .sp-comment-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+.sp-comment-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
 
 .sp-comment-user {
   font-size: 12.5px;
@@ -374,10 +388,34 @@ body {
   color: var(--ember);
 }
 
+.sp-comment-reply-to {
+  font-size: 11px;
+  color: var(--ink-faint);
+  font-family: var(--font-sans);
+}
+
+.sp-comment-reply-to b {
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+
 .sp-comment-meta {
   font-family: var(--font-mono);
   font-size: 11.5px;
   color: var(--ink-faint);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.sp-reply-badge {
+  color: var(--ember-deep);
+  font-weight: 700;
+  background: var(--ember-soft);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 10.5px;
 }
 
 .sp-comment-snippet {
@@ -471,13 +509,40 @@ body {
   padding: 12px 14px;
 }
 
+.sp-debug-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.sp-debug-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--ember);
+  background: var(--ember-soft);
+  color: var(--ember-deep);
+  font-size: 11.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.sp-debug-toggle-btn:hover {
+  background: var(--ember);
+  color: #FFF;
+}
+
 .sp-debug-title {
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--ember-deep);
-  margin-bottom: 8px;
 }
 
 .sp-debug-grid {
@@ -496,13 +561,141 @@ body {
   color: var(--ink);
 }
 
-.sp-debug-hint {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--line);
+.sp-inspector-container {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sp-inspector-head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+
+.sp-filter-pills {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.sp-pill {
+  padding: 3px 7px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink-soft);
   font-size: 11px;
-  line-height: 1.5;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.sp-pill:hover, .sp-pill.active {
+  background: var(--ember);
+  color: #FFF;
+  border-color: var(--ember);
+}
+
+.sp-inspector-list {
+  max-height: 240px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--paper);
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-soft);
+}
+
+.sp-inspector-item {
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  border: 1px solid var(--line-soft);
+  border-radius: 6px;
+  font-size: 11.5px;
+  overflow: hidden;
+}
+
+.sp-inspector-item-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sp-inspector-item-row:hover {
+  background: var(--paper-deep);
+}
+
+.sp-inspector-num {
+  font-family: var(--font-mono);
+  font-weight: 800;
   color: var(--ink-faint);
+  font-size: 10.5px;
+}
+
+.sp-inspector-badge {
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.sp-inspector-badge.root {
+  background: rgba(46, 125, 107, 0.15);
+  color: var(--calm);
+}
+
+.sp-inspector-badge.sub {
+  background: var(--ember-soft);
+  color: var(--ember);
+}
+
+.sp-inspector-source {
+  font-size: 10px;
+  color: var(--ink-faint);
+}
+
+.sp-inspector-user {
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.sp-inspector-text {
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.sp-inspector-detail {
+  background: #1E1B18;
+  color: #E4D8C2;
+  padding: 8px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-top: 1px solid var(--line);
+}
+
+.sp-inspector-detail-row code {
+  color: #F05A28;
+  word-break: break-all;
 }
 
 /* ===== Logs ===== */
