@@ -458,15 +458,6 @@ export default function HomePage() {
                   </div>
                 </div>
               )}
-
-              {/* Widget 3: Chrome Extension Callout */}
-              <div className="sidebar-widget ext-callout-widget">
-                <div className="ext-callout-icon">🧵</div>
-                <div className="ext-callout-text">
-                  <h5 className="ext-callout-title">{t('sidebar.extTitle')}</h5>
-                  <p className="ext-callout-desc">{t('sidebar.extDesc')}</p>
-                </div>
-              </div>
             </aside>
           </div>
         </div>

@@ -64,8 +64,6 @@ export default function ThreadCard({ thread }: { thread: ThreadRecord }) {
     ? (thread.content.length > 130 ? thread.content.slice(0, 130) + '...' : thread.content)
     : t('sb.fallback');
 
-  const showContentSnippet = thread.content && thread.title && thread.title !== thread.content && thread.title !== 'Thread';
-
   const authorName = thread.author_username || t('tc.anon');
   const avatarInitial = thread.author_username ? thread.author_username.charAt(0).toUpperCase() : 'TS';
   const avatarStyle = getAvatarStyle(thread.author_username);
@@ -137,18 +135,12 @@ export default function ThreadCard({ thread }: { thread: ThreadRecord }) {
         )}
       </div>
 
-      {/* 2. Tiêu đề & Nội dung trích dẫn với line-height thoáng cho dấu tiếng Việt */}
+      {/* 2. Tiêu đề với line-height thoáng cho dấu tiếng Việt */}
       <h3 className="threadcard-title-wrap">
         <span className="threadcard-title">
           {displayTitle}
         </span>
       </h3>
-
-      {showContentSnippet && (
-        <p className="threadcard-snippet">
-          {thread.content}
-        </p>
-      )}
 
       {/* 3. Phân bố cảm xúc (Sentiment Spectrum) */}
       {isScored && breakdown && (
