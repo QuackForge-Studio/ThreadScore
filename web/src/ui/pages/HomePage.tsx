@@ -327,19 +327,21 @@ export default function HomePage() {
                 </div>
               ) : (
                 <>
-                  {threads.map((tItem, i) => {
-                    const isFeatured = i === 0 && page === 1;
-                    const rankNum = i + 1 + (page - 1) * PAGE_SIZE;
-                    return (
-                      <Reveal key={tItem.id} delay={(i % 4) * 0.04}>
-                        <ThreadCard
-                          thread={tItem}
-                          rank={rankNum}
-                          variant={isFeatured ? 'featured' : 'compact'}
-                        />
-                      </Reveal>
-                    );
-                  })}
+                  <div className="feed-cards-list">
+                    {threads.map((tItem, i) => {
+                      const isFeatured = i === 0 && page === 1;
+                      const rankNum = i + 1 + (page - 1) * PAGE_SIZE;
+                      return (
+                        <Reveal key={tItem.id} delay={(i % 4) * 0.04}>
+                          <ThreadCard
+                            thread={tItem}
+                            rank={rankNum}
+                            variant={isFeatured ? 'featured' : 'compact'}
+                          />
+                        </Reveal>
+                      );
+                    })}
+                  </div>
 
                   {threads.length === 0 && !error && (
                     <div className="empty-state">
@@ -348,62 +350,6 @@ export default function HomePage() {
                       </div>
                       <p className="empty-title">{t('feed.empty')}</p>
                       <p className="empty-subtitle">{t('feed.emptyHint')}</p>
-                    </div>
-                  )}
-
-                  {/* Phân trang: căn giữa hoàn toàn theo chiều rộng Cột Trái */}
-                  {threads.length > 0 && (
-                    <div className="feed-pagination">
-                      <div className="pagination-info">
-                        {t('feed.pageInfo')
-                          .replace('{page}', String(page))
-                          .replace('{totalPages}', String(Math.max(1, totalPages)))
-                          .replace('{total}', String(totalCount || threads.length))}
-                      </div>
-
-                      <div className="pagination-controls">
-                        <button
-                          type="button"
-                          className="btn-page btn-page-nav"
-                          disabled={page <= 1 || loading}
-                          onClick={() => handlePageChange(page - 1)}
-                          title={t('feed.prevPage')}
-                        >
-                          <CaretLeft size={16} weight="bold" />
-                          <span>{t('feed.prevPage')}</span>
-                        </button>
-
-                        <div className="pagination-numbers">
-                          {getPageNumbers().map((p, idx) =>
-                            typeof p === 'number' ? (
-                              <button
-                                key={`page-${p}`}
-                                type="button"
-                                className={`btn-page btn-page-num${p === page ? ' active' : ''}`}
-                                onClick={() => handlePageChange(p)}
-                                disabled={loading || totalPages <= 1}
-                              >
-                                {p}
-                              </button>
-                            ) : (
-                              <span key={`ellipsis-${idx}`} className="pagination-ellipsis">
-                                ...
-                              </span>
-                            )
-                          )}
-                        </div>
-
-                        <button
-                          type="button"
-                          className="btn-page btn-page-nav"
-                          disabled={page >= totalPages || loading}
-                          onClick={() => handlePageChange(page + 1)}
-                          title={t('feed.nextPage')}
-                        >
-                          <span>{t('feed.nextPage')}</span>
-                          <CaretRight size={16} weight="bold" />
-                        </button>
-                      </div>
                     </div>
                   )}
                 </>
@@ -517,6 +463,66 @@ export default function HomePage() {
               )}
             </aside>
           </div>
+
+          {/* Phân trang: Đặt ngay dưới feed-grid-layout và căn giữa thẳng hàng theo cột trái */}
+          {threads.length > 0 && (
+            <div className="feed-pagination-row">
+              <div className="feed-pagination-left-slot">
+                <div className="feed-pagination">
+                  <div className="pagination-info">
+                    {t('feed.pageInfo')
+                      .replace('{page}', String(page))
+                      .replace('{totalPages}', String(Math.max(1, totalPages)))
+                      .replace('{total}', String(totalCount || threads.length))}
+                  </div>
+
+                  <div className="pagination-controls">
+                    <button
+                      type="button"
+                      className="btn-page btn-page-nav"
+                      disabled={page <= 1 || loading}
+                      onClick={() => handlePageChange(page - 1)}
+                      title={t('feed.prevPage')}
+                    >
+                      <CaretLeft size={16} weight="bold" />
+                      <span>{t('feed.prevPage')}</span>
+                    </button>
+
+                    <div className="pagination-numbers">
+                      {getPageNumbers().map((p, idx) =>
+                        typeof p === 'number' ? (
+                          <button
+                            key={`page-${p}`}
+                            type="button"
+                            className={`btn-page btn-page-num${p === page ? ' active' : ''}`}
+                            onClick={() => handlePageChange(p)}
+                            disabled={loading || totalPages <= 1}
+                          >
+                            {p}
+                          </button>
+                        ) : (
+                          <span key={`ellipsis-${idx}`} className="pagination-ellipsis">
+                            ...
+                          </span>
+                        )
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      className="btn-page btn-page-nav"
+                      disabled={page >= totalPages || loading}
+                      onClick={() => handlePageChange(page + 1)}
+                      title={t('feed.nextPage')}
+                    >
+                      <span>{t('feed.nextPage')}</span>
+                      <CaretRight size={16} weight="bold" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
