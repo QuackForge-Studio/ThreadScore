@@ -530,29 +530,109 @@ function extractCommentNode(obj: Record<string, any>, out: ScrapedComment[]) {
   }
 }
 
+function getLsdToken(): string | null {
+  if (typeof document === 'undefined') return null;
+  const input = document.querySelector('input[name="lsd"]') as HTMLInputElement | null;
+  if (input?.value) return input.value;
+  const scripts = Array.from(document.querySelectorAll('script'));
+  for (const s of scripts) {
+    const txt = s.textContent || '';
+    const m =
+      txt.match(/"LSD"[\s\S]*?"token":"([^"]+)"/) ||
+      txt.match(/name="lsd"\s+value="([^"]+)"/) ||
+      txt.match(/"lsd":\s*"([^"]+)"/);
+    if (m && m[1]) return m[1];
+  }
+  return null;
+}
+
 // Tự động quét sâu các comment có câu trả lời con (Sub-replies Deep Scraper)
 async function fetchNestedReplies(
   parentComments: ScrapedComment[],
   seenKeys: Set<string>,
-  maxParents: number = 30
+  maxParents: number = 60
 ): Promise<ScrapedComment[]> {
   const nestedComments: ScrapedComment[] = [];
   const parentsWithReplies = parentComments.filter(
-    (c) => c.direct_reply_count && c.direct_reply_count > 0 && c.code
+    (c) => (c.direct_reply_count && c.direct_reply_count > 0 && c.code) || c.code
   );
 
   const targets = parentsWithReplies.slice(0, maxParents);
   if (targets.length === 0) return nestedComments;
 
-  const chunkSize = 5;
+  const lsdToken = getLsdToken();
+  const chunkSize = 6;
+
   for (let i = 0; i < targets.length; i += chunkSize) {
     if (isScrapeAborted()) break;
     const chunk = targets.slice(i, i + chunkSize);
     const promises = chunk.map(async (parent) => {
       try {
         const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.threads.net';
-        const targetUrl = `${origin}/t/${parent.code}`;
-        const res = await fetch(targetUrl, { credentials: 'include' });
+
+        // 1. Thử gọi GraphQL API trực tiếp nếu có external_id
+        if (parent.external_id && lsdToken) {
+          try {
+            const body = new URLSearchParams({
+              lsd: lsdToken,
+              doc_id: '8097822346994987',
+              variables: JSON.stringify({ postID: parent.external_id }),
+            });
+            const gqlRes = await fetch(`${origin}/api/graphql`, {
+              method: 'POST',
+              headers: {
+                'content-type': 'application/x-www-form-urlencoded',
+                'x-fb-lsd': lsdToken,
+                'x-ig-app-id': '238260118697367',
+              },
+              body: body.toString(),
+              credentials: 'include',
+            });
+            if (gqlRes.ok) {
+              const txt = await gqlRes.text();
+              const payloads = parseJsonPayloads(txt);
+              for (const p of payloads) {
+                const extracted: ScrapedComment[] = [];
+                extractCommentNode(p, extracted);
+                for (const sub of extracted) {
+                  if (!sub.text || !sub.author_username) continue;
+                  if (sub.external_id && sub.external_id === parent.external_id) continue;
+                  if (sub.author_username === parent.author_username && sub.text === parent.text) continue;
+
+                  const key = `${sub.author_username.toLowerCase()}:${sub.text}`;
+                  if (seenKeys.has(key)) continue;
+                  seenKeys.add(key);
+
+                  nestedComments.push({
+                    external_id: sub.external_id,
+                    author_username: sub.author_username,
+                    author_name: sub.author_name,
+                    author_avatar_url: sub.author_avatar_url,
+                    text: cleanPartMarkers(sub.text),
+                    like_count: sub.like_count,
+                    posted_at: sub.posted_at,
+                    parent_id: sub.parent_id || parent.external_id,
+                    reply_to_username: sub.reply_to_username || parent.author_username,
+                    code: sub.code,
+                    direct_reply_count: sub.direct_reply_count,
+                  });
+                }
+              }
+            }
+          } catch {}
+        }
+
+        // 2. Fetch HTML Sub-thread page
+        const targetUrl = parent.author_username
+          ? `${origin}/@${parent.author_username}/post/${parent.code}`
+          : `${origin}/t/${parent.code}`;
+
+        const res = await fetch(targetUrl, {
+          credentials: 'include',
+          headers: {
+            Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          },
+        });
         if (!res.ok) return;
         const html = await res.text();
 
@@ -868,10 +948,6 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
   // 1. Comment từ GraphQL interceptor
   for (const gc of interceptedCommentsBuffer) {
     if (!gc.text || !gc.author_username) continue;
-    if (gc.pageUrl && currentPostCode) {
-      const { postCode: bufPostCode } = parseThreadsUrl(gc.pageUrl);
-      if (bufPostCode && bufPostCode !== currentPostCode) continue;
-    }
 
     // Bỏ qua nếu là bài viết gốc (Main Post)
     if (isMainPostComment(gc, resolvedMainAuthor, mainTitleText, mainContentText, currentPostCode)) {
