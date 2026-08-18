@@ -124,6 +124,12 @@ function isRealSubReplyExpander(el: HTMLElement): boolean {
   return false;
 }
 
+// Ngân sách an toàn: tổng click expander tối đa cho CẢ lần quét + giới hạn thời gian.
+// Threads tự reload khi bị thao tác quá nhiều — phải dừng sớm.
+const MAX_TOTAL_CLICKS = 10;
+const MAX_SCAN_MS = 75_000;
+let totalClicksThisScan = 0;
+
 // Mở rộng các câu trả lời con (sub-replies) trực tiếp trên từng bình luận (tối ưu hóa chống lag DOM)
 async function expandSubReplies(doc: Document): Promise<{ found: number; clicked: number }> {
   let expandedCount = 0;
@@ -143,7 +149,7 @@ async function expandSubReplies(doc: Document): Promise<{ found: number; clicked
       foundCount++;
       // Chỉ click tối đa 2 expander mỗi lượt cuộn, chờ 600ms giữa mỗi lần —
       // mở quá nhanh làm Threads reload trang mất toàn bộ trạng thái.
-      if (expandedCount < 2) {
+      if (expandedCount < 2 && totalClicksThisScan < MAX_TOTAL_CLICKS) {
         if (el.offsetParent !== null || el.clientHeight > 0) {
           try {
             const txt = (el.textContent ?? '').trim();
@@ -190,7 +196,8 @@ async function expandSubReplies(doc: Document): Promise<{ found: number; clicked
                   numTarget.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: doc.defaultView ?? undefined }));
                 } catch {}
                 expandedCount++;
-                logDebug('expand', `clicked reply-count: "${count}" (tag=${numTarget.tagName.toLowerCase()}, href=${(numTarget as HTMLAnchorElement).getAttribute?.('href') ?? ''}, role=${numTarget.getAttribute('role') ?? ''})`);
+                totalClicksThisScan++;
+                logDebug('expand', `clicked reply-count: "${count}" (tag=${numTarget.tagName.toLowerCase()}, href=${(numTarget as HTMLAnchorElement).getAttribute?.('href') ?? ''}, role=${numTarget.getAttribute('role') ?? ''}, totalClicks=${totalClicksThisScan}/${MAX_TOTAL_CLICKS})`);
                 await new Promise((r) => setTimeout(r, 600));
                 closeComposerIfOpen(doc);
                 continue;
@@ -209,8 +216,9 @@ async function expandSubReplies(doc: Document): Promise<{ found: number; clicked
               el.dataset.tsExpanded = 'true';
               el.click();
               expandedCount++;
-              logDebug('expand', `clicked expander: "${txt.slice(0, 60)}"`);
-              await new Promise((r) => setTimeout(r, 700));
+              totalClicksThisScan++;
+              logDebug('expand', `clicked expander: "${txt.slice(0, 60)}" (totalClicks=${totalClicksThisScan}/${MAX_TOTAL_CLICKS})`);
+              await new Promise((r) => setTimeout(r, 600));
               closeComposerIfOpen(doc);
             }
           } catch {}
@@ -243,15 +251,43 @@ function countReplies(doc: Document): number {
 }
 
 export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?: number; maxScrolls?: number }): Promise<void> {
-  const maxScrolls = opts?.maxScrolls ?? 120;
+  const maxScrolls = opts?.maxScrolls ?? 90;
+  const scanStart = Date.now();
   let stableCount = 0;
   let lastBufferCount = -1;
   let lastDomCount = -1;
   let totalExpandersFound = 0;
   let totalExpandersClicked = 0;
+  let reloadDetected = false;
+
+  // Gắn marker vào body để phát hiện trang bị reload giữa chừng.
+  try {
+    let marker = doc.getElementById('ts-scan-marker');
+    if (!marker) {
+      marker = doc.createElement('div');
+      marker.id = 'ts-scan-marker';
+      marker.style.display = 'none';
+      doc.body.appendChild(marker);
+    }
+  } catch {}
 
   for (let i = 0; i < maxScrolls; i++) {
     if (isScrapeAborted()) break;
+    if (Date.now() - scanStart > MAX_SCAN_MS) {
+      logDebug('autoscroll', `dừng sớm: quá ${MAX_SCAN_MS}ms (an toàn chống reload)`);
+      break;
+    }
+    if (totalClicksThisScan >= MAX_TOTAL_CLICKS) {
+      logDebug('autoscroll', `dừng sớm: đã click ${totalClicksThisScan}/${MAX_TOTAL_CLICKS} expander (ngân sách chống reload)`);
+      break;
+    }
+    // Phát hiện trang bị reload: marker DOM của chúng ta biến mất.
+    const marker = doc.getElementById('ts-scan-marker');
+    if (!marker) {
+      reloadDetected = true;
+      logDebug('autoscroll', 'PHÁT HIỆN RELOAD — dừng scan ngay để giữ dữ liệu');
+      break;
+    }
 
     // 1. Quét và bấm mở rộng tất cả các câu trả lời con thực sự
     const { found, clicked } = await expandSubReplies(doc);
@@ -259,6 +295,13 @@ export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?
     totalExpandersClicked += clicked;
 
     if (isScrapeAborted()) break;
+
+    // Kiểm tra marker lần nữa sau khi expand (click có thể gây reload)
+    if (!doc.getElementById('ts-scan-marker')) {
+      reloadDetected = true;
+      logDebug('autoscroll', 'PHÁT HIỆN RELOAD sau expand — dừng scan ngay');
+      break;
+    }
 
     // 2. Cuộn phần tử cuối cùng vào viewport để kích hoạt IntersectionObserver của Threads
     const allCommentCards = Array.from(
@@ -350,5 +393,5 @@ export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?
   debugStats.expandersFound = totalExpandersFound;
   debugStats.expandersClicked = totalExpandersClicked;
   debugStats.repliesCounted = countReplies(doc);
-  logDebug('autoscroll', `done: scrolls=${maxScrolls} expandersFound=${totalExpandersFound} expandersClicked=${totalExpandersClicked} buffer=${getInterceptedCommentsCount()}`);
+  logDebug('autoscroll', `done: scrolls=${maxScrolls} expandersFound=${totalExpandersFound} expandersClicked=${totalExpandersClicked} buffer=${getInterceptedCommentsCount()} reloadDetected=${reloadDetected}`);
 }

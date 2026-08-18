@@ -43,20 +43,69 @@ export function getInterceptedCommentsCount(): number {
   return interceptedCommentsBuffer.length;
 }
 
+// Persist buffer qua sessionStorage để sống sót khi Threads tự reload trang.
+const PERSIST_KEY = 'ts_intercepted_buffer_v1';
+let persistTimer: number | null = null;
+
+function persistBuffer() {
+  try {
+    const payload = JSON.stringify(interceptedCommentsBuffer.slice(-1500));
+    sessionStorage.setItem(PERSIST_KEY, payload);
+  } catch {}
+}
+
+function restoreBuffer() {
+  try {
+    const raw = sessionStorage.getItem(PERSIST_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      const seen = new Set(interceptedCommentsBuffer.map(c => c.external_id || `${c.author_username}:${c.text}`));
+      for (const c of parsed) {
+        if (!c || !c.text || !c.author_username) continue;
+        const key = c.external_id || `${c.author_username}:${c.text}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        interceptedCommentsBuffer.push(c);
+      }
+      logScrapeDebug('persist', `restored ${parsed.length} comments từ sessionStorage (tổng buffer=${interceptedCommentsBuffer.length})`);
+    }
+  } catch {}
+}
+
+function schedulePersist() {
+  if (persistTimer != null) return;
+  persistTimer = window.setTimeout(() => {
+    persistTimer = null;
+    persistBuffer();
+  }, 800);
+}
+
+function logScrapeDebug(tag: string, msg: string) {
+  try {
+    console.log(`[TS-DEBUG] [${tag}] ${msg}`);
+  } catch {}
+}
+
 if (typeof window !== 'undefined') {
+  restoreBuffer();
   window.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'TS_GRAPHQL_COMMENTS_INTERCEPTED' && Array.isArray(event.data.comments)) {
       const pageUrl = typeof event.data.pageUrl === 'string' ? event.data.pageUrl : window.location.href;
       debugStats.interceptedMessages++;
       debugStats.totalInterceptedRaw += event.data.comments.length;
       debugStats.lastInterceptUrl = pageUrl;
+      let added = 0;
       for (const c of event.data.comments) {
         if (c && c.text && c.author_username) {
           interceptedCommentsBuffer.push({ ...c, pageUrl });
+          added++;
         }
       }
+      if (added > 0) schedulePersist();
     }
   });
+  window.addEventListener('beforeunload', () => persistBuffer());
 }
 
 function parseThreadsUrl(urlStr: string): { author: string | null; postCode: string | null } {
