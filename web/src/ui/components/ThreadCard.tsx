@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Fire, Sparkle, Coffee, ChatCircleDots, ArrowRight, ArrowSquareOut, Lightning, User } from '@phosphor-icons/react';
 import HeatGauge from './HeatGauge';
 import { labelFromScore, LABEL_COLORS } from '../../shared/labels';
@@ -7,7 +7,8 @@ import { useI18n } from '../i18n';
 import type { ThreadRecord } from '../../shared/types';
 
 export default function ThreadCard({ thread }: { thread: ThreadRecord }) {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
+  const navigate = useNavigate();
 
   let breakdown: { bang_no: number; trung_lap: number; vui_ve: number } | null = null;
   if (thread.score_breakdown) {
@@ -39,38 +40,47 @@ export default function ThreadCard({ thread }: { thread: ThreadRecord }) {
 
   const showContentSnippet = thread.content && thread.title && thread.title !== thread.content && thread.title !== 'Thread';
 
+  function handleCardClick() {
+    navigate(`/t/${thread.id}`);
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      navigate(`/t/${thread.id}`);
+    }
+  }
+
   return (
-    <article className="threadcard" style={{ '--card-heat': heat } as React.CSSProperties}>
-      <div className="threadcard-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '10px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          <div
-            style={{
-              width: '26px',
-              height: '26px',
-              borderRadius: '50%',
-              background: 'var(--surface-raised)',
-              border: '1px solid var(--border)',
-              display: 'grid',
-              placeItems: 'center',
-              color: 'var(--muted)',
-            }}
-          >
-            <User size={14} />
+    <article
+      className="threadcard"
+      style={{ '--card-heat': heat } as React.CSSProperties}
+      onClick={handleCardClick}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      role="link"
+      aria-label={`${displayTitle} - ${isScored ? `${Math.round(avg!)}/100 ${t('tc.dramaScore')}` : t('tc.pending')}`}
+    >
+      {/* 1. Header: Author & Drama Score Badge */}
+      <div className="threadcard-head">
+        <div className="threadcard-author">
+          <div className="threadcard-avatar">
+            <User size={14} weight="bold" />
           </div>
-          <span style={{ fontWeight: '700', fontSize: '13.5px', color: 'var(--ink)' }}>
+          <span className="threadcard-username">
             @{thread.author_username || t('tc.anon')}
           </span>
           {thread.posted_at != null && (
-            <span style={{ color: 'var(--muted)', fontSize: '12.5px' }}>
+            <span className="threadcard-time">
               · {formatRelativeTime(thread.posted_at)}
             </span>
           )}
         </div>
 
+        {/* Drama Level Badge - Rõ ràng: [Điểm]/100 ĐỘ DRAMA • TRẠNG THÁI */}
         {isScored ? (
           <div
             className={`threadcard-scorebig ${scoreBigClass}`}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '5px 10px', fontSize: '13px', borderRadius: 'var(--radius-pill)' }}
             title={t('tc.heatBadge')}
           >
             {cls === 'BÙNG NỔ' ? (
@@ -80,54 +90,59 @@ export default function ThreadCard({ thread }: { thread: ThreadRecord }) {
             ) : (
               <Sparkle size={15} weight="fill" />
             )}
-            <span style={{ fontWeight: '800', fontFamily: 'var(--font-mono)' }}>{avg!.toFixed(0)}/100</span>
-            <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            <span className="threadcard-score-val">{Math.round(avg!)}/100</span>
+            <span className="threadcard-score-label">{t('tc.dramaScore')}</span>
+            <span className="threadcard-score-dot">•</span>
+            <span className="threadcard-score-status">
               {cls === 'BÙNG NỔ' ? t('tc.hot') : cls === 'VUI VẺ' ? t('tc.calm') : t('tc.neutral')}
             </span>
           </div>
         ) : (
-          <span className="pill pending" style={{ fontSize: '11.5px' }}>
+          <span className="pill pending">
             <Lightning size={13} weight="fill" /> {t('tc.pending')}
           </span>
         )}
       </div>
 
-      <h3 style={{ margin: '0 0 8px', lineHeight: '1.4' }}>
-        <Link to={`/t/${thread.id}`} className="threadcard-title" style={{ fontSize: '17.5px', fontWeight: '800', color: 'var(--ink)' }}>
+      {/* 2. Tiêu đề & Nội dung tóm tắt */}
+      <h3 className="threadcard-title-wrap">
+        <span className="threadcard-title">
           {displayTitle}
-        </Link>
+        </span>
       </h3>
 
       {showContentSnippet && (
-        <p style={{ margin: '0 0 14px', fontSize: '13.5px', color: 'var(--muted)', lineHeight: '1.55', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+        <p className="threadcard-snippet">
           {thread.content}
         </p>
       )}
 
+      {/* 3. Phân bố cảm xúc (Sentiment Spectrum) */}
       {isScored && breakdown && (
-        <div style={{ margin: '14px 0 12px' }}>
+        <div className="threadcard-spectrum">
           <HeatGauge breakdown={breakdown} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginTop: '8px', fontSize: '12px', color: 'var(--muted)', flexWrap: 'wrap' }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--anger)' }} />
-              <b>{pctAngry}%</b> {t('tc.angry')} ({breakdown.bang_no})
+          <div className="threadcard-spectrum-legend">
+            <span className="spectrum-tag angry">
+              <span className="spectrum-dot angry" />
+              <b>{pctAngry}%</b> {t('tc.angry')} <small>({breakdown.bang_no})</small>
             </span>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--neutral)' }} />
-              <b>{pctNeutral}%</b> {t('tc.neutral')} ({breakdown.trung_lap})
+            <span className="spectrum-tag neutral">
+              <span className="spectrum-dot neutral" />
+              <b>{pctNeutral}%</b> {t('tc.neutral')} <small>({breakdown.trung_lap})</small>
             </span>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--calm)' }} />
-              <b>{pctCalm}%</b> {t('tc.positive')} ({breakdown.vui_ve})
+            <span className="spectrum-tag positive">
+              <span className="spectrum-dot positive" />
+              <b>{pctCalm}%</b> {t('tc.positive')} <small>({breakdown.vui_ve})</small>
             </span>
           </div>
         </div>
       )}
 
-      <div className="threadcard-foot" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '14px', paddingTop: '12px', borderTop: '1px solid var(--border-soft)', flexWrap: 'wrap', gap: '10px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '13px', color: 'var(--ink-2)' }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontWeight: '600' }}>
-            <ChatCircleDots size={16} color="var(--accent)" />
+      {/* 4. Footer: Số bình luận, Link Threads gốc & CTA */}
+      <div className="threadcard-foot">
+        <div className="threadcard-foot-left">
+          <span className="threadcard-comments-count">
+            <ChatCircleDots size={16} weight="fill" color="var(--accent)" />
             {thread.total_comments} {t('tc.comments')}
           </span>
           {thread.url && (
@@ -135,29 +150,18 @@ export default function ThreadCard({ thread }: { thread: ThreadRecord }) {
               href={thread.url}
               target="_blank"
               rel="noreferrer"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'var(--muted)', fontSize: '12px', textDecoration: 'none' }}
+              className="threadcard-threads-link"
               title={t('tc.onThreads')}
+              onClick={(e) => e.stopPropagation()}
             >
               Threads <ArrowSquareOut size={13} />
             </a>
           )}
         </div>
 
-        <Link
-          to={`/t/${thread.id}`}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '5px',
-            fontSize: '13px',
-            fontWeight: '700',
-            color: 'var(--accent)',
-            textDecoration: 'none',
-            transition: 'gap 150ms ease',
-          }}
-        >
-          {t('tc.viewReport')} <ArrowRight size={14} weight="bold" />
-        </Link>
+        <span className="threadcard-cta">
+          {t('tc.viewReport')} <ArrowRight size={14} weight="bold" className="threadcard-cta-icon" />
+        </span>
       </div>
     </article>
   );

@@ -94,16 +94,17 @@ export const translations = {
     'feed.pageInfo': 'Trang {page} / {totalPages} ({total} bài viết)',
 
     // ThreadCard
-    'tc.pending': 'Đang chờ chấm điểm',
-    'tc.hot': 'Bùng nổ',
-    'tc.calm': 'Vui vẻ',
-    'tc.neutral': 'Trung lập',
-    'tc.angry': 'Bùng nổ',
-    'tc.positive': 'Vui vẻ',
+    'tc.pending': 'Đang phân tích',
+    'tc.hot': 'Căng thẳng',
+    'tc.calm': 'Êm dịu',
+    'tc.neutral': 'Sôi nổi',
+    'tc.dramaScore': 'Độ drama',
+    'tc.angry': 'Gay gắt',
+    'tc.positive': 'Tích cực',
     'tc.comments': 'bình luận',
-    'tc.onThreads': 'Mở bài viết gốc trên Threads',
+    'tc.onThreads': 'Mở trên Threads',
     'tc.viewReport': 'Xem chi tiết',
-    'tc.heatBadge': 'Điểm nhiệt độ cảm xúc (0-100)',
+    'tc.heatBadge': 'Chỉ số độ drama thảo luận (0-100)',
     'tc.anon': 'ẩn danh',
 
     // SearchBox
@@ -277,16 +278,17 @@ export const translations = {
     'feed.pageInfo': 'Page {page} of {totalPages} ({total} posts)',
 
     // ThreadCard
-    'tc.pending': 'Pending AI Scoring',
-    'tc.hot': 'Hot',
+    'tc.pending': 'Analyzing',
+    'tc.hot': 'Tense',
     'tc.calm': 'Calm',
-    'tc.neutral': 'Neutral',
-    'tc.angry': 'Angry',
+    'tc.neutral': 'Lively',
+    'tc.dramaScore': 'Drama score',
+    'tc.angry': 'Tense',
     'tc.positive': 'Positive',
     'tc.comments': 'comments',
-    'tc.onThreads': 'Open original post on Threads',
+    'tc.onThreads': 'Open on Threads',
     'tc.viewReport': 'View report',
-    'tc.heatBadge': 'Sentiment heat score (0-100)',
+    'tc.heatBadge': 'Discussion drama score (0-100)',
     'tc.anon': 'anonymous',
 
     // SearchBox

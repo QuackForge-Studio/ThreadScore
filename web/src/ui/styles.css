@@ -1136,74 +1136,275 @@ button { font-family: var(--font-sans); }
 .sort-tab.active { color: var(--ink); border-bottom-color: var(--accent); }
 
 /* ===== ThreadCard ===== */
+/* ===== ThreadCard Redesign ===== */
 .threadcard {
   position: relative;
   background: var(--surface);
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-card);
-  padding: var(--space-5) var(--space-5);
+  padding: 20px 22px 16px;
   margin-bottom: var(--space-4);
   box-shadow: var(--shadow-card);
   overflow: hidden;
-  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+  user-select: none;
 }
+
 .threadcard::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--card-heat, var(--neutral)), transparent 70%);
-  opacity: 0.9;
+  height: 3.5px;
+  background: var(--card-heat, var(--neutral));
+  opacity: 0.95;
 }
-.threadcard:hover {
-  border-color: var(--border);
+
+.threadcard:hover,
+.threadcard:focus-visible {
+  border-color: var(--border-strong);
   box-shadow: var(--shadow-hover);
   transform: translateY(-2px);
 }
+
+.threadcard:focus-visible {
+  box-shadow: 0 0 0 3px rgba(229, 72, 77, 0.25), var(--shadow-hover);
+}
+
+/* 1. Header */
 .threadcard-head {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--space-3);
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
 }
-.threadcard-title {
-  font-size: 17px;
+
+.threadcard-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.threadcard-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--surface-sunk);
+  border: 1px solid var(--border);
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+
+.threadcard-username {
   font-weight: 700;
+  font-size: 13.5px;
+  color: var(--ink);
+}
+
+.threadcard-time {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+/* Drama Score Badge */
+.threadcard-scorebig {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  background: var(--anger-soft);
+  color: var(--anger-ink);
+  border: 1px solid rgba(229, 72, 77, 0.2);
+  flex-shrink: 0;
+}
+
+.threadcard-scorebig.calm {
+  background: var(--calm-soft);
+  color: var(--calm-ink);
+  border-color: rgba(42, 111, 142, 0.22);
+}
+
+.threadcard-scorebig.neutral {
+  background: var(--neutral-soft);
+  color: var(--neutral-ink);
+  border-color: rgba(154, 138, 120, 0.25);
+}
+
+.threadcard-score-val {
+  font-family: var(--font-mono);
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.threadcard-score-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+}
+
+.threadcard-score-dot {
+  opacity: 0.5;
+  margin: 0 1px;
+}
+
+.threadcard-score-status {
+  font-size: 11.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* 2. Title & Snippet */
+.threadcard-title-wrap {
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+
+.threadcard-title {
+  font-size: 17.5px;
+  font-weight: 800;
   letter-spacing: -0.015em;
   color: var(--ink);
   line-height: 1.35;
-  display: inline-block;
+  transition: color 150ms ease;
 }
-.threadcard-title:hover { color: var(--accent); }
-.threadcard-scorebig {
-  font-family: var(--font-mono);
-  font-weight: 800;
-  font-size: 22px;
-  line-height: 1;
-  color: var(--anger-ink);
-  letter-spacing: -0.03em;
-  flex-shrink: 0;
-  background: var(--anger-soft);
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
+
+.threadcard:hover .threadcard-title {
+  color: var(--accent);
 }
-.threadcard-scorebig.calm { color: var(--calm-ink); background: var(--calm-soft); }
-.threadcard-scorebig.neutral { color: var(--neutral-ink); background: var(--neutral-soft); }
-.threadcard-meta {
+
+.threadcard-snippet {
+  margin: 0 0 12px;
+  font-size: 13.5px;
   color: var(--muted);
-  font-size: 13px;
-  margin: 8px 0 var(--space-3);
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 3. Phân bố cảm xúc (Spectrum) */
+.threadcard-spectrum {
+  margin: 12px 0 10px;
+}
+
+.threadcard-spectrum-legend {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 14px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--muted);
   flex-wrap: wrap;
 }
+
+.spectrum-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.spectrum-tag b {
+  color: var(--ink-2);
+  font-weight: 700;
+}
+
+.spectrum-tag small {
+  color: var(--faint);
+  font-size: 11px;
+}
+
+.spectrum-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.spectrum-dot.angry { background: var(--anger); }
+.spectrum-dot.neutral { background: var(--neutral); }
+.spectrum-dot.positive { background: var(--calm); }
+
+/* 4. Footer */
 .threadcard-foot {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  margin-top: var(--space-3);
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-soft);
   flex-wrap: wrap;
+  gap: 10px;
+}
+
+.threadcard-foot-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.threadcard-comments-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+
+.threadcard-threads-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunk);
+  border: 1px solid var(--border-soft);
+  transition: all 150ms ease;
+}
+
+.threadcard-threads-link:hover {
+  color: var(--ink);
+  border-color: var(--border);
+  background: var(--surface-raised);
+}
+
+.threadcard-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  transition: gap 180ms ease, color 180ms ease;
+}
+
+.threadcard:hover .threadcard-cta {
+  color: var(--accent-strong);
+  gap: 8px;
+}
+
+.threadcard-cta-icon {
+  transition: transform 180ms ease;
+}
+
+.threadcard:hover .threadcard-cta-icon {
+  transform: translateX(2px);
 }
 .pill {
   display: inline-flex;
