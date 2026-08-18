@@ -736,11 +736,13 @@ button { font-family: var(--font-sans); }
 }
 
 .hero-heat-num {
+  display: inline-block;
   font-family: var(--font-mono);
   font-weight: 900;
   font-size: clamp(4.4rem, 8vw, 5.6rem);
-  line-height: 0.9;
-  letter-spacing: -0.05em;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  padding: 0 0.08em;
   color: var(--ink);
   background: linear-gradient(180deg, var(--num-grad-1) 0%, var(--num-grad-2) 48%, var(--num-grad-3) 100%);
   -webkit-background-clip: text;
