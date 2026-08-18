@@ -19,18 +19,24 @@ export const translations = {
     'theme.toggleLight': 'Chuyển sang chế độ sáng',
 
     // Hero Redesign
-    'hero.eyebrow': 'THREADS SENTIMENT INTELLIGENCE',
-    'hero.headlineStart': 'Biết cuộc thảo luận đang',
-    'hero.headlineAccent': 'nóng',
-    'hero.headlineEnd': 'đến đâu.',
-    'hero.desc': 'ThreadScore phân tích bình luận theo thời gian thực để đo độ nóng và sắc thái cuộc thảo luận.',
-    'hero.ctaExplore': 'Khám phá bài viết',
-    'hero.flameLabel': 'ĐIỂM NÓNG HÔM NAY',
+    'hero.liveBadge': 'RADAR CẢM XÚC THREADS · LIVE',
+    'hero.mainHeadline': 'Hôm nay Threads có biến gì không?',
+    'hero.subHeadline': 'Giải mã mức độ drama, phát hiện tranh cãi và đo lường cảm xúc từ hàng ngàn bình luận trên Threads bằng AI.',
+    'hero.flameLabel': 'ĐỘ DRAMA HÔM NAY',
     'hero.flameUnit': '/100 độ drama',
+    'hero.moodLow': 'Cộng đồng đang ở trạng thái êm dịu, ít tranh cãi nảy lửa.',
+    'hero.moodMid': 'Thảo luận đang sôi nổi với nhiều luồng ý kiến đa chiều.',
+    'hero.moodHigh': 'Chiến sự nổ ra! Rất nhiều tranh cãi gay gắt đang diễn ra.',
     'hero.flameStatusLow': 'Cuộc thảo luận đang ở mức êm dịu',
     'hero.flameStatusMid': 'Đang nóng lên từng giờ',
     'hero.flameStatusHigh': 'Cuộc thảo luận đang bùng nổ dữ dội!',
     'hero.flameNoData': 'Đang kết nối dữ liệu...',
+
+    // Sidebar
+    'sidebar.hottestTitle': 'Tâm điểm Drama',
+    'sidebar.statsTitle': 'Bản đồ cảm xúc nhanh',
+    'sidebar.extTitle': 'Cài Chrome Extension',
+    'sidebar.extDesc': 'Quét & đo độ drama bất kỳ bài viết Threads nào chỉ với 1 click.',
 
     // Marquee
     'marquee.explosive': 'Đo độ bùng nổ',
@@ -203,18 +209,24 @@ export const translations = {
     'theme.toggleLight': 'Switch to Light Mode',
 
     // Hero Redesign
-    'hero.eyebrow': 'THREADS SENTIMENT INTELLIGENCE',
-    'hero.headlineStart': 'Know how',
-    'hero.headlineAccent': 'heated',
-    'hero.headlineEnd': 'the conversation really is.',
-    'hero.desc': 'ThreadScore analyzes comments in real time to measure heat and sentiment across Threads.',
-    'hero.ctaExplore': 'Explore Threads',
-    'hero.flameLabel': 'TODAY\'S HEAT SCORE',
+    'hero.liveBadge': 'THREADS SENTIMENT RADAR · LIVE',
+    'hero.mainHeadline': "What's firing up Threads today?",
+    'hero.subHeadline': 'Decode drama levels, uncover heated debates, and measure community sentiment from thousands of comments using AI.',
+    'hero.flameLabel': 'TODAY\'S DRAMA SCORE',
     'hero.flameUnit': '/100 drama score',
+    'hero.moodLow': 'Discussions are currently calm with minimal controversy.',
+    'hero.moodMid': 'Discussions are lively with diverse opposing viewpoints.',
+    'hero.moodHigh': 'Heated drama detected! High tension across threads.',
     'hero.flameStatusLow': 'Conversations are calm & positive',
     'hero.flameStatusMid': 'Discussions are warming up',
     'hero.flameStatusHigh': 'Discussions are fiercely heated!',
     'hero.flameNoData': 'Connecting live data...',
+
+    // Sidebar
+    'sidebar.hottestTitle': 'Drama Spotlight',
+    'sidebar.statsTitle': 'Sentiment Overview',
+    'sidebar.extTitle': 'Get Chrome Extension',
+    'sidebar.extDesc': 'Scan & measure drama on any Threads post with just 1 click.',
 
     // Marquee
     'marquee.explosive': 'Explosion scoring',
