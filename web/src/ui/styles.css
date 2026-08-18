@@ -1286,7 +1286,7 @@ button { font-family: var(--font-sans); }
   flex-direction: column;
   gap: 20px;
   position: sticky;
-  top: 90px;
+  top: 24px;
 }
 
 /* Sidebar Widgets */

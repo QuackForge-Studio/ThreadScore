@@ -94,16 +94,17 @@ export default function HomePage() {
   // Tạo danh sách số trang thông minh
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    const maxP = Math.max(1, totalPages);
+    if (maxP <= 7) {
+      for (let i = 1; i <= maxP; i++) pages.push(i);
     } else {
       pages.push(1);
       if (page > 3) pages.push('...');
       const start = Math.max(2, page - 1);
-      const end = Math.min(totalPages - 1, page + 1);
+      const end = Math.min(maxP - 1, page + 1);
       for (let i = start; i <= end; i++) pages.push(i);
-      if (page < totalPages - 2) pages.push('...');
-      pages.push(totalPages);
+      if (page < maxP - 2) pages.push('...');
+      pages.push(maxP);
     }
     return pages;
   };
@@ -340,13 +341,13 @@ export default function HomePage() {
                   )}
 
                   {/* Phân trang Pagination */}
-                  {totalPages > 1 && (
+                  {threads.length > 0 && (
                     <div className="feed-pagination">
                       <div className="pagination-info">
                         {t('feed.pageInfo')
                           .replace('{page}', String(page))
-                          .replace('{totalPages}', String(totalPages))
-                          .replace('{total}', String(totalCount))}
+                          .replace('{totalPages}', String(Math.max(1, totalPages)))
+                          .replace('{total}', String(totalCount || threads.length))}
                       </div>
 
                       <div className="pagination-controls">
@@ -369,7 +370,7 @@ export default function HomePage() {
                                 type="button"
                                 className={`btn-page btn-page-num${p === page ? ' active' : ''}`}
                                 onClick={() => handlePageChange(p)}
-                                disabled={loading}
+                                disabled={loading || totalPages <= 1}
                               >
                                 {p}
                               </button>
