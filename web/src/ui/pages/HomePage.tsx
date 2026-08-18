@@ -90,6 +90,7 @@ export default function HomePage() {
 
   const avg = stats?.avg_anger ?? null;
   const heatTier: 'low' | 'mid' | 'high' = avg == null ? 'mid' : avg < 30 ? 'low' : avg < 70 ? 'mid' : 'high';
+  const isHot = (avg ?? 0) >= 60;
   const statusText = avg == null
     ? t('hero.flameNoData')
     : avg < 30
@@ -119,18 +120,39 @@ export default function HomePage() {
     <div className="page">
       {/* 1. HERO SECTION - Minimalist single flame heat metric */}
       <section className="hero" style={{ paddingTop: 'var(--space-7)', paddingBottom: 'var(--space-6)' }}>
-        {/* Visual ngọn lửa lớn & Điểm nóng duy nhất căn giữa */}
+        {/* Visual Hero Graphic: Ngọn lửa & Điểm nóng trực tiếp trên nền */}
         <Reveal>
-          <div className="hero-flame-wrap">
-            <div className={`hero-flame-card theme-${heatTier}`}>
-              <div className="hero-flame-glow" />
+          <div className="hero-heat-stage-wrap">
+            <div className={`hero-heat-stage theme-${heatTier} ${isHot ? 'is-hot' : ''}`}>
+              {/* Quầng nhiệt radial gradient phía sau ngọn lửa */}
+              <div className="hero-heat-glow" />
 
-              <div className="hero-flame-inner">
-                <span className="hero-flame-label">{t('hero.flameLabel')}</span>
+              {/* Sóng nhiệt uốn lượn hữu cơ (organic heat ripples / waves) */}
+              <div className="hero-heat-waves" aria-hidden="true">
+                <div className="heat-wave wave-1" />
+                <div className="heat-wave wave-2" />
+                <div className="heat-wave wave-3" />
+              </div>
 
-                {/* Visual Ngọn lửa trung tâm với vòng ring mảnh */}
+              {/* Hạt than hồng / sparks bay lên khi điểm nóng tăng */}
+              <div className="hero-heat-sparks" aria-hidden="true">
+                <span className="spark spark-1" />
+                <span className="spark spark-2" />
+                <span className="spark spark-3" />
+                <span className="spark spark-4" />
+                <span className="spark spark-5" />
+                <span className="spark spark-6" />
+              </div>
+
+              <div className="hero-heat-inner">
+                {/* 1. Label trung tâm: ĐIỂM NÓNG HÔM NAY · ˚ */}
+                <div className="hero-heat-label">
+                  <span>{t('hero.flameLabel')}</span>
+                  <span className="hero-heat-sparkle" aria-hidden="true">· ˚</span>
+                </div>
+
+                {/* 2. Visual Ngọn lửa trung tâm */}
                 <div className="hero-flame-visual-wrap">
-                  <div className="hero-flame-ring" />
                   <div className="hero-flame-icon-box">
                     <svg className="hero-flame-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <defs>
@@ -139,6 +161,10 @@ export default function HomePage() {
                           <stop offset="60%" stopColor={heatTier === 'low' ? '#3B8FB5' : heatTier === 'mid' ? '#E5484D' : '#FF453A'} />
                           <stop offset="100%" stopColor={heatTier === 'low' ? '#70BCD8' : heatTier === 'mid' ? '#FFD166' : '#FFA26B'} />
                         </linearGradient>
+                        <radialGradient id="flameCoreGlow" cx="50%" cy="60%" r="50%">
+                          <stop offset="0%" stopColor="#FFF9E6" stopOpacity="0.95" />
+                          <stop offset="100%" stopColor="#FFF4E0" stopOpacity="0.75" />
+                        </radialGradient>
                       </defs>
                       <path
                         d="M32 4C32 4 37 14 34 22C38 18 42 12 42 12C42 12 52 24 50 38C48 51 38 58 32 58C26 58 16 51 14 38C12 26 22 14 26 10C26 10 24 18 28 22C30 14 32 4 32 4Z"
@@ -146,25 +172,25 @@ export default function HomePage() {
                       />
                       <path
                         d="M32 26C32 26 36 32 34 38C37 35 39 31 39 31C39 31 44 38 42 46C40 53 35 56 32 56C29 56 24 53 22 46C20 40 26 33 28 30C28 30 27 34 29 36C30 32 32 26 32 26Z"
-                        fill="#FFF4E0"
-                        opacity="0.88"
+                        fill="url(#flameCoreGlow)"
                       />
                     </svg>
                   </div>
                 </div>
 
-                {/* Số điểm nóng duy nhất [HOT_SCORE]/100 */}
-                <div className="hero-flame-metric">
-                  <span className="hero-flame-num">
+                {/* 3. Con số lớn + /100 ĐIỂM NÓNG */}
+                <div className="hero-heat-metric">
+                  <span className="hero-heat-num">
                     {avg != null ? <CountUp to={Math.round(avg)} /> : '--'}
                   </span>
-                  <span className="hero-flame-unit">{t('hero.flameUnit')}</span>
+                  <span className="hero-heat-unit">{t('hero.flameUnit')}</span>
                 </div>
 
-                {/* Mô tả ngắn một dòng */}
-                <p className="hero-flame-desc">
-                  {statusText}
-                </p>
+                {/* 4. Dòng trạng thái trong pill nhỏ dạng kính mờ */}
+                <div className="hero-heat-pill">
+                  <span className="hero-heat-pill-dot" aria-hidden="true" />
+                  <span className="hero-heat-pill-text">{statusText}</span>
+                </div>
               </div>
             </div>
           </div>
