@@ -6,12 +6,14 @@ import {
   Lightning,
   CaretLeft,
   CaretRight,
+  Question,
 } from '@phosphor-icons/react';
 import { apiGet } from '../api';
 import SearchBox from '../components/SearchBox';
 import ThreadCard from '../components/ThreadCard';
 import HallOfFame from '../components/HallOfFame';
 import DonateModal from '../components/DonateModal';
+import HowScoreWorksModal from '../components/HowScoreWorksModal';
 import { Reveal, CountUp } from '../components/motion';
 import { useI18n } from '../i18n';
 import type { ThreadRecord, OverallStats } from '../../shared/types';
@@ -29,6 +31,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDonateOpen, setIsDonateOpen] = useState(false);
+  const [isHowOpen, setIsHowOpen] = useState(false);
 
   // Khi đổi sort thì reset về trang 1
   function handleSortChange(newSort: 'newest' | 'hottest' | 'most_comments') {
@@ -324,11 +327,19 @@ export default function HomePage() {
                 </div>
               ) : (
                 <>
-                  {threads.map((tItem, i) => (
-                    <Reveal key={tItem.id} delay={(i % 3) * 0.06}>
-                      <ThreadCard thread={tItem} />
-                    </Reveal>
-                  ))}
+                  {threads.map((tItem, i) => {
+                    const isFeatured = i === 0 && page === 1;
+                    const rankNum = i + 1 + (page - 1) * PAGE_SIZE;
+                    return (
+                      <Reveal key={tItem.id} delay={(i % 4) * 0.04}>
+                        <ThreadCard
+                          thread={tItem}
+                          rank={rankNum}
+                          variant={isFeatured ? 'featured' : 'compact'}
+                        />
+                      </Reveal>
+                    );
+                  })}
 
                   {threads.length === 0 && !error && (
                     <div className="empty-state">
@@ -517,6 +528,14 @@ export default function HomePage() {
                       </div>
                       <b className="stat-item-val">{stats.breakdown?.vui_ve ?? 0}</b>
                     </div>
+
+                    <button
+                      type="button"
+                      className="sidebar-how-link"
+                      onClick={() => setIsHowOpen(true)}
+                    >
+                      <Question size={14} weight="bold" /> {t('how.eyebrow')} & {t('how.step2.title')} ↗
+                    </button>
                   </div>
                 </div>
               )}
@@ -554,6 +573,7 @@ export default function HomePage() {
       </section>
 
       <DonateModal isOpen={isDonateOpen} onClose={() => setIsDonateOpen(false)} />
+      <HowScoreWorksModal isOpen={isHowOpen} onClose={() => setIsHowOpen(false)} />
     </div>
   );
 }

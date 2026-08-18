@@ -32,7 +32,15 @@ function getAvatarStyle(username: string | null) {
   };
 }
 
-export default function ThreadCard({ thread }: { thread: ThreadRecord }) {
+export default function ThreadCard({
+  thread,
+  rank,
+  variant = 'compact',
+}: {
+  thread: ThreadRecord;
+  rank?: number;
+  variant?: 'featured' | 'compact';
+}) {
   const { t } = useI18n();
   const navigate = useNavigate();
 
@@ -79,9 +87,95 @@ export default function ThreadCard({ thread }: { thread: ThreadRecord }) {
     }
   }
 
+  // ===== COMPACT RESULT ROW (#2, #3, ...) =====
+  if (variant === 'compact') {
+    return (
+      <article
+        className="threadcard threadcard-compact"
+        style={{ '--card-heat': heat } as React.CSSProperties}
+        onClick={handleCardClick}
+        onKeyDown={handleKeyDown}
+        tabIndex={0}
+        role="link"
+        aria-label={`${displayTitle} - ${isScored ? `${Math.round(avg!)}/100` : t('tc.pending')}`}
+      >
+        {/* Cột trái: Rank & Score Anchor */}
+        <div className="threadrow-anchor">
+          {rank != null && (
+            <span className="threadrow-rank">#{rank < 10 ? `0${rank}` : rank}</span>
+          )}
+          {isScored ? (
+            <div className={`threadrow-score ${scoreBigClass}`} title={`${Math.round(avg!)}/100 - ${cls}`}>
+              <span className="threadrow-score-val">{Math.round(avg!)}</span>
+              <span className="threadrow-score-icon">
+                {cls === 'BÙNG NỔ' ? (
+                  <Fire size={13} weight="fill" />
+                ) : cls === 'VUI VẺ' ? (
+                  <Coffee size={13} weight="fill" />
+                ) : (
+                  <Sparkle size={13} weight="fill" />
+                )}
+              </span>
+            </div>
+          ) : (
+            <div className="threadrow-score pending" title={t('tc.pending')}>
+              <Lightning size={14} weight="fill" />
+            </div>
+          )}
+        </div>
+
+        {/* Cột phải: Title + Lightweight Metadata Row */}
+        <div className="threadrow-body">
+          <h4 className="threadrow-title">{displayTitle}</h4>
+          <div className="threadrow-meta">
+            <div className="threadcard-avatar threadrow-avatar" style={avatarStyle}>
+              {thread.author_avatar_url ? (
+                <img
+                  src={thread.author_avatar_url}
+                  alt={authorName}
+                  className="threadcard-avatar-img"
+                  loading="lazy"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <span>{avatarInitial}</span>
+              )}
+            </div>
+            <span className="threadrow-author">@{authorName}</span>
+            {thread.posted_at != null && (
+              <span className="threadrow-meta-item">· {formatRelativeTime(thread.posted_at)}</span>
+            )}
+            <span className="threadrow-meta-item">
+              · <b>{thread.total_comments}</b> {t('tc.comments')}
+            </span>
+            {thread.url && (
+              <a
+                href={thread.url}
+                target="_blank"
+                rel="noreferrer"
+                className="threadrow-outlink"
+                title={t('tc.onThreads')}
+                onClick={(e) => e.stopPropagation()}
+              >
+                Threads <ArrowSquareOut size={12} weight="bold" />
+              </a>
+            )}
+          </div>
+        </div>
+
+        <div className="threadrow-action" aria-hidden="true">
+          <ArrowRight size={16} weight="bold" />
+        </div>
+      </article>
+    );
+  }
+
+  // ===== FEATURED EDITORIAL CARD (#1) =====
   return (
     <article
-      className="threadcard"
+      className="threadcard threadcard-featured"
       style={{ '--card-heat': heat } as React.CSSProperties}
       onClick={handleCardClick}
       onKeyDown={handleKeyDown}
@@ -89,6 +183,12 @@ export default function ThreadCard({ thread }: { thread: ThreadRecord }) {
       role="link"
       aria-label={`${displayTitle} - ${isScored ? `${Math.round(avg!)}/100 ${t('tc.dramaScore')}` : t('tc.pending')}`}
     >
+      <div className="featured-kicker-bar">
+        <span className="featured-kicker-pill">
+          <Fire size={13} weight="fill" /> #{rank ?? 1} TÂM ĐIỂM NỔI BẬT
+        </span>
+      </div>
+
       {/* 1. Header: Monogram Avatar & Drama Score Badge */}
       <div className="threadcard-head">
         <div className="threadcard-author">
@@ -117,7 +217,7 @@ export default function ThreadCard({ thread }: { thread: ThreadRecord }) {
           )}
         </div>
 
-        {/* Drama Level Badge với Tooltip giải thích tiêu chí */}
+        {/* Drama Level Badge */}
         {isScored ? (
           <div
             className={`threadcard-scorebig ${scoreBigClass}`}
@@ -136,9 +236,6 @@ export default function ThreadCard({ thread }: { thread: ThreadRecord }) {
             <span className="threadcard-score-status">
               {cls === 'BÙNG NỔ' ? t('tc.hot') : cls === 'VUI VẺ' ? t('tc.calm') : t('tc.neutral')}
             </span>
-            <span className="threadcard-score-info-btn" aria-hidden="true">
-              <Question size={11} weight="bold" />
-            </span>
           </div>
         ) : (
           <span className="pill pending">
@@ -147,9 +244,9 @@ export default function ThreadCard({ thread }: { thread: ThreadRecord }) {
         )}
       </div>
 
-      {/* 2. Tiêu đề với line-height thoáng cho dấu tiếng Việt */}
+      {/* 2. Tiêu đề nổi bật */}
       <h3 className="threadcard-title-wrap">
-        <span className="threadcard-title">
+        <span className="threadcard-title featured-title">
           {displayTitle}
         </span>
       </h3>
@@ -175,7 +272,7 @@ export default function ThreadCard({ thread }: { thread: ThreadRecord }) {
         </div>
       )}
 
-      {/* 4. Footer: Số bình luận, Nút Threads nổi bật & CTA */}
+      {/* 4. Footer */}
       <div className="threadcard-foot">
         <div className="threadcard-foot-left">
           <span className="threadcard-comments-count">
