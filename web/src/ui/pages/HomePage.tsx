@@ -113,21 +113,38 @@ export default function HomePage() {
     <div className="page">
       {/* 1. HERO SECTION - Minimalist single flame heat metric */}
       <section className="hero" style={{ paddingTop: 'var(--space-7)', paddingBottom: 'var(--space-6)' }}>
-        {/* Visual Hero Graphic: Ngọn lửa & Điểm nóng trực tiếp trên nền */}
+        {/* Visual Hero Graphic: Heat Reactor trực tiếp trên nền canvas */}
         <Reveal>
           <div className="hero-heat-stage-wrap">
             <div className={`hero-heat-stage theme-${heatTier} ${isHot ? 'is-hot' : ''}`}>
-              {/* Quầng nhiệt radial gradient phía sau ngọn lửa */}
-              <div className="hero-heat-glow" />
+              {/* 1. 3 lớp Radial Glow: Lõi cam/đỏ mờ, Vàng kem, Ambient tan vào nền */}
+              <div className="reactor-glow-ambient" aria-hidden="true" />
+              <div className="reactor-glow-mid" aria-hidden="true" />
+              <div className="reactor-glow-core" aria-hidden="true" />
 
-              {/* Sóng nhiệt uốn lượn hữu cơ (organic heat ripples / waves) */}
-              <div className="hero-heat-waves" aria-hidden="true">
-                <div className="heat-wave wave-1" />
-                <div className="heat-wave wave-2" />
-                <div className="heat-wave wave-3" />
+              {/* 2. Vòng nhiệt hữu cơ bất đối xứng (broken wave / morphing contour) */}
+              <div className="reactor-heat-contour" aria-hidden="true">
+                <svg className="contour-svg" viewBox="0 0 260 260" fill="none">
+                  <path
+                    className="contour-path-1"
+                    d="M130 18 C192 12, 244 68, 238 134 C232 198, 182 244, 122 240 C60 236, 16 186, 22 124 C28 64, 72 24, 130 18 Z"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeDasharray="28 16 72 20 40 14 96 18"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    className="contour-path-2"
+                    d="M134 34 C182 28, 224 74, 218 128 C212 182, 172 222, 126 220 C78 216, 40 176, 44 124 C48 76, 88 38, 134 34 Z"
+                    stroke="currentColor"
+                    strokeWidth="1.2"
+                    strokeDasharray="44 22 16 18 64 24"
+                    strokeLinecap="round"
+                  />
+                </svg>
               </div>
 
-              {/* Hạt than hồng / sparks bay lên khi điểm nóng tăng */}
+              {/* 3. 8 Hạt than hồng (embers) phân bố bất đối xứng quanh và dưới flame */}
               <div className="hero-heat-sparks" aria-hidden="true">
                 <span className="spark spark-1" />
                 <span className="spark spark-2" />
@@ -135,37 +152,91 @@ export default function HomePage() {
                 <span className="spark spark-4" />
                 <span className="spark spark-5" />
                 <span className="spark spark-6" />
+                <span className="spark spark-7" />
+                <span className="spark spark-8" />
               </div>
 
               <div className="hero-heat-inner">
-                {/* Visual Ngọn lửa trung tâm */}
+                {/* 4. Visual Anchor: Flame-Orb (Signature Icon với sóng nóng lỏng & vệt sáng chéo) */}
                 <div className="hero-flame-visual-wrap">
                   <div className="hero-flame-icon-box">
                     <svg className="hero-flame-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <defs>
-                        <linearGradient id="flameGradHot" x1="0%" y1="100%" x2="0%" y2="0%">
-                          <stop offset="0%" stopColor={heatTier === 'low' ? '#2A6F8E' : heatTier === 'mid' ? '#F05A28' : '#E5484D'} />
-                          <stop offset="60%" stopColor={heatTier === 'low' ? '#3B8FB5' : heatTier === 'mid' ? '#E5484D' : '#FF453A'} />
-                          <stop offset="100%" stopColor={heatTier === 'low' ? '#70BCD8' : heatTier === 'mid' ? '#FFD166' : '#FFA26B'} />
+                        {/* Clip Path cho vệt sáng chéo specular sheen */}
+                        <clipPath id="flameBodyClip">
+                          <path d="M32 4C32 4 37 14 34 22C38 18 42 12 42 12C42 12 52 24 50 38C48 51 38 58 32 58C26 58 16 51 14 38C12 26 22 14 26 10C26 10 24 18 28 22C30 14 32 4 32 4Z" />
+                        </clipPath>
+
+                        {/* Thân ngọn lửa chính */}
+                        <linearGradient id="flameBodyGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+                          <stop offset="0%" stopColor={heatTier === 'low' ? '#1E5874' : heatTier === 'mid' ? '#D63F15' : '#BD2429'} />
+                          <stop offset="35%" stopColor={heatTier === 'low' ? '#2A6F8E' : heatTier === 'mid' ? '#F05A28' : '#E5484D'} />
+                          <stop offset="70%" stopColor={heatTier === 'low' ? '#3B8FB5' : heatTier === 'mid' ? '#FF7A45' : '#FF453A'} />
+                          <stop offset="100%" stopColor={heatTier === 'low' ? '#78C4E0' : heatTier === 'mid' ? '#FFD166' : '#FFA26B'} />
                         </linearGradient>
-                        <radialGradient id="flameCoreGlow" cx="50%" cy="60%" r="50%">
-                          <stop offset="0%" stopColor="#FFF9E6" stopOpacity="0.95" />
-                          <stop offset="100%" stopColor="#FFF4E0" stopOpacity="0.75" />
+
+                        {/* Lõi sóng lỏng nhiệt chuyển động (Liquid Hot Wave) */}
+                        <linearGradient id="flameLiquidGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+                          <stop offset="0%" stopColor={heatTier === 'low' ? '#FFA26B' : '#FFE5A3'} stopOpacity={heatTier === 'low' ? '0.75' : '0.95'} />
+                          <stop offset="50%" stopColor={heatTier === 'low' ? '#FFD166' : '#FFF4E0'} stopOpacity="0.88" />
+                          <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.95" />
+                        </linearGradient>
+
+                        {/* Than hồng nhen nhóm ở cuống/đáy đối với score thấp (Than hồng đang thức) */}
+                        <radialGradient id="flameEmberRoot" cx="50%" cy="90%" r="52%">
+                          <stop offset="0%" stopColor="#FF5722" stopOpacity="0.95" />
+                          <stop offset="40%" stopColor="#F05A28" stopOpacity="0.65" />
+                          <stop offset="85%" stopColor="#2A6F8E" stopOpacity="0" />
                         </radialGradient>
+
+                        {/* Vệt sáng quét ngang chéo */}
+                        <linearGradient id="sheenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0" />
+                          <stop offset="45%" stopColor="#FFFFFF" stopOpacity="0.08" />
+                          <stop offset="50%" stopColor="#FFFFFF" stopOpacity="0.55" />
+                          <stop offset="55%" stopColor="#FFFFFF" stopOpacity="0.12" />
+                          <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+                        </linearGradient>
                       </defs>
+
+                      {/* 1. Lớp thân lửa chính */}
                       <path
+                        className="flame-body-path"
                         d="M32 4C32 4 37 14 34 22C38 18 42 12 42 12C42 12 52 24 50 38C48 51 38 58 32 58C26 58 16 51 14 38C12 26 22 14 26 10C26 10 24 18 28 22C30 14 32 4 32 4Z"
-                        fill="url(#flameGradHot)"
+                        fill="url(#flameBodyGrad)"
                       />
+
+                      {/* 2. Đốm than hồng nhen nhóm ở đáy (cho cảm giác than hồng đang thức) */}
                       <path
-                        d="M32 26C32 26 36 32 34 38C37 35 39 31 39 31C39 31 44 38 42 46C40 53 35 56 32 56C29 56 24 53 22 46C20 40 26 33 28 30C28 30 27 34 29 36C30 32 32 26 32 26Z"
-                        fill="url(#flameCoreGlow)"
+                        className="flame-ember-root-path"
+                        d="M32 4C32 4 37 14 34 22C38 18 42 12 42 12C42 12 52 24 50 38C48 51 38 58 32 58C26 58 16 51 14 38C12 26 22 14 26 10C26 10 24 18 28 22C30 14 32 4 32 4Z"
+                        fill="url(#flameEmberRoot)"
+                        opacity={heatTier === 'low' ? '0.88' : '0.45'}
                       />
+
+                      {/* 3. Lớp sóng chất lỏng nhiệt bên trong (Liquid Heat Wave) */}
+                      <path
+                        className="flame-liquid-wave"
+                        d="M32 24C32 24 37 31 35 37C38 34 40 30 40 30C40 30 45 37 43 45C41 52 36 55 32 55C28 55 23 52 21 45C19 39 25 32 27 29C27 29 26 33 28 35C29 31 32 24 32 24Z"
+                        fill="url(#flameLiquidGrad)"
+                      />
+
+                      {/* 4. Vệt sáng chạy chéo qua icon (Specular Light Sweep) */}
+                      <g clipPath="url(#flameBodyClip)">
+                        <rect
+                          className="flame-sheen-sweep"
+                          x="-35"
+                          y="-35"
+                          width="134"
+                          height="134"
+                          fill="url(#sheenGrad)"
+                        />
+                      </g>
                     </svg>
                   </div>
                 </div>
 
-                {/* Con số lớn + /100 ĐIỂM NÓNG */}
+                {/* 5. Con số lớn + /100 độ drama */}
                 <div className="hero-heat-metric">
                   <span className="hero-heat-num">
                     {avg != null ? <CountUp to={Math.round(avg)} /> : '--'}

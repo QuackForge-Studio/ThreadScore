@@ -362,6 +362,7 @@ button { font-family: var(--font-sans); }
 .lang-btn.active { color: #FFFFFF; background: var(--accent); }
 
 /* ===== Hero Redesign: Frameless Heat Stage Hero Graphic ===== */
+/* ===== Hero Redesign: Heat Reactor Frameless Graphic ===== */
 .hero {
   position: relative;
   padding: var(--space-8) var(--space-5) var(--space-7);
@@ -383,147 +384,210 @@ button { font-family: var(--font-sans); }
   justify-content: center;
   text-align: center;
   padding: var(--space-4) var(--space-4) 0;
-  /* Trực tiếp trên nền kem (canvas), không bọc card trắng */
 }
 
-/* 1. Quầng nhiệt radial gradient: vàng kem rất mờ ở ngoài, cam/đỏ dịu ngay lõi */
-.hero-heat-glow {
+/* 1. Ba lớp Radial Glow: Lõi cam/đỏ mờ, Vàng kem, Ambient tan vào nền */
+.reactor-glow-ambient {
   position: absolute;
-  top: 48%;
+  top: 40%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 380px;
-  height: 380px;
+  width: 560px;
+  height: 560px;
   border-radius: 50%;
   pointer-events: none;
+  filter: blur(65px);
   z-index: 0;
-  transition: all 600ms cubic-bezier(0.16, 1, 0.3, 1);
-  filter: blur(32px);
+  transition: all 600ms ease;
+}
+
+.reactor-glow-mid {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(38px);
+  z-index: 0;
+  transition: all 600ms ease;
+}
+
+.reactor-glow-core {
+  position: absolute;
+  top: 38%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(18px);
+  z-index: 0;
+  transition: all 600ms ease;
 }
 
 /* Theme Glows by Tier */
-.hero-heat-stage.theme-low .hero-heat-glow {
-  background: radial-gradient(circle, rgba(42, 111, 142, 0.18) 0%, rgba(112, 188, 216, 0.08) 40%, rgba(243, 238, 228, 0) 72%);
-}
 .hero-heat-stage.theme-low {
-  --stage-accent: var(--calm);
-  --stage-ink: var(--ink);
-  --wave-color: rgba(42, 111, 142, 0.2);
-  --dot-color: var(--calm);
+  --contour-color: rgba(42, 111, 142, 0.22);
+  --spark-color: #FFA26B;
+  --spark-glow: rgba(240, 90, 40, 0.6);
+  --num-grad-1: #1C130D;
+  --num-grad-2: #381A12;
+  --num-grad-3: #6E220C;
+}
+.hero-heat-stage.theme-low .reactor-glow-ambient {
+  background: radial-gradient(circle, rgba(42, 111, 142, 0.14) 0%, rgba(112, 188, 216, 0.06) 45%, rgba(243, 238, 228, 0) 75%);
+}
+.hero-heat-stage.theme-low .reactor-glow-mid {
+  background: radial-gradient(circle, rgba(255, 222, 160, 0.16) 0%, rgba(255, 238, 204, 0.08) 50%, rgba(243, 238, 228, 0) 75%);
+}
+.hero-heat-stage.theme-low .reactor-glow-core {
+  background: radial-gradient(circle, rgba(240, 90, 40, 0.2) 0%, rgba(255, 146, 72, 0.1) 48%, rgba(42, 111, 142, 0) 75%);
 }
 
-.hero-heat-stage.theme-mid .hero-heat-glow {
-  background: radial-gradient(circle, rgba(240, 90, 40, 0.18) 0%, rgba(255, 209, 102, 0.1) 42%, rgba(243, 238, 228, 0) 75%);
-}
 .hero-heat-stage.theme-mid {
-  --stage-accent: var(--ember);
-  --stage-ink: var(--ink);
-  --wave-color: rgba(240, 90, 40, 0.22);
-  --dot-color: var(--ember);
+  --contour-color: rgba(240, 90, 40, 0.26);
+  --spark-color: #FFD166;
+  --spark-glow: rgba(240, 90, 40, 0.8);
+  --num-grad-1: #1A0E08;
+  --num-grad-2: #52190A;
+  --num-grad-3: #9E2A0E;
+}
+.hero-heat-stage.theme-mid .reactor-glow-ambient {
+  background: radial-gradient(circle, rgba(240, 90, 40, 0.15) 0%, rgba(255, 209, 102, 0.08) 45%, rgba(243, 238, 228, 0) 75%);
+}
+.hero-heat-stage.theme-mid .reactor-glow-mid {
+  background: radial-gradient(circle, rgba(255, 209, 102, 0.18) 0%, rgba(255, 235, 185, 0.08) 50%, rgba(243, 238, 228, 0) 75%);
+}
+.hero-heat-stage.theme-mid .reactor-glow-core {
+  background: radial-gradient(circle, rgba(240, 90, 40, 0.28) 0%, rgba(255, 160, 80, 0.12) 50%, rgba(240, 90, 40, 0) 75%);
 }
 
-.hero-heat-stage.theme-high .hero-heat-glow,
-.hero-heat-stage.is-hot .hero-heat-glow {
-  width: 520px;
-  height: 520px;
-  background: radial-gradient(circle, rgba(229, 72, 77, 0.26) 0%, rgba(240, 90, 40, 0.18) 38%, rgba(255, 209, 102, 0.09) 64%, rgba(243, 238, 228, 0) 82%);
-}
 .hero-heat-stage.theme-high,
 .hero-heat-stage.is-hot {
-  --stage-accent: var(--anger);
-  --stage-ink: var(--ink);
-  --wave-color: rgba(229, 72, 77, 0.28);
-  --dot-color: var(--anger);
+  --contour-color: rgba(229, 72, 77, 0.32);
+  --spark-color: #FFE066;
+  --spark-glow: rgba(229, 72, 77, 0.9);
+  --num-grad-1: #1F0A06;
+  --num-grad-2: #7A1909;
+  --num-grad-3: #C2292E;
+}
+.hero-heat-stage.theme-high .reactor-glow-ambient,
+.hero-heat-stage.is-hot .reactor-glow-ambient {
+  background: radial-gradient(circle, rgba(229, 72, 77, 0.24) 0%, rgba(240, 90, 40, 0.14) 42%, rgba(243, 238, 228, 0) 78%);
+}
+.hero-heat-stage.theme-high .reactor-glow-mid,
+.hero-heat-stage.is-hot .reactor-glow-mid {
+  background: radial-gradient(circle, rgba(255, 175, 75, 0.22) 0%, rgba(255, 215, 130, 0.1) 50%, rgba(243, 238, 228, 0) 75%);
+}
+.hero-heat-stage.theme-high .reactor-glow-core,
+.hero-heat-stage.is-hot .reactor-glow-core {
+  background: radial-gradient(circle, rgba(229, 72, 77, 0.36) 0%, rgba(240, 90, 40, 0.18) 48%, rgba(229, 72, 77, 0) 75%);
 }
 
 /* Dark mode quầng nhiệt */
-[data-theme="dark"] .hero-heat-stage.theme-low .hero-heat-glow {
-  background: radial-gradient(circle, rgba(42, 111, 142, 0.28) 0%, rgba(112, 188, 216, 0.12) 40%, transparent 72%);
+[data-theme="dark"] .hero-heat-stage.theme-low {
+  --num-grad-1: #FFFDF8;
+  --num-grad-2: #E8B89C;
+  --num-grad-3: #FF8F6B;
 }
-[data-theme="dark"] .hero-heat-stage.theme-mid .hero-heat-glow {
-  background: radial-gradient(circle, rgba(240, 90, 40, 0.26) 0%, rgba(255, 209, 102, 0.12) 45%, transparent 74%);
+[data-theme="dark"] .hero-heat-stage.theme-low .reactor-glow-ambient {
+  background: radial-gradient(circle, rgba(42, 111, 142, 0.25) 0%, transparent 70%);
 }
-[data-theme="dark"] .hero-heat-stage.theme-high .hero-heat-glow,
-[data-theme="dark"] .hero-heat-stage.is-hot .hero-heat-glow {
-  background: radial-gradient(circle, rgba(229, 72, 77, 0.38) 0%, rgba(240, 90, 40, 0.24) 38%, rgba(255, 209, 102, 0.1) 62%, transparent 80%);
+[data-theme="dark"] .hero-heat-stage.theme-low .reactor-glow-mid {
+  background: radial-gradient(circle, rgba(255, 210, 140, 0.12) 0%, transparent 65%);
+}
+[data-theme="dark"] .hero-heat-stage.theme-low .reactor-glow-core {
+  background: radial-gradient(circle, rgba(240, 90, 40, 0.28) 0%, transparent 65%);
 }
 
-/* 2. Sóng nhiệt méo hữu cơ (heat waves) uốn lượn mềm mại thay vì dotted spinner */
-.hero-heat-waves {
+[data-theme="dark"] .hero-heat-stage.theme-mid {
+  --num-grad-1: #FFFDF8;
+  --num-grad-2: #FFCA80;
+  --num-grad-3: #FF7043;
+}
+[data-theme="dark"] .hero-heat-stage.theme-mid .reactor-glow-ambient {
+  background: radial-gradient(circle, rgba(240, 90, 40, 0.26) 0%, transparent 70%);
+}
+[data-theme="dark"] .hero-heat-stage.theme-mid .reactor-glow-mid {
+  background: radial-gradient(circle, rgba(255, 209, 102, 0.15) 0%, transparent 65%);
+}
+[data-theme="dark"] .hero-heat-stage.theme-mid .reactor-glow-core {
+  background: radial-gradient(circle, rgba(240, 90, 40, 0.35) 0%, transparent 65%);
+}
+
+[data-theme="dark"] .hero-heat-stage.theme-high,
+[data-theme="dark"] .hero-heat-stage.is-hot {
+  --num-grad-1: #FFFDF8;
+  --num-grad-2: #FFA38E;
+  --num-grad-3: #FF453A;
+}
+[data-theme="dark"] .hero-heat-stage.theme-high .reactor-glow-ambient,
+[data-theme="dark"] .hero-heat-stage.is-hot .reactor-glow-ambient {
+  background: radial-gradient(circle, rgba(229, 72, 77, 0.35) 0%, transparent 70%);
+}
+[data-theme="dark"] .hero-heat-stage.theme-high .reactor-glow-mid,
+[data-theme="dark"] .hero-heat-stage.is-hot .reactor-glow-mid {
+  background: radial-gradient(circle, rgba(255, 175, 75, 0.18) 0%, transparent 65%);
+}
+[data-theme="dark"] .hero-heat-stage.theme-high .reactor-glow-core,
+[data-theme="dark"] .hero-heat-stage.is-hot .reactor-glow-core {
+  background: radial-gradient(circle, rgba(229, 72, 77, 0.45) 0%, transparent 65%);
+}
+
+/* 2. Vòng nhiệt hữu cơ bất đối xứng (broken wave / morphing contour) */
+.reactor-heat-contour {
   position: absolute;
-  top: 46%;
+  top: 38%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 210px;
-  height: 210px;
+  width: 250px;
+  height: 250px;
   pointer-events: none;
   z-index: 1;
+  color: var(--contour-color);
 }
 
-.heat-wave {
-  position: absolute;
-  inset: 0;
-  border: 1.5px solid var(--wave-color, rgba(240, 90, 40, 0.2));
-  border-radius: 48% 52% 56% 44% / 44% 56% 48% 52%;
-  opacity: 0.7;
-  transition: border-color 400ms ease;
+.contour-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
 }
 
-.heat-wave.wave-1 {
-  animation: heat-morph-1 14s ease-in-out infinite alternate;
+.contour-path-1 {
+  animation: contour-rotate-1 28s linear infinite;
+  transform-origin: 130px 130px;
+  opacity: 0.85;
 }
 
-.heat-wave.wave-2 {
-  inset: -16px;
-  border-radius: 54% 46% 42% 58% / 58% 42% 54% 46%;
-  opacity: 0.45;
-  animation: heat-morph-2 18s ease-in-out infinite alternate-reverse;
+.contour-path-2 {
+  animation: contour-rotate-2 36s linear infinite;
+  transform-origin: 130px 130px;
+  opacity: 0.55;
 }
 
-.heat-wave.wave-3 {
-  inset: -36px;
-  border-radius: 46% 54% 50% 50% / 52% 48% 52% 48%;
-  opacity: 0.25;
-  animation: heat-morph-1 22s linear infinite;
+@keyframes contour-rotate-1 {
+  0% { transform: rotate(0deg) scale(0.97); }
+  50% { transform: rotate(180deg) scale(1.03); }
+  100% { transform: rotate(360deg) scale(0.97); }
 }
 
-@keyframes heat-morph-1 {
-  0% {
-    transform: rotate(0deg) scale(0.96);
-    border-radius: 48% 52% 56% 44% / 44% 56% 48% 52%;
-  }
-  50% {
-    transform: rotate(180deg) scale(1.04);
-    border-radius: 56% 44% 48% 52% / 52% 48% 44% 56%;
-  }
-  100% {
-    transform: rotate(360deg) scale(0.96);
-    border-radius: 48% 52% 56% 44% / 44% 56% 48% 52%;
-  }
+@keyframes contour-rotate-2 {
+  0% { transform: rotate(360deg) scale(1.02); }
+  50% { transform: rotate(180deg) scale(0.96); }
+  100% { transform: rotate(0deg) scale(1.02); }
 }
 
-@keyframes heat-morph-2 {
-  0% {
-    transform: rotate(360deg) scale(1.02);
-    border-radius: 54% 46% 42% 58% / 58% 42% 54% 46%;
-  }
-  50% {
-    transform: rotate(180deg) scale(0.97);
-    border-radius: 44% 56% 58% 42% / 46% 54% 42% 58%;
-  }
-  100% {
-    transform: rotate(0deg) scale(1.02);
-    border-radius: 54% 46% 42% 58% / 58% 42% 54% 46%;
-  }
-}
-
-/* 3. Hạt than hồng / sparks bay lên */
+/* 3. 8 Hạt than hồng (embers) phân bố bất đối xứng quanh và dưới flame */
 .hero-heat-sparks {
   position: absolute;
-  top: 42%;
+  top: 38%;
   left: 50%;
-  width: 140px;
-  height: 140px;
+  width: 170px;
+  height: 170px;
   transform: translate(-50%, -50%);
   pointer-events: none;
   z-index: 2;
@@ -535,30 +599,26 @@ button { font-family: var(--font-sans); }
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #FFA26B;
-  box-shadow: 0 0 6px #F05A28;
+  background: var(--spark-color, #FFA26B);
+  box-shadow: 0 0 6px var(--spark-glow, rgba(240, 90, 40, 0.6));
   opacity: 0;
   pointer-events: none;
 }
 
-.hero-heat-stage.theme-low .spark {
-  background: #70BCD8;
-  box-shadow: 0 0 6px #2A6F8E;
-}
+/* 8 Vị trí bất đối xứng & animation trôi nổi */
+.spark-1 { left: 34%; bottom: 28px; animation: ember-rise 4.4s ease-out infinite 0.2s; --spark-drift: -1.2; }
+.spark-2 { left: 66%; bottom: 22px; animation: ember-rise 3.8s ease-out infinite 1.4s; --spark-drift: 1.4; }
+.spark-3 { left: 24%; bottom: 44px; animation: ember-rise 4.8s ease-out infinite 2.2s; --spark-drift: -1.6; }
+.spark-4 { left: 74%; bottom: 38px; animation: ember-rise 3.6s ease-out infinite 0.8s; --spark-drift: 1.1; }
+.spark-5 { left: 45%; bottom: 16px; animation: ember-rise 4.2s ease-out infinite 3.0s; --spark-drift: 0.4; }
+.spark-6 { left: 58%; bottom: 14px; animation: ember-rise 3.4s ease-out infinite 1.8s; --spark-drift: -0.7; }
+.spark-7 { left: 38%; bottom: 50px; animation: ember-rise 4.6s ease-out infinite 2.6s; --spark-drift: 0.9; }
+.spark-8 { left: 62%; bottom: 54px; animation: ember-rise 3.9s ease-out infinite 1.1s; --spark-drift: -1.3; }
 
-/* Sparks positions & floating animation */
-.spark-1 { left: 42%; bottom: 26px; animation: ember-rise 4.2s ease-out infinite 0.2s; }
-.spark-2 { left: 58%; bottom: 22px; animation: ember-rise 3.8s ease-out infinite 1.4s; }
-.spark-3 { left: 35%; bottom: 32px; animation: ember-rise 4.6s ease-out infinite 2.3s; }
-.spark-4 { left: 66%; bottom: 28px; animation: ember-rise 3.5s ease-out infinite 0.8s; }
-.spark-5 { left: 48%; bottom: 36px; animation: ember-rise 4.0s ease-out infinite 2.9s; }
-.spark-6 { left: 54%; bottom: 18px; animation: ember-rise 3.2s ease-out infinite 1.8s; }
-
-/* Khi điểm nóng >= 60 (is-hot), sparks sinh động và sáng hơn */
+/* Khi điểm nóng >= 60 (is-hot), sparks sinh động hơn */
 .hero-heat-stage.is-hot .spark {
   width: 5px;
   height: 5px;
-  background: #FFD166;
   box-shadow: 0 0 8px #FF453A, 0 0 14px rgba(240, 90, 40, 0.8);
 }
 
@@ -568,24 +628,17 @@ button { font-family: var(--font-sans); }
     transform: translateY(0) translateX(0) scale(0.6);
   }
   20% {
-    opacity: 0.85;
+    opacity: 0.65;
   }
   60% {
-    opacity: 0.6;
-    transform: translateY(-45px) translateX(calc((var(--spark-drift, 1) * 8px) - 4px)) scale(1);
+    opacity: 0.45;
+    transform: translateY(-48px) translateX(calc((var(--spark-drift, 1) * 8px) - 4px)) scale(1);
   }
   100% {
     opacity: 0;
-    transform: translateY(-80px) translateX(calc((var(--spark-drift, 1) * 16px) - 8px)) scale(0.3);
+    transform: translateY(-84px) translateX(calc((var(--spark-drift, 1) * 16px) - 8px)) scale(0.2);
   }
 }
-
-.spark-1 { --spark-drift: 1.2; }
-.spark-2 { --spark-drift: -1.0; }
-.spark-3 { --spark-drift: -1.4; }
-.spark-4 { --spark-drift: 1.5; }
-.spark-5 { --spark-drift: 0.4; }
-.spark-6 { --spark-drift: -0.8; }
 
 /* 4. Nội dung trung tâm */
 .hero-heat-inner {
@@ -597,33 +650,33 @@ button { font-family: var(--font-sans); }
   width: 100%;
 }
 
-/* Visual ngọn lửa */
+/* Visual Anchor: Flame-Orb (1.5-1.8× larger than before) */
 .hero-flame-visual-wrap {
   position: relative;
-  width: 110px;
-  height: 110px;
+  width: 144px;
+  height: 144px;
   display: grid;
   place-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 0;
 }
 
 .hero-flame-icon-box {
   position: relative;
-  width: 78px;
-  height: 78px;
+  width: 122px;
+  height: 122px;
   display: grid;
   place-items: center;
-  filter: drop-shadow(0 8px 22px rgba(240, 90, 40, 0.3));
-  animation: flame-breathe 3.6s ease-in-out infinite;
+  filter: drop-shadow(0 10px 26px rgba(240, 90, 40, 0.28));
+  animation: flame-breathe 4.2s ease-in-out infinite;
 }
 
 .hero-heat-stage.theme-low .hero-flame-icon-box {
-  filter: drop-shadow(0 8px 22px rgba(42, 111, 142, 0.28));
+  filter: drop-shadow(0 10px 26px rgba(42, 111, 142, 0.28)) drop-shadow(0 6px 14px rgba(240, 90, 40, 0.18));
 }
 
 .hero-heat-stage.is-hot .hero-flame-icon-box,
 .hero-heat-stage.theme-high .hero-flame-icon-box {
-  filter: drop-shadow(0 10px 28px rgba(229, 72, 77, 0.45));
+  filter: drop-shadow(0 12px 32px rgba(229, 72, 77, 0.45)) drop-shadow(0 6px 18px rgba(240, 90, 40, 0.3));
 }
 
 .hero-flame-svg {
@@ -632,28 +685,64 @@ button { font-family: var(--font-sans); }
   transition: transform 300ms ease;
 }
 
-@keyframes flame-breathe {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.06) translateY(-3px); }
+/* Sóng chất lỏng chuyển động nhẹ bên trong */
+.flame-liquid-wave {
+  animation: liquid-pulse 4.2s ease-in-out infinite alternate;
+  transform-origin: 32px 42px;
 }
 
-/* Con số lớn & /100 điểm nóng */
+@keyframes liquid-pulse {
+  0% { transform: scale(0.96) translateY(0.5px); opacity: 0.82; }
+  100% { transform: scale(1.03) translateY(-0.5px); opacity: 0.96; }
+}
+
+/* Vệt sáng chạy chéo qua icon (Specular Light Sweep) */
+.flame-sheen-sweep {
+  animation: light-sweep 6.5s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes light-sweep {
+  0%, 62% {
+    transform: translate(-100px, -100px) rotate(35deg);
+    opacity: 0;
+  }
+  70% {
+    opacity: 0.9;
+  }
+  84% {
+    transform: translate(90px, 90px) rotate(35deg);
+    opacity: 0.9;
+  }
+  88%, 100% {
+    transform: translate(110px, 110px) rotate(35deg);
+    opacity: 0;
+  }
+}
+
+@keyframes flame-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05) translateY(-3px); }
+}
+
+/* 5. Con số lớn đặt sát flame + Gradient than sẫm sang cam cháy */
 .hero-heat-metric {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
+  margin-top: -6px;
   margin-bottom: 0;
 }
 
 .hero-heat-num {
   font-family: var(--font-mono);
   font-weight: 900;
-  font-size: clamp(4.2rem, 7.5vw, 5.4rem);
-  line-height: 0.92;
+  font-size: clamp(4.4rem, 8vw, 5.6rem);
+  line-height: 0.9;
   letter-spacing: -0.05em;
   color: var(--ink);
-  background: linear-gradient(180deg, var(--ink) 0%, var(--ink-2) 100%);
+  background: linear-gradient(180deg, var(--num-grad-1) 0%, var(--num-grad-2) 48%, var(--num-grad-3) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -665,13 +754,15 @@ button { font-family: var(--font-sans); }
   color: var(--muted);
   letter-spacing: 0.02em;
   text-transform: lowercase;
-  margin-top: 4px;
+  margin-top: 3px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .heat-wave { animation: none; }
+  .contour-path-1, .contour-path-2 { animation: none; }
   .spark { display: none; }
   .hero-flame-icon-box { animation: none; }
+  .flame-liquid-wave { animation: none; }
+  .flame-sheen-sweep { display: none; }
 }
 
 /* ===== Section scaffolding ===== */
