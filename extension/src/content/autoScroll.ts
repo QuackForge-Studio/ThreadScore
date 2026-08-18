@@ -35,7 +35,25 @@ function isRealSubReplyExpander(el: HTMLElement): boolean {
   const title = (el.getAttribute('title') ?? '').toLowerCase().trim();
   const role = (el.getAttribute('role') ?? '').toLowerCase();
 
-  // Bỏ qua các menu và nút tương tác cơ bản (so khớp chính xác để không chặn nút expander có chữ "trả lời")
+  const txt = (el.textContent ?? '').trim().toLowerCase();
+  if (!txt || txt.length < 2 || txt.length > 100) return false;
+
+  // ƯU TIÊN 1: text có số đi kèm chữ "trả lời"/"reply" => chắc chắn là expander
+  // (phải xét TRƯỚC các guard aria-label/icon — nút expander cũng có aria-label
+  // "trả lời" và icon, nên guard đó sẽ chặn nhầm).
+  const hasReplyCount =
+    /\d+\s*(câu\s+trả\s+lời|phản\s+hồi|replies|reply)/i.test(txt) ||
+    /(xem|view|show|hiển\s+thị)\s+.*(câu\s+trả\s+lời|phản\s+hồi|replies|reply)/i.test(txt) ||
+    /(xem|view)\s+\d+\s+(câu\s+trả\s+lời|phản\s+hồi|replies|reply)/i.test(txt) ||
+    /^\d+\s*(câu\s+trả\s+lời|phản\s+hồi)$/i.test(txt) ||
+    /^\d+\s*(replies|reply)$/i.test(txt) ||
+    // UI mới: chữ "trả lời" đứng TRƯỚC số, không khoảng trắng — "trả lời660", "reply90"
+    /^(trả\s*lời|phản\s*hồi|câu\s*trả\s*lời|reply|replies)\s*[:.,]?\s*\d+/i.test(txt) ||
+    /^(xem|view|hiển\s*thị)\s*(trả\s*lời|phản\s*hồi|reply|replies)\s*[:.,]?\s*\d+/i.test(txt);
+
+  if (hasReplyCount) return true;
+
+  // Không có số => không phải expander. Giờ mới áp guard để loại nút composer/menu.
   if (
     role === 'menu' ||
     role === 'menuitem' ||
@@ -62,16 +80,6 @@ function isRealSubReplyExpander(el: HTMLElement): boolean {
     return false;
   }
 
-  // QUAN TRỌNG: bỏ qua nút composer "Trả lời" (nút hành động mở công cụ soạn).
-  // Nút này có icon svg với aria-label "Trả lời"/"Reply" bên trong hoặc là chính nó.
-  const replyIcon = el.querySelector('svg[aria-label*="trả lời" i], svg[aria-label*="reply" i], svg[aria-label*="thích" i], svg[aria-label*="like" i]');
-  if (replyIcon) return false;
-  const selfIsReplyIcon = el.tagName.toLowerCase() === 'svg' && /trả lời|reply/i.test(el.getAttribute('aria-label') ?? '');
-  if (selfIsReplyIcon) return false;
-
-  const txt = (el.textContent ?? '').trim().toLowerCase();
-  if (!txt || txt.length < 2 || txt.length > 100) return false;
-
   // Lọc các từ cấm
   if (
     txt === 'trả lời' ||
@@ -97,17 +105,7 @@ function isRealSubReplyExpander(el: HTMLElement): boolean {
     return true;
   }
 
-  // Nhận diện các nút mở câu trả lời con (tiếng Việt & tiếng Anh):
-  return (
-    /\d+\s*(câu\s+trả\s+lời|phản\s+hồi|replies|reply)/i.test(txt) ||
-    /(xem|view|show|hiển\s+thị)\s+.*(câu\s+trả\s+lời|phản\s+hồi|replies|reply)/i.test(txt) ||
-    /(xem|view)\s+\d+\s+(câu\s+trả\s+lời|phản\s+hồi|replies|reply)/i.test(txt) ||
-    /^\d+\s*(câu\s+trả\s+lời|phản\s+hồi)$/i.test(txt) ||
-    /^\d+\s*(replies|reply)$/i.test(txt) ||
-    // UI mới: chữ "trả lời" đứng TRƯỚC số, không có khoảng trắng — "trả lời656", "trả lời13"
-    /^(trả\s*lời|phản\s*hồi|câu\s*trả\s*lời|reply|replies)\s*[\d.,]+[kKmM]?\s*$/i.test(txt) ||
-    /^(xem|view|hiển\s*thị)\s*(trả\s*lời|phản\s*hồi|reply|replies)\s*[\d.,]+[kKmM]?/i.test(txt)
-  );
+  return false;
 }
 
 // Mở rộng các câu trả lời con (sub-replies) trực tiếp trên từng bình luận (tối ưu hóa chống lag DOM)
