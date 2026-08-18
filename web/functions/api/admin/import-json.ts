@@ -13,7 +13,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   try {
     const result = await importThreadPayload(context.env, body);
     const { runScoringWorker } = await import('../../../src/server/services/scoringWorker');
-    await runScoringWorker(context.env).catch(() => null);
+    if (typeof context.waitUntil === 'function') {
+      context.waitUntil(runScoringWorker(context.env).catch(() => null));
+    } else {
+      runScoringWorker(context.env).catch(() => null);
+    }
     return Response.json(result);
   } catch (e) {
     if (e instanceof ZodError) {
