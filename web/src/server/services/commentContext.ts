@@ -7,20 +7,48 @@ function truncate(text: string, max: number): string {
   return text.length > max ? text.slice(0, max) + '...' : text;
 }
 
+export function cleanPartMarkers(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/[\s([{\-–—•|]*\b\d+\/\d+\b[)\]}]*\s*$/gi, '')
+    .replace(/^[\s([{\-–—•|]*\b\d+\/\d+\b[)\]}:.–—\-\s]*/gi, '')
+    .trim();
+}
+
+export function hasPartMarker(text: string): boolean {
+  if (!text) return false;
+  return /\b\d+\/\d+\b|(\(|\[|\b)(part|phần|tập|p)\s*\d+(\)|\]|\b)/i.test(text);
+}
+
 // Comment có phải phần tiếp nối của chính tác giả bài gốc không
-// (tác giả reply trực tiếp vào bài gốc, ví dụ "2/2" nối tiếp nội dung).
+// (tác giả reply trực tiếp vào bài gốc, có đánh dấu "2/2", "Phần 2" nối tiếp nội dung).
 export function isAuthorContinuationComment(
   c: CommentRecord,
   thread: ThreadRecord
 ): boolean {
   if (!thread.author_username || !c.author_username) return false;
   if (c.author_username.toLowerCase() !== thread.author_username.toLowerCase()) return false;
+
+  // 1. Phải không phải reply vào user khác
   const replyTo = c.reply_to_username?.toLowerCase() ?? null;
-  if (c.parent_id != null && c.parent_id !== '') {
-    if (thread.main_post_id != null) return c.parent_id === thread.main_post_id;
-    return replyTo == null || replyTo === thread.author_username.toLowerCase();
+  if (replyTo && replyTo !== thread.author_username.toLowerCase()) {
+    return false;
   }
-  return replyTo == null || replyTo === thread.author_username.toLowerCase();
+  if (c.parent_id != null && c.parent_id !== '') {
+    if (thread.main_post_id != null && c.parent_id !== thread.main_post_id) {
+      return false;
+    }
+  }
+
+  // 2. Phải có dấu hiệu viết tiếp (part marker như 2/2, [2/2], Phần 2, Part 2...)
+  // hoặc bài gốc có part marker (ví dụ 1/2) và đây là bài của tác giả
+  const rawText = c.text || '';
+  const rootText = `${thread.title ?? ''} ${thread.content ?? ''}`;
+
+  if (hasPartMarker(rawText)) return true;
+  if (hasPartMarker(rootText)) return true;
+
+  return false;
 }
 
 // Build context riêng cho từng comment:

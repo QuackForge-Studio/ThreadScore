@@ -58,4 +58,22 @@ describe('buildCommentContext', () => {
     });
     expect(isAuthorContinuationComment(replyToOther, t)).toBe(false);
   });
+
+  it('author chatty reply without part markers is not a continuation', () => {
+    const t = thread();
+    const chattyReply = comment({
+      id: 'c10', external_id: 'e10', author_username: 'author',
+      text: 'thằng em mình hun đầu nhỏ mèo quài toàn nước miếng thúi', parent_id: 'main-1',
+    });
+    expect(isAuthorContinuationComment(chattyReply, t)).toBe(false);
+  });
+
+  it('author reply with 2/2 marker is a genuine continuation', () => {
+    const t = thread();
+    const part2 = comment({
+      id: 'c11', external_id: 'e11', author_username: 'author',
+      text: 'thế cô dỗi cô đ dạy thì lớp trưởng lại là người đứng lên thay mặt xin lỗi 2/2', parent_id: 'main-1',
+    });
+    expect(isAuthorContinuationComment(part2, t)).toBe(true);
+  });
 });

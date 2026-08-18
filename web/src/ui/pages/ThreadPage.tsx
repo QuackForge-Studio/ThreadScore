@@ -9,7 +9,7 @@ import { Reveal } from '../components/motion';
 import { formatRelativeTime } from '../format';
 import { useI18n } from '../i18n';
 import type { ThreadRecord, CommentRecord, AiScoreRecord, UserCommentRecord } from '../../shared/types';
-import { isAuthorContinuationComment } from '../../server/services/commentContext';
+import { isAuthorContinuationComment, cleanPartMarkers } from '../../server/services/commentContext';
 
 type ThreadDetail = {
   thread: ThreadRecord;
@@ -167,13 +167,15 @@ export default function ThreadPage() {
 
   if (!data) return <div className="page thread-page" />;
 
-  const displayTitle = data.thread.title && data.thread.title !== 'Thread' && data.thread.title.trim().length > 0
+  const rawTitle = data.thread.title && data.thread.title !== 'Thread' && data.thread.title.trim().length > 0
     ? data.thread.title
     : data.thread.content
     ? (data.thread.content.length > 140 ? data.thread.content.slice(0, 140) + '...' : data.thread.content)
     : t('tp.postFallback');
 
-  const showFullContent = data.thread.content && data.thread.content.trim() !== displayTitle.trim();
+  const displayTitle = cleanPartMarkers(rawTitle);
+  const cleanContent = cleanPartMarkers(data.thread.content ?? '');
+  const showFullContent = cleanContent.length > 0 && cleanContent.trim() !== displayTitle.trim();
 
   const continuations = data.comments
     .filter((c) => isAuthorContinuationComment(c, data.thread))
@@ -206,7 +208,7 @@ export default function ThreadPage() {
 
               {showFullContent && (
                 <p className="thread-content" style={{ fontSize: '15px', color: 'var(--ink-2)', lineHeight: '1.6', margin: '0 0 16px', whiteSpace: 'pre-wrap' }}>
-                  {data.thread.content}
+                  {cleanContent}
                 </p>
               )}
 
@@ -218,7 +220,7 @@ export default function ThreadPage() {
                   </div>
                   {continuations.map((c) => (
                     <div key={c.id} className="author-continuation-item">
-                      <p className="author-continuation-text">{c.text}</p>
+                      <p className="author-continuation-text">{cleanPartMarkers(c.text)}</p>
                       <p className="author-continuation-meta">
                         {c.posted_at != null && <span>{formatRelativeTime(c.posted_at)}</span>}
                         {c.like_count > 0 && <span>♥ {c.like_count}</span>}

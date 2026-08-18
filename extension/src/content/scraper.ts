@@ -285,6 +285,19 @@ export function isMetaOrBadgeText(text: string): boolean {
   return false;
 }
 
+export function cleanPartMarkers(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/[\s([{\-–—•|]*\b\d+\/\d+\b[)\]}]*\s*$/gi, '')
+    .replace(/^[\s([{\-–—•|]*\b\d+\/\d+\b[)\]}:.–—\-\s]*/gi, '')
+    .trim();
+}
+
+export function hasPartMarker(text: string): boolean {
+  if (!text) return false;
+  return /\b\d+\/\d+\b|(\(|\[|\b)(part|phần|tập|p)\s*\d+(\)|\]|\b)/i.test(text);
+}
+
 // Trích xuất chính xác phần nội dung chữ của bình luận
 function extractCommentText(card: Element, link: Element): string {
   const textElements = Array.from(
@@ -313,7 +326,7 @@ function extractCommentText(card: Element, link: Element): string {
       }
     }
     if (filtered.length > 0) {
-      return filtered.join('\n').trim();
+      return cleanPartMarkers(filtered.join('\n').trim());
     }
   }
 
@@ -324,11 +337,13 @@ function extractCommentText(card: Element, link: Element): string {
     return t.length > 1 && el.children.length === 0;
   });
 
-  return directTexts
-    .map((e) => e.textContent?.trim() ?? '')
-    .filter(Boolean)
-    .join('\n')
-    .trim();
+  return cleanPartMarkers(
+    directTexts
+      .map((e) => e.textContent?.trim() ?? '')
+      .filter(Boolean)
+      .join('\n')
+      .trim()
+  );
 }
 
 // Thu thập comment từ DOM
@@ -488,7 +503,7 @@ function extractCommentNode(obj: Record<string, any>, out: ScrapedComment[]) {
         author_username: String(username),
         author_name: fullName ? String(fullName) : null,
         author_avatar_url: avatarUrl ? String(avatarUrl) : null,
-        text: text.trim(),
+        text: cleanPartMarkers(text.trim()),
         like_count: likes,
         posted_at: takenAt,
         parent_id: parentPk,
@@ -558,7 +573,8 @@ async function fetchNestedReplies(
                 external_id: sub.external_id,
                 author_username: sub.author_username,
                 author_name: sub.author_name,
-                text: sub.text,
+                author_avatar_url: sub.author_avatar_url,
+                text: cleanPartMarkers(sub.text),
                 like_count: sub.like_count,
                 posted_at: sub.posted_at,
                 parent_id: sub.parent_id || parent.external_id,
@@ -643,22 +659,30 @@ export function isDirectReplyToMainPost(
 }
 
 // Phần tiếp nối của chính tác giả bài gốc: tác giả reply trực tiếp vào bài gốc
-// (không phải reply vào comment khác) — ví dụ "2/2" nối tiếp nội dung bài viết.
+// (có đánh dấu "2/2", "Phần 2" hoặc bài gốc có marker 1/2).
 export function isAuthorContinuation(
   c: ScrapedComment,
   mainAuthorUsername: string | null,
-  mainPostId?: string | null
+  mainPostId?: string | null,
+  mainPostText?: string | null
 ): boolean {
   if (!mainAuthorUsername || !c.author_username) return false;
   if (c.author_username.toLowerCase() !== mainAuthorUsername.toLowerCase()) return false;
   const replyTo = c.reply_to_username?.toLowerCase() ?? null;
-  if (c.parent_id != null && c.parent_id !== '') {
-    if (mainPostId != null) return c.parent_id === mainPostId;
-    // Không biết ID bài gốc: nếu reply vào user khác → chắc chắn là reply con.
-    return replyTo == null || replyTo === mainAuthorUsername.toLowerCase();
+  if (replyTo && replyTo !== mainAuthorUsername.toLowerCase()) {
+    return false;
   }
-  // Không có parent_id: nếu reply_to trỏ vào user khác → reply con; ngược lại là bài gốc tiếp nối.
-  return replyTo == null || replyTo === mainAuthorUsername.toLowerCase();
+  if (c.parent_id != null && c.parent_id !== '') {
+    if (mainPostId != null && c.parent_id !== mainPostId) {
+      return false;
+    }
+  }
+
+  const rawText = c.text || '';
+  if (hasPartMarker(rawText)) return true;
+  if (mainPostText && hasPartMarker(mainPostText)) return true;
+
+  return false;
 }
 
 // Phân loại chính xác comment gốc (Top-level) vs Phản hồi con (Sub-reply)
@@ -908,10 +932,13 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
     }
   }
 
+  const finalTitle = cleanPartMarkers(mainTitleText || titleEl?.textContent?.trim() || '');
+  const finalContent = cleanPartMarkers(mainContentText || contentEl?.textContent?.trim() || '');
+
   return {
     url: currentUrl,
-    title: mainTitleText || titleEl?.textContent?.trim() || null,
-    content: mainContentText || contentEl?.textContent?.trim() || null,
+    title: finalTitle || null,
+    content: finalContent || null,
     author_username: resolvedMainAuthor,
     author_name: rootPostNode?.author_name ?? null,
     author_avatar_url: authorAvatarUrl,

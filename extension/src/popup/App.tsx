@@ -200,9 +200,15 @@ export default function App() {
   const rootCount = (scraped?.comments.length ?? 0) - replyCount;
   const graphqlCount = scraped?.comments.filter((c) => c.external_id != null).length ?? 0;
   const domCount = (scraped?.comments.length ?? 0) - graphqlCount;
-  const authorUsername = scraped?.author_username ?? null;
   const continuationCount = scraped
-    ? scraped.comments.filter((c) => isAuthorContinuation(c, authorUsername, scraped.main_post_id)).length
+    ? scraped.comments.filter((c) =>
+        isAuthorContinuation(
+          c,
+          authorUsername,
+          scraped.main_post_id,
+          `${scraped.title ?? ''} ${scraped.content ?? ''}`
+        )
+      ).length
     : 0;
   const commentDepth = scraped
     ? computeCommentDepth(scraped.comments, scraped.main_post_id)
@@ -396,7 +402,8 @@ export default function App() {
                     {scraped.comments.slice(0, 10).map((c, idx) => {
                       const isReply = isSubReplyComment(c, scraped.author_username, scraped.main_post_id);
                       const depth = commentDepth.get(c) ?? 0;
-                      const isAuthor = isAuthorContinuation(c, scraped.author_username, scraped.main_post_id);
+                      const isAuthorUser = Boolean(c.author_username && scraped.author_username && c.author_username.toLowerCase() === scraped.author_username.toLowerCase());
+                      const isContinuation = isAuthorContinuation(c, scraped.author_username, scraped.main_post_id, `${scraped.title ?? ''} ${scraped.content ?? ''}`);
                       return (
                         <div
                           key={idx}
@@ -405,7 +412,7 @@ export default function App() {
                         >
                           <div className="sp-comment-author-row">
                             <span className="sp-comment-author">@{c.author_username || 'user'}</span>
-                            {isAuthor && <span className="sp-comment-author-badge">Tác giả</span>}
+                            {isAuthorUser && <span className="sp-comment-author-badge">{isContinuation ? 'Viết tiếp' : 'Tác giả'}</span>}
                             {isReply && c.reply_to_username && (
                               <span className="sp-comment-reply-hint">↳ @{c.reply_to_username}</span>
                             )}
