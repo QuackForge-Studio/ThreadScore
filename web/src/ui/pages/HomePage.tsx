@@ -275,22 +275,6 @@ export default function HomePage() {
                       </div>
                     </div>
                   </div>
-
-                  {/* AI Mood Status Pill */}
-                  <div className="hero-mood-card">
-                    <div className="hero-mood-head">
-                      <span className={`hero-mood-tag ${heatTier}`}>
-                        {heatTier === 'low' ? '☕ ÊM DỊU' : heatTier === 'mid' ? '⚡ SÔI NỔI' : '🔥 CĂNG THẲNG'}
-                      </span>
-                    </div>
-                    <p className="hero-mood-text">
-                      {heatTier === 'low'
-                        ? t('hero.moodLow')
-                        : heatTier === 'mid'
-                        ? t('hero.moodMid')
-                        : t('hero.moodHigh')}
-                    </p>
-                  </div>
                 </div>
               </Reveal>
             </div>
