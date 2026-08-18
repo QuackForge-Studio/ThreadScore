@@ -15,6 +15,8 @@ export const commentInputSchema = z.object({
   text: z.string().min(1).max(10000),
   like_count: z.number().int().min(0).default(0),
   posted_at: z.number().int().nullable().optional(),
+  parent_id: z.string().max(100).nullable().optional(),
+  reply_to_username: z.string().max(200).nullable().optional(),
 });
 
 export const importPayloadSchema = z.object({
@@ -24,6 +26,7 @@ export const importPayloadSchema = z.object({
   author_username: z.string().max(200).nullable().optional(),
   author_name: z.string().max(200).nullable().optional(),
   posted_at: z.number().int().nullable().optional(),
+  main_post_id: z.string().max(100).nullable().optional(),
   comments: z.array(commentInputSchema).max(1000),
 });
 

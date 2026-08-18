@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { WarningCircle, ArrowLeft, ArrowSquareOut, MagnifyingGlass, X } from '@phosphor-icons/react';
+import { WarningCircle, ArrowLeft, ArrowSquareOut, MagnifyingGlass, X, Quotes } from '@phosphor-icons/react';
 import { apiGet } from '../api';
 import CommentCard from '../components/CommentCard';
 import DiscussionBox from '../components/DiscussionBox';
@@ -9,6 +9,7 @@ import { Reveal } from '../components/motion';
 import { formatRelativeTime } from '../format';
 import { useI18n } from '../i18n';
 import type { ThreadRecord, CommentRecord, AiScoreRecord, UserCommentRecord } from '../../shared/types';
+import { isAuthorContinuationComment } from '../../server/services/commentContext';
 
 type ThreadDetail = {
   thread: ThreadRecord;
@@ -17,6 +18,49 @@ type ThreadDetail = {
   user_comments: UserCommentRecord[];
   vote_counts: Record<string, { correct: number; incorrect: number }>;
 };
+
+type ScoredComment = CommentRecord & { score: AiScoreRecord | null };
+
+interface CommentNode {
+  comment: ScoredComment;
+  depth: number;
+  children: CommentNode[];
+}
+
+function buildCommentTree(comments: ScoredComment[]): CommentNode[] {
+  const byExternalId = new Map<string, ScoredComment>();
+  const childrenOf = new Map<string, ScoredComment[]>();
+  for (const c of comments) {
+    if (c.external_id) byExternalId.set(c.external_id, c);
+  }
+  for (const c of comments) {
+    if (c.parent_id && byExternalId.has(c.parent_id)) {
+      const list = childrenOf.get(c.parent_id) ?? [];
+      list.push(c);
+      childrenOf.set(c.parent_id, list);
+    }
+  }
+  const sortKey = (c: ScoredComment) => c.posted_at ?? c.created_at;
+  const roots = comments.filter((c) => !c.parent_id || !byExternalId.has(c.parent_id)).sort((a, b) => sortKey(a) - sortKey(b));
+  const build = (c: ScoredComment, depth: number): CommentNode => ({
+    comment: c,
+    depth,
+    children: (childrenOf.get(c.external_id ?? '') ?? []).sort((a, b) => sortKey(a) - sortKey(b)).map((ch) => build(ch, depth + 1)),
+  });
+  return roots.map((c) => build(c, 0));
+}
+
+function flattenTree(nodes: CommentNode[]): { comment: ScoredComment; depth: number }[] {
+  const out: { comment: ScoredComment; depth: number }[] = [];
+  const walk = (list: CommentNode[]) => {
+    for (const n of list) {
+      out.push({ comment: n.comment, depth: n.depth });
+      walk(n.children);
+    }
+  };
+  walk(nodes);
+  return out;
+}
 
 const PAGE_SIZE = 15;
 
@@ -68,8 +112,13 @@ export default function ThreadPage() {
     return matchFilter && matchSearch;
   }) : [];
 
+  const treeMode = filter === 'all' && !commentSearch;
+  const orderedVisible = data && treeMode
+    ? flattenTree(buildCommentTree(data.comments))
+    : visible.map(c => ({ comment: c, depth: 0 }));
+
   const hasMore = displayCount < visible.length;
-  const renderedComments = visible.slice(0, displayCount);
+  const renderedComments = orderedVisible.slice(0, displayCount);
 
   // IntersectionObserver tự động load thêm khi scroll gần đến cuối danh sách (rootMargin 300px)
   useEffect(() => {
@@ -126,6 +175,10 @@ export default function ThreadPage() {
 
   const showFullContent = data.thread.content && data.thread.content.trim() !== displayTitle.trim();
 
+  const continuations = data.comments
+    .filter((c) => isAuthorContinuationComment(c, data.thread))
+    .sort((a, b) => (a.posted_at ?? a.created_at) - (b.posted_at ?? b.created_at));
+
   const scoredComments = data.comments.filter(c => c.score != null);
 
   const countBangNo = scoredComments.filter(c => c.score?.label === 'BÙNG NỔ').length;
@@ -155,6 +208,24 @@ export default function ThreadPage() {
                 <p className="thread-content" style={{ fontSize: '15px', color: 'var(--ink-2)', lineHeight: '1.6', margin: '0 0 16px', whiteSpace: 'pre-wrap' }}>
                   {data.thread.content}
                 </p>
+              )}
+
+              {continuations.length > 0 && (
+                <div className="author-continuations">
+                  <div className="author-continuations-title">
+                    <Quotes size={15} weight="fill" aria-hidden="true" />
+                    {t('tp.authorFollowUp')} ({continuations.length})
+                  </div>
+                  {continuations.map((c) => (
+                    <div key={c.id} className="author-continuation-item">
+                      <p className="author-continuation-text">{c.text}</p>
+                      <p className="author-continuation-meta">
+                        {c.posted_at != null && <span>{formatRelativeTime(c.posted_at)}</span>}
+                        {c.like_count > 0 && <span>♥ {c.like_count}</span>}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               )}
 
               <p className="thread-meta" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', fontSize: '13px', color: 'var(--muted)' }}>
@@ -272,9 +343,16 @@ export default function ThreadPage() {
             </div>
           </div>
 
-          {renderedComments.map((c, i) => (
+          {renderedComments.map(({ comment: c, depth }, i) => (
             <Reveal key={c.id} delay={(i % 3) * 0.03}>
-              <CommentCard comment={c} voteCounts={data.vote_counts[c.id] ?? { correct: 0, incorrect: 0 }} />
+              <CommentCard
+                comment={c}
+                voteCounts={data.vote_counts[c.id] ?? { correct: 0, incorrect: 0 }}
+                depth={depth}
+                replyToUsername={c.reply_to_username}
+                isAuthor={data.thread.author_username != null && c.author_username != null
+                  && c.author_username.toLowerCase() === data.thread.author_username.toLowerCase()}
+              />
             </Reveal>
           ))}
 

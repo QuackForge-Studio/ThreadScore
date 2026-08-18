@@ -7,6 +7,9 @@ import type { CommentRecord, AiScoreRecord, Label } from '../../shared/types';
 type Props = {
   comment: CommentRecord & { score: AiScoreRecord | null };
   voteCounts: { correct: number; incorrect: number };
+  depth?: number;
+  replyToUsername?: string | null;
+  isAuthor?: boolean;
 };
 
 function labelClass(label: Label): string {
@@ -21,14 +24,16 @@ const labelText: Record<Label, 'tp.hot' | 'tp.neutral' | 'tp.calm'> = {
   'VUI VẺ': 'tp.calm',
 };
 
-export default function CommentCard({ comment, voteCounts }: Props) {
-  const { t } = useI18n();
+export default function CommentCard({ comment, voteCounts, depth = 0, replyToUsername = null, isAuthor = false }: Props) {
+  const { t, tf } = useI18n();
   const label = comment.score?.label ?? null;
   return (
-    <article className="commentcard">
+    <article className="commentcard" style={depth > 0 ? { marginLeft: Math.min(depth, 8) * 22 } : undefined}>
       <p className="commentcard-text">{comment.text}</p>
       <p className="commentcard-meta">
         @{comment.author_username ?? t('tp.anon')}
+        {isAuthor && <span className="comment-badge-author">{t('tp.authorBadge')}</span>}
+        {replyToUsername && <span className="comment-reply-hint">↳ {tf('tp.replyTo', { user: replyToUsername })}</span>}
         {comment.like_count > 0 && <> - {comment.like_count} {t('tp.likes')}</>}
       </p>
       {comment.score ? (

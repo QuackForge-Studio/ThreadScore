@@ -25,7 +25,13 @@ import { scrapeActiveTab, scrapeTestActiveTab, stopActiveTabScrape, getActiveTab
 import { runBatchFromPopup } from './batch';
 import { pushImport } from '../lib/api';
 import type { ScrapedThread, ScrapedComment } from '../content/scraper';
-import { debugStats, type DebugStats, isSubReplyComment } from '../content/scraper';
+import {
+  debugStats,
+  type DebugStats,
+  isSubReplyComment,
+  computeCommentDepth,
+  isAuthorContinuation,
+} from '../content/scraper';
 import { getUsage, isCooldownActive, getCooldownReason, POLICY } from './shared';
 
 export default function App() {
@@ -194,6 +200,13 @@ export default function App() {
   const rootCount = (scraped?.comments.length ?? 0) - replyCount;
   const graphqlCount = scraped?.comments.filter((c) => c.external_id != null).length ?? 0;
   const domCount = (scraped?.comments.length ?? 0) - graphqlCount;
+  const authorUsername = scraped?.author_username ?? null;
+  const continuationCount = scraped
+    ? scraped.comments.filter((c) => isAuthorContinuation(c, authorUsername, scraped.main_post_id)).length
+    : 0;
+  const commentDepth = scraped
+    ? computeCommentDepth(scraped.comments, scraped.main_post_id)
+    : new Map<ScrapedComment, number>();
 
   const filteredComments = (scraped?.comments || []).filter((c) => {
     const isSub = isSubReplyComment(c, scraped?.author_username ?? null, scraped?.main_post_id ?? null);
@@ -359,6 +372,9 @@ export default function App() {
                     </span>
                     <span className="sp-stat-pill">📌 {rootCount} gốc</span>
                     <span className="sp-stat-pill">↳ {replyCount} phản hồi</span>
+                    {continuationCount > 0 && (
+                      <span className="sp-stat-pill author">✍️ {continuationCount} tiếp nối</span>
+                    )}
                   </div>
                 </div>
 
@@ -366,10 +382,17 @@ export default function App() {
                   <div className="sp-comments-preview">
                     {scraped.comments.slice(0, 10).map((c, idx) => {
                       const isReply = isSubReplyComment(c, scraped.author_username, scraped.main_post_id);
+                      const depth = commentDepth.get(c) ?? 0;
+                      const isAuthor = isAuthorContinuation(c, scraped.author_username, scraped.main_post_id);
                       return (
-                        <div key={idx} className={`sp-comment-card ${isReply ? 'sub' : ''}`}>
+                        <div
+                          key={idx}
+                          className={`sp-comment-card ${isReply ? 'sub' : ''}`}
+                          style={{ marginLeft: depth > 0 ? Math.min(depth, 6) * 14 : undefined }}
+                        >
                           <div className="sp-comment-author-row">
                             <span className="sp-comment-author">@{c.author_username || 'user'}</span>
+                            {isAuthor && <span className="sp-comment-author-badge">Tác giả</span>}
                             {isReply && c.reply_to_username && (
                               <span className="sp-comment-reply-hint">↳ @{c.reply_to_username}</span>
                             )}

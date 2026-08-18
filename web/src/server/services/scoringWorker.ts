@@ -7,6 +7,7 @@ import { listPendingScoring, updateThread } from '../repo/threads';
 import { getCommentsByThread } from '../repo/comments';
 import { insertScores } from '../repo/scores';
 import { scoreCommentsWithAI } from './aiScoring';
+import { buildCommentContext } from './commentContext';
 
 export interface ScoringWorkerResult {
   processedThreads: number;
@@ -65,11 +66,14 @@ export async function runScoringWorker(env: Env): Promise<ScoringWorkerResult> {
 
         console.log(`[ScoringWorker] Thread ${thread.id}: total comments in DB = ${allComments.length}, pending = ${pendingComments.length}`);
 
-        const context = `${thread.title ?? ''}\n${thread.content ?? ''}`.trim();
         let batchCount = 0;
         for (let start = 0; start < pendingComments.length && batchCount < MAX_WORKER_BATCHES; start += MAX_AI_BATCH, batchCount++) {
           const slice = pendingComments.slice(start, start + MAX_AI_BATCH);
-          const results = await scoreCommentsWithAI(env, slice.map(c => ({ id: c.id, text: c.text, context })));
+          const results = await scoreCommentsWithAI(env, slice.map(c => ({
+            id: c.id,
+            text: c.text,
+            context: buildCommentContext(thread, allComments, c),
+          })));
           await insertScores(env.DB, results.map((r, j) => ({
             id: newId(),
             comment_id: slice[j].id,

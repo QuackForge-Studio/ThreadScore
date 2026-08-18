@@ -10,6 +10,7 @@ export interface ThreadRecord {
   author_username: string | null;
   author_name: string | null;
   posted_at: number | null;
+  main_post_id: string | null;
   total_comments: number;
   scoring_status: ScoringStatus;
   avg_anger_score: number | null;
@@ -26,6 +27,8 @@ export interface CommentRecord {
   text: string;
   like_count: number;
   posted_at: number | null;
+  parent_id: string | null;
+  reply_to_username: string | null;
   created_at: number;
 }
 
@@ -82,6 +85,8 @@ export interface ImportCommentInput {
   text: string;
   like_count?: number;
   posted_at?: number | null;
+  parent_id?: string | null;
+  reply_to_username?: string | null;
 }
 
 export interface ImportPayload {
@@ -91,5 +96,6 @@ export interface ImportPayload {
   author_username?: string | null;
   author_name?: string | null;
   posted_at?: number | null;
+  main_post_id?: string | null;
   comments: ImportCommentInput[];
 }

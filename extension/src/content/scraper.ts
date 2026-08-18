@@ -602,6 +602,61 @@ function isMainPostComment(
   return false;
 }
 
+// Tính depth của từng comment theo cây parent_id → external_id.
+// Comment không tìm thấy cha (hoặc cha trùng bài gốc) có depth = 0.
+export function computeCommentDepth(
+  comments: ScrapedComment[],
+  mainPostId?: string | null
+): Map<ScrapedComment, number> {
+  const byExternalId = new Map<string, ScrapedComment>();
+  for (const c of comments) {
+    if (c.external_id) byExternalId.set(c.external_id, c);
+  }
+  const depthOf = new Map<ScrapedComment, number>();
+  const compute = (c: ScrapedComment, trail: Set<ScrapedComment>): number => {
+    const cached = depthOf.get(c);
+    if (cached != null) return cached;
+    if (trail.has(c)) return 0;
+    const parent = c.parent_id ? byExternalId.get(c.parent_id) : undefined;
+    const isRoot = !parent || (mainPostId != null && c.parent_id === mainPostId);
+    const depth = isRoot ? 0 : compute(parent, new Set(trail).add(c)) + 1;
+    depthOf.set(c, depth);
+    return depth;
+  };
+  for (const c of comments) compute(c, new Set());
+  return depthOf;
+}
+
+// Reply trực tiếp vào bài gốc (không phải reply vào comment khác).
+export function isDirectReplyToMainPost(
+  c: ScrapedComment,
+  mainPostId?: string | null
+): boolean {
+  if (c.parent_id != null && c.parent_id !== '') {
+    return mainPostId != null ? c.parent_id === mainPostId : false;
+  }
+  return false;
+}
+
+// Phần tiếp nối của chính tác giả bài gốc: tác giả reply trực tiếp vào bài gốc
+// (không phải reply vào comment khác) — ví dụ "2/2" nối tiếp nội dung bài viết.
+export function isAuthorContinuation(
+  c: ScrapedComment,
+  mainAuthorUsername: string | null,
+  mainPostId?: string | null
+): boolean {
+  if (!mainAuthorUsername || !c.author_username) return false;
+  if (c.author_username.toLowerCase() !== mainAuthorUsername.toLowerCase()) return false;
+  const replyTo = c.reply_to_username?.toLowerCase() ?? null;
+  if (c.parent_id != null && c.parent_id !== '') {
+    if (mainPostId != null) return c.parent_id === mainPostId;
+    // Không biết ID bài gốc: nếu reply vào user khác → chắc chắn là reply con.
+    return replyTo == null || replyTo === mainAuthorUsername.toLowerCase();
+  }
+  // Không có parent_id: nếu reply_to trỏ vào user khác → reply con; ngược lại là bài gốc tiếp nối.
+  return replyTo == null || replyTo === mainAuthorUsername.toLowerCase();
+}
+
 // Phân loại chính xác comment gốc (Top-level) vs Phản hồi con (Sub-reply)
 export function isSubReplyComment(
   c: ScrapedComment,

@@ -55,6 +55,7 @@ export async function importThreadPayload(env: Env, rawPayload: unknown): Promis
       author_username: payload.author_username ?? existing.author_username,
       author_name: payload.author_name ?? existing.author_name,
       posted_at: payload.posted_at ?? existing.posted_at,
+      main_post_id: payload.main_post_id ?? existing.main_post_id,
       total_comments: payload.comments.length,
       scoring_status: 'pending_scoring',
       avg_anger_score: null,
@@ -69,6 +70,7 @@ export async function importThreadPayload(env: Env, rawPayload: unknown): Promis
       author_username: payload.author_username ?? null,
       author_name: payload.author_name ?? null,
       posted_at: payload.posted_at ?? null,
+      main_post_id: payload.main_post_id ?? null,
       total_comments: payload.comments.length,
       scoring_status: 'pending_scoring',
       avg_anger_score: null,
@@ -87,6 +89,8 @@ export async function importThreadPayload(env: Env, rawPayload: unknown): Promis
       text: c.text,
       like_count: c.like_count ?? 0,
       posted_at: c.posted_at ?? null,
+      parent_id: c.parent_id ?? null,
+      reply_to_username: c.reply_to_username ?? null,
       created_at: now,
     })));
   }

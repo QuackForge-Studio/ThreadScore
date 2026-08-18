@@ -53,6 +53,26 @@ describe('importThreadPayload', () => {
     expect(all[0].external_id).toBe('e3');
   });
 
+  it('persists parent_id, reply_to_username and main_post_id', async () => {
+    const withHierarchy: ImportPayload = {
+      ...payload([
+        { external_id: 'root-1', text: 'comment gốc', parent_id: 'main-post-1', reply_to_username: 'test' },
+        { external_id: 'child-1', text: 'reply con', parent_id: 'root-1', reply_to_username: 'rootuser' },
+      ]),
+      main_post_id: 'main-post-1',
+    };
+    const { threadId } = await importThreadPayload(env as never, withHierarchy);
+    const t = await getThreadByUrl(env.DB, URL);
+    expect(t?.main_post_id).toBe('main-post-1');
+    const all = await getCommentsByThread(env.DB, threadId);
+    const root = all.find(c => c.external_id === 'root-1');
+    const child = all.find(c => c.external_id === 'child-1');
+    expect(root?.parent_id).toBe('main-post-1');
+    expect(root?.reply_to_username).toBe('test');
+    expect(child?.parent_id).toBe('root-1');
+    expect(child?.reply_to_username).toBe('rootuser');
+  });
+
   it('fulfills matching pending request', async () => {
     await insertRequest(env.DB, {
       id: newId(),

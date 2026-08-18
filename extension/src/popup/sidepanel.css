@@ -570,7 +570,6 @@ body {
 }
 
 .sp-comment-card.sub {
-  margin-left: 12px;
   border-left: 2.5px solid var(--coral);
 }
 
@@ -583,6 +582,23 @@ body {
 .sp-comment-author {
   font-weight: 700;
   color: var(--ink);
+}
+
+.sp-comment-author-badge {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #E5484D, #F05A28);
+  color: #fff;
+}
+
+.sp-stat-pill.author {
+  background: rgba(229, 72, 77, 0.14);
+  border: 1px solid rgba(229, 72, 77, 0.4);
+  color: var(--coral);
 }
 
 .sp-comment-reply-hint {

@@ -2075,7 +2075,7 @@ button { font-family: var(--font-sans); }
 }
 .commentcard:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
 .commentcard-text { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--ink); }
-.commentcard-meta { color: var(--faint); font-size: 12px; margin: 8px 0 var(--space-2); font-family: var(--font-mono); }
+.commentcard-meta { color: var(--faint); font-size: 12px; margin: 8px 0 var(--space-2); font-family: var(--font-mono); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .commentcard-score { display: flex; align-items: center; gap: var(--space-2); margin: var(--space-3) 0; flex-wrap: wrap; }
 .commentcard-reason { font-size: 13px; color: var(--muted); }
 .commentcard-pending { font-style: italic; font-size: 13px; color: var(--faint); display: inline-flex; align-items: center; gap: 6px; }
@@ -2086,6 +2086,65 @@ button { font-family: var(--font-sans); }
   border-radius: 50%;
   background: var(--ember);
   animation: pulse-dot 1.4s ease-in-out infinite;
+}
+
+/* Reply hierarchy & author badges */
+.comment-reply-hint {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--accent);
+  font-family: var(--font-mono);
+}
+.comment-badge-author {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #E5484D, #F05A28);
+  color: #fff;
+  font-family: var(--font-mono);
+}
+
+/* Author continuation block (chủ thớt viết tiếp) */
+.author-continuations {
+  margin: 4px 0 18px;
+  padding: 14px 16px;
+  background: var(--surface-sunk);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius-card) var(--radius-card) 0;
+}
+.author-continuations-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.author-continuation-item + .author-continuation-item {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border-soft);
+}
+.author-continuation-text {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--ink);
+  white-space: pre-wrap;
+}
+.author-continuation-meta {
+  margin: 6px 0 0;
+  display: flex;
+  gap: 12px;
+  font-size: 11.5px;
+  color: var(--muted);
+  font-family: var(--font-mono);
 }
 
 /* ===== ScoreBar ===== */
