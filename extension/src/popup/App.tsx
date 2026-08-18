@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import {
   Fire,
   CloudArrowUp,
@@ -195,33 +195,47 @@ export default function App() {
     }
   }
 
-  const replyCount =
-    scraped?.comments.filter((c) => isSubReplyComment(c, scraped.author_username, scraped.main_post_id)).length ?? 0;
-  const rootCount = (scraped?.comments.length ?? 0) - replyCount;
-  const graphqlCount = scraped?.comments.filter((c) => c.external_id != null).length ?? 0;
-  const domCount = (scraped?.comments.length ?? 0) - graphqlCount;
-  const continuationCount = scraped
-    ? scraped.comments.filter((c) =>
-        isAuthorContinuation(
-          c,
-          authorUsername,
-          scraped.main_post_id,
-          `${scraped.title ?? ''} ${scraped.content ?? ''}`
-        )
-      ).length
-    : 0;
-  const commentDepth = scraped
-    ? computeCommentDepth(scraped.comments, scraped.main_post_id)
-    : new Map<ScrapedComment, number>();
+  const { replyCount, rootCount, graphqlCount, domCount, continuationCount } = useMemo(() => {
+    if (!scraped) {
+      return { replyCount: 0, rootCount: 0, graphqlCount: 0, domCount: 0, continuationCount: 0 };
+    }
+    const replies = scraped.comments.filter((c) =>
+      isSubReplyComment(c, scraped.author_username, scraped.main_post_id)
+    ).length;
+    const gq = scraped.comments.filter((c) => c.external_id != null).length;
+    const cont = scraped.comments.filter((c) =>
+      isAuthorContinuation(
+        c,
+        scraped.author_username,
+        scraped.main_post_id,
+        `${scraped.title ?? ''} ${scraped.content ?? ''}`
+      )
+    ).length;
+    return {
+      replyCount: replies,
+      rootCount: scraped.comments.length - replies,
+      graphqlCount: gq,
+      domCount: scraped.comments.length - gq,
+      continuationCount: cont,
+    };
+  }, [scraped]);
 
-  const filteredComments = (scraped?.comments || []).filter((c) => {
-    const isSub = isSubReplyComment(c, scraped?.author_username ?? null, scraped?.main_post_id ?? null);
-    if (debugFilter === 'root') return !isSub;
-    if (debugFilter === 'subreply') return isSub;
-    if (debugFilter === 'graphql') return c.external_id != null;
-    if (debugFilter === 'dom') return c.external_id == null;
-    return true;
-  });
+  const commentDepth = useMemo(() => {
+    return scraped
+      ? computeCommentDepth(scraped.comments, scraped.main_post_id)
+      : new Map<ScrapedComment, number>();
+  }, [scraped]);
+
+  const filteredComments = useMemo(() => {
+    return (scraped?.comments || []).filter((c) => {
+      const isSub = isSubReplyComment(c, scraped?.author_username ?? null, scraped?.main_post_id ?? null);
+      if (debugFilter === 'root') return !isSub;
+      if (debugFilter === 'subreply') return isSub;
+      if (debugFilter === 'graphql') return c.external_id != null;
+      if (debugFilter === 'dom') return c.external_id == null;
+      return true;
+    });
+  }, [scraped, debugFilter]);
 
   const isConfigured = Boolean(config.webUrl && config.adminKey);
 

@@ -622,8 +622,7 @@ function isMainPostComment(
   return false;
 }
 
-// Tính depth của từng comment theo cây parent_id → external_id.
-// Comment không tìm thấy cha (hoặc cha trùng bài gốc) có depth = 0.
+// Tính depth của từng comment theo cây parent_id → external_id (tối ưu hóa O(N) không đệ quy).
 export function computeCommentDepth(
   comments: ScrapedComment[],
   mainPostId?: string | null
@@ -633,17 +632,31 @@ export function computeCommentDepth(
     if (c.external_id) byExternalId.set(c.external_id, c);
   }
   const depthOf = new Map<ScrapedComment, number>();
-  const compute = (c: ScrapedComment, trail: Set<ScrapedComment>): number => {
-    const cached = depthOf.get(c);
-    if (cached != null) return cached;
-    if (trail.has(c)) return 0;
-    const parent = c.parent_id ? byExternalId.get(c.parent_id) : undefined;
-    const isRoot = !parent || (mainPostId != null && c.parent_id === mainPostId);
-    const depth = isRoot ? 0 : compute(parent, new Set(trail).add(c)) + 1;
-    depthOf.set(c, depth);
-    return depth;
-  };
-  for (const c of comments) compute(c, new Set());
+
+  for (const c of comments) {
+    let curr: ScrapedComment | undefined = c;
+    let depth = 0;
+    const visited = new Set<string>();
+
+    while (curr && curr.parent_id && depth < 20) {
+      if (mainPostId && curr.parent_id === mainPostId) break;
+      if (curr.external_id && visited.has(curr.external_id)) break;
+      if (curr.external_id) visited.add(curr.external_id);
+
+      const parent = byExternalId.get(curr.parent_id);
+      if (!parent) break;
+
+      const cached = depthOf.get(parent);
+      if (cached != null) {
+        depth += cached + 1;
+        break;
+      }
+      depth++;
+      curr = parent;
+    }
+    depthOf.set(c, Math.min(depth, 20));
+  }
+
   return depthOf;
 }
 

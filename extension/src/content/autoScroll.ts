@@ -101,28 +101,33 @@ function isRealSubReplyExpander(el: HTMLElement): boolean {
   );
 }
 
-// Mở rộng các câu trả lời con (sub-replies) trực tiếp trên từng bình luận
+// Mở rộng các câu trả lời con (sub-replies) trực tiếp trên từng bình luận (tối ưu hóa chống lag DOM)
 async function expandSubReplies(doc: Document): Promise<{ found: number; clicked: number }> {
   let expandedCount = 0;
   let foundCount = 0;
+  // Giới hạn trong main feed để không quét cả document
+  const container = doc.querySelector('main, [role="main"]') || doc.body;
   const clickables = Array.from(
-    doc.querySelectorAll('div[role="button"], button, span[role="button"], a, div[tabindex="0"]')
+    container.querySelectorAll('div[role="button"], button, span[role="button"], a[role="button"]')
   );
 
   for (const el of clickables) {
     if (!(el instanceof HTMLElement)) continue;
     if (el.dataset.tsExpanded === 'true') continue;
 
+    // Kiểm tra nhanh text trước khi gọi reflow layout
     if (isRealSubReplyExpander(el)) {
       foundCount++;
-      const rect = el.getBoundingClientRect();
-      if (rect.width > 0 && rect.height > 0) {
-        try {
-          el.dataset.tsExpanded = 'true';
-          el.click();
-          expandedCount++;
-          await new Promise((r) => setTimeout(r, 200));
-        } catch {}
+      // Chỉ click tối đa 6 expander mỗi lượt cuộn để tránh treo luồng giao diện
+      if (expandedCount < 6) {
+        if (el.offsetParent !== null || el.clientHeight > 0) {
+          try {
+            el.dataset.tsExpanded = 'true';
+            el.click();
+            expandedCount++;
+            await new Promise((r) => setTimeout(r, 60));
+          } catch {}
+        }
       }
     }
   }
