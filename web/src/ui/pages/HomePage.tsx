@@ -91,13 +91,6 @@ export default function HomePage() {
   const avg = stats?.avg_anger ?? null;
   const heatTier: 'low' | 'mid' | 'high' = avg == null ? 'mid' : avg < 30 ? 'low' : avg < 70 ? 'mid' : 'high';
   const isHot = (avg ?? 0) >= 60;
-  const statusText = avg == null
-    ? t('hero.flameNoData')
-    : avg < 30
-    ? t('hero.flameStatusLow')
-    : avg < 70
-    ? t('hero.flameStatusMid')
-    : t('hero.flameStatusHigh');
 
   // Tạo danh sách số trang thông minh
   const getPageNumbers = () => {
@@ -145,13 +138,7 @@ export default function HomePage() {
               </div>
 
               <div className="hero-heat-inner">
-                {/* 1. Label trung tâm: ĐIỂM NÓNG HÔM NAY · ˚ */}
-                <div className="hero-heat-label">
-                  <span>{t('hero.flameLabel')}</span>
-                  <span className="hero-heat-sparkle" aria-hidden="true">· ˚</span>
-                </div>
-
-                {/* 2. Visual Ngọn lửa trung tâm */}
+                {/* Visual Ngọn lửa trung tâm */}
                 <div className="hero-flame-visual-wrap">
                   <div className="hero-flame-icon-box">
                     <svg className="hero-flame-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -178,18 +165,12 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                {/* 3. Con số lớn + /100 ĐIỂM NÓNG */}
+                {/* Con số lớn + /100 ĐIỂM NÓNG */}
                 <div className="hero-heat-metric">
                   <span className="hero-heat-num">
                     {avg != null ? <CountUp to={Math.round(avg)} /> : '--'}
                   </span>
                   <span className="hero-heat-unit">{t('hero.flameUnit')}</span>
-                </div>
-
-                {/* 4. Dòng trạng thái trong pill nhỏ dạng kính mờ */}
-                <div className="hero-heat-pill">
-                  <span className="hero-heat-pill-dot" aria-hidden="true" />
-                  <span className="hero-heat-pill-text">{statusText}</span>
                 </div>
               </div>
             </div>
