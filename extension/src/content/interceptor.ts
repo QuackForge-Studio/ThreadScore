@@ -203,6 +203,25 @@ interface RawComment {
         extractComment(data, comments);
       }
 
+      // Chẩn đoán: payload có dấu hiệu chứa reply/comment nhưng extract = 0
+      if (comments.length === 0 && payloads.length > 0) {
+        const raw = textData.slice(0, 60000);
+        const hasReplyHints =
+          raw.includes('text_post_app_info') || raw.includes('thread_items') ||
+          raw.includes('reply_facepile') || raw.includes('reply') || raw.includes('caption');
+        if (hasReplyHints) {
+          dbg.probesLogged++;
+          if (dbg.probesLogged <= 6) {
+            const shapes = payloads.slice(0, 2).map((p) => {
+              const keys = Object.keys(p).slice(0, 25).join(',');
+              const dataKeys = p.data && typeof p.data === 'object' ? Object.keys(p.data).slice(0, 20).join(',') : '';
+              return `top=[${keys}] data=[${dataKeys}]`;
+            });
+            logDebug('probe-payload', `extract=0 nhưng có reply hints. url=${url.slice(0, 80)} ${shapes.join(' | ')}`);
+          }
+        }
+      }
+
       // Lọc trùng lặp theo external_id/text
       const seen = new Set<string>();
       const filtered = comments.filter((c) => {

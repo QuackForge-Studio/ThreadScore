@@ -134,7 +134,35 @@ async function expandSubReplies(doc: Document): Promise<{ found: number; clicked
             const desc = (s: string) => `tag=${el.tagName.toLowerCase()} class="${(el.className || '').toString().slice(0, 40)}" role="${el.getAttribute('role') ?? ''}" aria="${(el.getAttribute('aria-label') ?? '').slice(0, 30)}" title="${(el.getAttribute('title') ?? '').slice(0, 30)}"`;
             logDebug('expand-inspect', `"${txt.slice(0, 50)}" ${desc('self')}`);
 
-            // KHÔNG click nếu phần tử (hoặc cha trực tiếp) chứa icon composer "Trả lời".
+            // Trên Threads hiện tại: "Trả lời660" = nút composer "Trả lời" + span số reply.
+            // Click vào span số mới mở reply thread; click wrapper chỉ mở công cụ soạn.
+            const numMatch = txt.match(/^(trả\s*lời|reply|replies|phản\s*hồi)\s*[:.,]?\s*(\d[\d.,]*[kKmM]?)\s*$/i);
+            if (numMatch) {
+              const count = numMatch[2];
+              const spans = Array.from(el.querySelectorAll<HTMLElement>('span, div, p'));
+              let numTarget: HTMLElement | null = null;
+              for (const sp of spans) {
+                const st = (sp.textContent ?? '').trim();
+                if (st === count && sp.offsetParent !== null) {
+                  numTarget = sp;
+                  break;
+                }
+              }
+              if (numTarget) {
+                numTarget.dataset.tsExpanded = 'true';
+                el.dataset.tsExpanded = 'true';
+                numTarget.click();
+                expandedCount++;
+                logDebug('expand', `clicked reply-count: "${count}" (tag=${numTarget.tagName.toLowerCase()})`);
+                await new Promise((r) => setTimeout(r, 600));
+                continue;
+              }
+              logDebug('expand-skip', `không tìm thấy span số "${count}" trong "${txt.slice(0, 50)}"`);
+              el.dataset.tsExpanded = 'true';
+              continue;
+            }
+
+            // KHÔNG click nếu phần tử chứa icon composer "Trả lời".
             const hasComposerIcon = el.querySelector('svg[aria-label*="trả lời" i], svg[aria-label*="reply" i]');
             if (hasComposerIcon) {
               logDebug('expand-skip', `skip composer wrapper: "${txt.slice(0, 50)}"`);
