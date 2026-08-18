@@ -223,22 +223,16 @@ button { font-family: var(--font-sans); }
 
 /* ===== Header ===== */
 .site-header {
-  position: sticky;
-  top: 12px;
+  position: relative;
   z-index: var(--z-nav);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  max-width: calc(var(--maxw) + 32px);
-  margin: 12px auto 0;
-  padding: 10px 16px;
-  background: var(--glass);
-  border: 1px solid var(--glass-line);
-  border-radius: var(--radius-pill);
-  backdrop-filter: blur(14px) saturate(160%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
-  box-shadow: var(--shadow-card);
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 24px var(--space-5) 8px;
+  background: transparent;
 }
 
 .site-logo {
