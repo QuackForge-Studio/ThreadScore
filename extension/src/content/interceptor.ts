@@ -63,14 +63,23 @@ interface RawComment {
         const textPostInfo = node.text_post_app_info || {};
         const parentPk =
           typeof node.parent_id === 'string' || typeof node.parent_id === 'number' ? String(node.parent_id) :
+          typeof node.parent_comment_id === 'string' || typeof node.parent_comment_id === 'number' ? String(node.parent_comment_id) :
           node.parent && (node.parent.id || node.parent.pk) ? String(node.parent.id || node.parent.pk) :
+          node.parent_comment && (node.parent_comment.id || node.parent_comment.pk) ? String(node.parent_comment.id || node.parent_comment.pk) :
           node.comment_parent_id ? String(node.comment_parent_id) :
-          textPostInfo.parent_post_id ? String(textPostInfo.parent_post_id) : null;
+          textPostInfo.parent_post_id ? String(textPostInfo.parent_post_id) :
+          textPostInfo.parent_comment_id ? String(textPostInfo.parent_comment_id) : null;
 
         const replyToUser =
           (node.reply_to_username ? String(node.reply_to_username) : null) ||
           (textPostInfo.reply_to_author?.username ? String(textPostInfo.reply_to_author.username) : null) ||
+          (node.parent_comment && (node.parent_comment.user?.username || node.parent_comment.user?.handle) ? String(node.parent_comment.user?.username || node.parent_comment.user?.handle) : null) ||
           (node.parent && (node.parent.user?.username || node.parent.user?.handle) ? String(node.parent.user?.username || node.parent.user?.handle) : null);
+
+        if (!parentPk) {
+          dbg.noParentCount++;
+          probeMissingParent(node, textPostInfo, text);
+        }
 
         out.push({
           external_id: pk ? String(pk) : null,
@@ -110,12 +119,30 @@ interface RawComment {
     graphQLResponses: 0,
     totalComments: 0,
     totalReplies: 0,
+    noParentCount: 0,
+    probesLogged: 0,
   };
 
   function logDebug(tag: string, msg: string) {
     try {
       console.log(`[TS-DEBUG] [${tag}] ${msg}`);
     } catch {}
+  }
+
+  // Schema probe: khi comment không tìm được parent_id, log shape của node
+  // (giới hạn 6 mẫu) để biết Threads đã đổi tên field gì.
+  function probeMissingParent(node: AnyObj, textPostInfo: AnyObj, text: string) {
+    if (dbg.probesLogged >= 6) return;
+    dbg.probesLogged++;
+    const keys = Object.keys(node).slice(0, 40).join(',');
+    const infoKeys = Object.keys(textPostInfo || {}).slice(0, 20).join(',');
+    const parentShapes: string[] = [];
+    if (node.parent && typeof node.parent === 'object') parentShapes.push(`parent:{${Object.keys(node.parent).slice(0, 15).join(',')}}`);
+    if (node.parent_comment && typeof node.parent_comment === 'object') parentShapes.push(`parent_comment:{${Object.keys(node.parent_comment).slice(0, 15).join(',')}}`);
+    logDebug(
+      'probe',
+      `comment KHÔNG có parent_id. text="${String(text).slice(0, 40)}..." nodeKeys=[${keys}] textPostInfoKeys=[${infoKeys}] ${parentShapes.join(' ')}`
+    );
   }
 
   // Giải mã chuỗi JSON từ Meta (xử lý prefix `for (;;);` và stream chunk)
@@ -171,7 +198,7 @@ interface RawComment {
       dbg.totalReplies += filtered.filter((c) => c.parent_id != null).length;
       logDebug(
         'extract',
-        `comments=${filtered.length} (replies=${filtered.filter((c) => c.parent_id != null).length}), total=${dbg.totalComments}`
+        `comments=${filtered.length} (replies=${filtered.filter((c) => c.parent_id != null).length}), total=${dbg.totalComments}, noParent=${dbg.noParentCount}`
       );
 
       if (filtered.length > 0) {

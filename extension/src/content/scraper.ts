@@ -558,7 +558,12 @@ async function fetchNestedReplies(
   );
 
   const targets = parentsWithReplies.slice(0, maxParents);
-  if (targets.length === 0) return nestedComments;
+  if (targets.length === 0) {
+    console.log(`[TS-DEBUG] [nested] no targets: total=${parentComments.length}, withCode=${parentComments.filter(c => c.code).length}, withReplyCount=${parentComments.filter(c => c.direct_reply_count && c.direct_reply_count > 0).length}`);
+    return nestedComments;
+  }
+
+  console.log(`[TS-DEBUG] [nested] targets=${targets.length}, bắt đầu cào sâu...`);
 
   const lsdToken = getLsdToken();
   const chunkSize = 6;
@@ -594,6 +599,7 @@ async function fetchNestedReplies(
               for (const p of payloads) {
                 const extracted: ScrapedComment[] = [];
                 extractCommentNode(p, extracted);
+                console.log(`[TS-DEBUG] [nested] graphQL direct for ${parent.external_id}: extracted=${extracted.length}`);
                 for (const sub of extracted) {
                   if (!sub.text || !sub.author_username) continue;
                   if (sub.external_id && sub.external_id === parent.external_id) continue;
@@ -618,8 +624,12 @@ async function fetchNestedReplies(
                   });
                 }
               }
+            } else {
+              console.log(`[TS-DEBUG] [nested] graphQL direct FAIL ${parent.external_id}: status=${gqlRes.status}`);
             }
-          } catch {}
+          } catch (e) {
+            console.log(`[TS-DEBUG] [nested] graphQL direct ERROR ${parent.external_id}: ${e instanceof Error ? e.message : String(e)}`);
+          }
         }
 
         // 2. Fetch HTML Sub-thread page
@@ -633,8 +643,12 @@ async function fetchNestedReplies(
             Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           },
         });
-        if (!res.ok) return;
+        if (!res.ok) {
+          console.log(`[TS-DEBUG] [nested] HTML fetch FAIL ${targetUrl}: status=${res.status}`);
+          return;
+        }
         const html = await res.text();
+        console.log(`[TS-DEBUG] [nested] HTML fetch OK ${targetUrl}: len=${html.length}`);
 
         const scriptMatches = html.match(/<script[^>]*>([\s\S]*?)<\/script>/gi) || [];
         for (const s of scriptMatches) {
@@ -674,6 +688,7 @@ async function fetchNestedReplies(
     await Promise.all(promises);
   }
 
+  console.log(`[TS-DEBUG] [nested] done: nestedFound=${nestedComments.length}, nestedTotal=${nestedComments.length}`);
   return nestedComments;
 }
 

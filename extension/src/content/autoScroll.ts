@@ -3,6 +3,15 @@
 import { debugStats } from './debug';
 import { isScrapeAborted, getInterceptedCommentsCount } from './scraper';
 
+// Candidate gần giống nút expander nhưng không khớp regex — để chẩn đoán vì sao không click được.
+const nearMissCandidates = new Set<string>();
+
+function logDebug(tag: string, msg: string) {
+  try {
+    console.log(`[TS-DEBUG] [${tag}] ${msg}`);
+  } catch {}
+}
+
 // Kiểm tra xem đã chạm đến thông báo chân trang Threads hay chưa
 export function isEndOfCommentsReached(doc: Document): boolean {
   const hiddenLink = doc.querySelector('a[href*="/hidden_replies"], a[href*="hidden_replies"]');
@@ -116,8 +125,23 @@ async function expandSubReplies(doc: Document): Promise<{ found: number; clicked
             el.dataset.tsExpanded = 'true';
             el.click();
             expandedCount++;
+            logDebug('expand', `clicked expander: "${(el.textContent ?? '').trim().slice(0, 60)}"`);
             await new Promise((r) => setTimeout(r, 80));
           } catch {}
+        }
+      }
+    } else {
+      // Chẩn đoán: log các candidate gần giống nút reply nhưng không khớp regex
+      const txt = (el.textContent ?? '').trim().toLowerCase();
+      if (
+        txt.length > 2 && txt.length < 100 &&
+        (txt.includes('trả') || txt.includes('phản hồi') || txt.includes('reply') || txt.includes('repl')) &&
+        !txt.includes('sao chép') && !txt.includes('mã nhúng') && !txt.includes('không quan tâm') &&
+        el.offsetParent !== null && !nearMissCandidates.has(txt)
+      ) {
+        nearMissCandidates.add(txt);
+        if (nearMissCandidates.size <= 8) {
+          logDebug('expand-nearmiss', `candidate KHÔNG khớp: "${txt.slice(0, 80)}"`);
         }
       }
     }
@@ -240,4 +264,5 @@ export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?
   debugStats.expandersFound = totalExpandersFound;
   debugStats.expandersClicked = totalExpandersClicked;
   debugStats.repliesCounted = countReplies(doc);
+  logDebug('autoscroll', `done: scrolls=${maxScrolls} expandersFound=${totalExpandersFound} expandersClicked=${totalExpandersClicked} buffer=${getInterceptedCommentsCount()}`);
 }
