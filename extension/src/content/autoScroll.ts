@@ -5,11 +5,27 @@ import { isScrapeAborted, getInterceptedCommentsCount } from './scraper';
 
 // Candidate gần giống nút expander nhưng không khớp regex — để chẩn đoán vì sao không click được.
 const nearMissCandidates = new Set<string>();
+const escapedComposerCount = { n: 0 };
 
 function logDebug(tag: string, msg: string) {
   try {
     console.log(`[TS-DEBUG] [${tag}] ${msg}`);
   } catch {}
+}
+
+// Đóng công cụ soạn (composer) nếu nó vô tình bị mở — nhấn Escape 1 lần.
+function closeComposerIfOpen(doc: Document): boolean {
+  const composerOpen = doc.querySelector(
+    '[role="dialog"] textarea, [role="dialog"] [contenteditable="true"], div[role="dialog"]'
+  );
+  if (!composerOpen) return false;
+  try {
+    const w = doc.defaultView;
+    w?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', keyCode: 27, which: 27, bubbles: true }));
+    escapedComposerCount.n++;
+    logDebug('composer-close', `escape #${escapedComposerCount.n} — đóng composer vô tình mở`);
+  } catch {}
+  return true;
 }
 
 // Kiểm tra xem đã chạm đến thông báo chân trang Threads hay chưa
@@ -135,26 +151,48 @@ async function expandSubReplies(doc: Document): Promise<{ found: number; clicked
             logDebug('expand-inspect', `"${txt.slice(0, 50)}" ${desc('self')}`);
 
             // Trên Threads hiện tại: "Trả lời660" = nút composer "Trả lời" + span số reply.
-            // Click vào span số mới mở reply thread; click wrapper chỉ mở công cụ soạn.
+            // KHÔNG bao giờ click wrapper — dội lên mở composer. Tìm phần tử con có
+            // role=button/tabindex hoặc là leaf span chứa đúng số, ưu tiên phần tử
+            // có thuộc tính click handler (tabindex/role) để mở reply thread.
             const numMatch = txt.match(/^(trả\s*lời|reply|replies|phản\s*hồi)\s*[:.,]?\s*(\d[\d.,]*[kKmM]?)\s*$/i);
             if (numMatch) {
               const count = numMatch[2];
-              const spans = Array.from(el.querySelectorAll<HTMLElement>('span, div, p'));
+              // Ưu tiên: <a href> chứa đúng số (reply count link) → mở reply thread.
+              const allDesc = Array.from(el.querySelectorAll<HTMLElement>('*'));
               let numTarget: HTMLElement | null = null;
-              for (const sp of spans) {
-                const st = (sp.textContent ?? '').trim();
-                if (st === count && sp.offsetParent !== null) {
-                  numTarget = sp;
+              for (const d of allDesc) {
+                if (d.tagName.toLowerCase() === 'a' && (d.textContent ?? '').trim() === count && d.offsetParent !== null) {
+                  numTarget = d;
                   break;
+                }
+              }
+              if (!numTarget) {
+                for (const d of allDesc) {
+                  const st = (d.textContent ?? '').trim();
+                  if (st !== count || d.offsetParent === null) continue;
+                  const isInteractive =
+                    d.hasAttribute('tabindex') ||
+                    (d.getAttribute('role') ?? '') !== '' ||
+                    (d.style && d.style.cursor === 'pointer');
+                  if (isInteractive) { numTarget = d; break; }
+                }
+              }
+              if (!numTarget) {
+                for (const d of allDesc) {
+                  const st = (d.textContent ?? '').trim();
+                  if (st === count && d.offsetParent !== null) { numTarget = d; break; }
                 }
               }
               if (numTarget) {
                 numTarget.dataset.tsExpanded = 'true';
                 el.dataset.tsExpanded = 'true';
-                numTarget.click();
+                try {
+                  numTarget.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: doc.defaultView ?? undefined }));
+                } catch {}
                 expandedCount++;
-                logDebug('expand', `clicked reply-count: "${count}" (tag=${numTarget.tagName.toLowerCase()})`);
+                logDebug('expand', `clicked reply-count: "${count}" (tag=${numTarget.tagName.toLowerCase()}, href=${(numTarget as HTMLAnchorElement).getAttribute?.('href') ?? ''}, role=${numTarget.getAttribute('role') ?? ''})`);
                 await new Promise((r) => setTimeout(r, 600));
+                closeComposerIfOpen(doc);
                 continue;
               }
               logDebug('expand-skip', `không tìm thấy span số "${count}" trong "${txt.slice(0, 50)}"`);
@@ -162,7 +200,7 @@ async function expandSubReplies(doc: Document): Promise<{ found: number; clicked
               continue;
             }
 
-            // KHÔNG click nếu phần tử chứa icon composer "Trả lời".
+            // Fallback cũ: chỉ click phần tử không có icon composer bên trong
             const hasComposerIcon = el.querySelector('svg[aria-label*="trả lời" i], svg[aria-label*="reply" i]');
             if (hasComposerIcon) {
               logDebug('expand-skip', `skip composer wrapper: "${txt.slice(0, 50)}"`);
@@ -172,7 +210,8 @@ async function expandSubReplies(doc: Document): Promise<{ found: number; clicked
               el.click();
               expandedCount++;
               logDebug('expand', `clicked expander: "${txt.slice(0, 60)}"`);
-              await new Promise((r) => setTimeout(r, 600));
+              await new Promise((r) => setTimeout(r, 700));
+              closeComposerIfOpen(doc);
             }
           } catch {}
         }
@@ -204,7 +243,7 @@ function countReplies(doc: Document): number {
 }
 
 export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?: number; maxScrolls?: number }): Promise<void> {
-  const maxScrolls = opts?.maxScrolls ?? 180;
+  const maxScrolls = opts?.maxScrolls ?? 120;
   let stableCount = 0;
   let lastBufferCount = -1;
   let lastDomCount = -1;
