@@ -390,21 +390,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 3. VISUAL STATISTICS SECTION - Dedicated Community Heat Index */}
+      {/* 3. VISUAL STATISTICS SECTION - Overall Heat Card */}
       {stats && (
-        <section className="section" id="community-stats" style={{ paddingTop: 'var(--space-8)' }}>
+        <section className="section" id="community-stats" style={{ paddingTop: 'var(--space-6)', paddingBottom: 'var(--space-6)' }}>
           <div className="container">
             <Reveal>
-              <div className="section-head">
-                <span className="section-eyebrow">
-                  <Lightning size={16} weight="fill" color="var(--accent)" />
-                  {t('stats.eyebrow')}
-                </span>
-                <h2 className="section-title">{t('stats.title')}</h2>
-                <p className="section-subtitle">{t('stats.subtitle')}</p>
-              </div>
-            </Reveal>
-            <Reveal delay={0.06}>
               <OverallHeat stats={stats} />
             </Reveal>
           </div>
