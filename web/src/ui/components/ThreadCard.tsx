@@ -1,10 +1,36 @@
 import { useNavigate } from 'react-router-dom';
-import { Fire, Sparkle, Coffee, ChatCircleDots, ArrowRight, ArrowSquareOut, Lightning, User } from '@phosphor-icons/react';
+import { Fire, Sparkle, Coffee, ChatCircleDots, ArrowRight, ArrowSquareOut, Lightning, Question } from '@phosphor-icons/react';
 import HeatGauge from './HeatGauge';
 import { labelFromScore, LABEL_COLORS } from '../../shared/labels';
 import { formatRelativeTime } from '../format';
 import { useI18n } from '../i18n';
 import type { ThreadRecord } from '../../shared/types';
+
+function getAvatarStyle(username: string | null) {
+  if (!username) {
+    return {
+      background: 'linear-gradient(135deg, #F0ECE1 0%, #E2DBD0 100%)',
+      color: 'var(--ink-2)',
+    };
+  }
+  let hash = 0;
+  for (let i = 0; i < username.length; i++) {
+    hash = username.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const palettes = [
+    { bg: 'linear-gradient(135deg, #FFE8D6 0%, #FFD6BA 100%)', color: '#B34A1B' },
+    { bg: 'linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%)', color: '#0369A1' },
+    { bg: 'linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%)', color: '#7E22CE' },
+    { bg: 'linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%)', color: '#15803D' },
+    { bg: 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)', color: '#B45309' },
+    { bg: 'linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%)', color: '#B91C1C' },
+  ];
+  const idx = Math.abs(hash) % palettes.length;
+  return {
+    background: palettes[idx].bg,
+    color: palettes[idx].color,
+  };
+}
 
 export default function ThreadCard({ thread }: { thread: ThreadRecord }) {
   const { t } = useI18n();
@@ -40,6 +66,10 @@ export default function ThreadCard({ thread }: { thread: ThreadRecord }) {
 
   const showContentSnippet = thread.content && thread.title && thread.title !== thread.content && thread.title !== 'Thread';
 
+  const authorName = thread.author_username || t('tc.anon');
+  const avatarInitial = thread.author_username ? thread.author_username.charAt(0).toUpperCase() : 'TS';
+  const avatarStyle = getAvatarStyle(thread.author_username);
+
   function handleCardClick() {
     navigate(`/t/${thread.id}`);
   }
@@ -61,14 +91,14 @@ export default function ThreadCard({ thread }: { thread: ThreadRecord }) {
       role="link"
       aria-label={`${displayTitle} - ${isScored ? `${Math.round(avg!)}/100 ${t('tc.dramaScore')}` : t('tc.pending')}`}
     >
-      {/* 1. Header: Author & Drama Score Badge */}
+      {/* 1. Header: Monogram Avatar & Drama Score Badge */}
       <div className="threadcard-head">
         <div className="threadcard-author">
-          <div className="threadcard-avatar">
-            <User size={14} weight="bold" />
+          <div className="threadcard-avatar" style={avatarStyle}>
+            <span>{avatarInitial}</span>
           </div>
           <span className="threadcard-username">
-            @{thread.author_username || t('tc.anon')}
+            @{authorName}
           </span>
           {thread.posted_at != null && (
             <span className="threadcard-time">
@@ -77,7 +107,7 @@ export default function ThreadCard({ thread }: { thread: ThreadRecord }) {
           )}
         </div>
 
-        {/* Drama Level Badge - Rõ ràng: [Điểm]/100 ĐỘ DRAMA • TRẠNG THÁI */}
+        {/* Drama Level Badge với Tooltip giải thích tiêu chí */}
         {isScored ? (
           <div
             className={`threadcard-scorebig ${scoreBigClass}`}
@@ -96,6 +126,9 @@ export default function ThreadCard({ thread }: { thread: ThreadRecord }) {
             <span className="threadcard-score-status">
               {cls === 'BÙNG NỔ' ? t('tc.hot') : cls === 'VUI VẺ' ? t('tc.calm') : t('tc.neutral')}
             </span>
+            <span className="threadcard-score-info-btn" aria-hidden="true">
+              <Question size={11} weight="bold" />
+            </span>
           </div>
         ) : (
           <span className="pill pending">
@@ -104,7 +137,7 @@ export default function ThreadCard({ thread }: { thread: ThreadRecord }) {
         )}
       </div>
 
-      {/* 2. Tiêu đề & Nội dung tóm tắt */}
+      {/* 2. Tiêu đề & Nội dung trích dẫn với line-height thoáng cho dấu tiếng Việt */}
       <h3 className="threadcard-title-wrap">
         <span className="threadcard-title">
           {displayTitle}
@@ -138,12 +171,12 @@ export default function ThreadCard({ thread }: { thread: ThreadRecord }) {
         </div>
       )}
 
-      {/* 4. Footer: Số bình luận, Link Threads gốc & CTA */}
+      {/* 4. Footer: Số bình luận, Nút Threads nổi bật & CTA */}
       <div className="threadcard-foot">
         <div className="threadcard-foot-left">
           <span className="threadcard-comments-count">
             <ChatCircleDots size={16} weight="fill" color="var(--accent)" />
-            {thread.total_comments} {t('tc.comments')}
+            <b>{thread.total_comments}</b> {t('tc.comments')}
           </span>
           {thread.url && (
             <a
@@ -154,7 +187,7 @@ export default function ThreadCard({ thread }: { thread: ThreadRecord }) {
               title={t('tc.onThreads')}
               onClick={(e) => e.stopPropagation()}
             >
-              Threads <ArrowSquareOut size={13} />
+              Threads <ArrowSquareOut size={13} weight="bold" />
             </a>
           )}
         </div>
