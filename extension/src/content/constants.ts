@@ -1,1 +1,2 @@
-export const MAX_COMMENTS = 500;
+export const MAX_COMMENTS = 2000;
+

@@ -39,6 +39,10 @@ interface BufferedComment extends ScrapedComment {
 
 const interceptedCommentsBuffer: BufferedComment[] = [];
 
+export function getInterceptedCommentsCount(): number {
+  return interceptedCommentsBuffer.length;
+}
+
 if (typeof window !== 'undefined') {
   window.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'TS_GRAPHQL_COMMENTS_INTERCEPTED' && Array.isArray(event.data.comments)) {
