@@ -111,23 +111,16 @@ export default function HomePage() {
 
   return (
     <div className="page">
-      {/* 1. HERO SECTION - High-Impact Headline + Interactive Heat Reactor Anchor */}
+      {/* 1. HERO SECTION - Clean Headline + Search Box + Heat Reactor */}
       <section className="hero-v2">
         <div className="container hero-container">
           <div className="hero-grid">
-            {/* Cột Trái: Value Proposition & Search Box */}
+            {/* Cột Trái: Main Headline & Search Box */}
             <div className="hero-info-col">
               <Reveal>
-                <div className="hero-live-badge">
-                  <span className="live-dot" />
-                  <span>{t('hero.liveBadge')}</span>
-                </div>
                 <h1 className="hero-main-title">
                   {t('hero.mainHeadline')}
                 </h1>
-                <p className="hero-main-desc">
-                  {t('hero.subHeadline')}
-                </p>
               </Reveal>
 
               <Reveal delay={0.06}>
@@ -308,28 +301,30 @@ export default function HomePage() {
       {/* 2. DISCOVERY & FEED SECTION - 2-Column Responsive Layout */}
       <section className="section-feed" id="explore">
         <div className="container">
+          {/* Hàng phân cách / Tabs chạy dài ngang toàn bộ chiều rộng */}
+          <div className="feed-header-bar">
+            <div className="sort-tabs" role="tablist">
+              {(['hottest', 'newest', 'most_comments'] as const).map((s) => (
+                <button
+                  key={s}
+                  role="tab"
+                  aria-selected={sort === s}
+                  className={`sort-tab${sort === s ? ' active' : ''}`}
+                  onClick={() => handleSortChange(s)}
+                >
+                  {s === 'hottest'
+                    ? t('feed.sort.hottest')
+                    : s === 'newest'
+                    ? t('feed.sort.latest')
+                    : t('feed.sort.comments')}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="feed-grid-layout">
-            {/* Cột Trái: Feed Bài Viết & Sort Tabs */}
+            {/* Cột Trái: Feed Bài Viết */}
             <div className="feed-main-col">
-              <div className="feed-header-row">
-                <div className="sort-tabs" role="tablist">
-                  {(['hottest', 'newest', 'most_comments'] as const).map((s) => (
-                    <button
-                      key={s}
-                      role="tab"
-                      aria-selected={sort === s}
-                      className={`sort-tab${sort === s ? ' active' : ''}`}
-                      onClick={() => handleSortChange(s)}
-                    >
-                      {s === 'hottest'
-                        ? t('feed.sort.hottest')
-                        : s === 'newest'
-                        ? t('feed.sort.latest')
-                        : t('feed.sort.comments')}
-                    </button>
-                  ))}
-                </div>
-              </div>
 
               {error && (
                 <div className="error-banner" role="alert">
