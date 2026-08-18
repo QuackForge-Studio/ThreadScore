@@ -8,6 +8,11 @@ const chromeStub = vi.hoisted(() => ({
 }));
 vi.stubGlobal('chrome', chromeStub);
 
+vi.mock('../src/content/autoScroll', () => ({
+  autoScrollUntilStable: vi.fn().mockResolvedValue(undefined),
+  isEndOfCommentsReached: vi.fn().mockReturnValue(false),
+}));
+
 import { scrapeCurrentThread, testScrapeAndHighlight } from '../src/content/scraper';
 
 function makeDom(): Document {
