@@ -23,58 +23,6 @@ function AppContent() {
             <img src="/ThreadScore.png?v=2" alt="ThreadScore Logo" className="logo-img" />
             <span>ThreadScore</span>
           </Link>
-          <nav className="site-nav" aria-label="Main">
-            <div className="nav-lang" role="group" aria-label={t('nav.langLabel')}>
-              <button
-                type="button"
-                className={`lang-btn ${lang === 'vi' ? 'active' : ''}`}
-                onClick={() => setLang('vi')}
-              >
-                VI
-              </button>
-              <button
-                type="button"
-                className={`lang-btn ${lang === 'en' ? 'active' : ''}`}
-                onClick={() => setLang('en')}
-              >
-                EN
-              </button>
-            </div>
-
-            <button
-              type="button"
-              className="nav-link nav-donate-btn"
-              onClick={() => setIsDonateOpen(true)}
-              title={t('nav.donateTitle')}
-            >
-              <Coffee size={15} weight="fill" color="var(--accent)" />
-              <span>{t('nav.donate')}</span>
-            </button>
-
-            <button
-              type="button"
-              className="theme-toggle-btn"
-              onClick={toggleTheme}
-              title={t('nav.themeTitle')}
-              aria-label={theme === 'dark' ? t('theme.toggleLight') : t('theme.toggleDark')}
-            >
-              {theme === 'dark' ? (
-                <Sun size={18} weight="bold" color="#FDB813" />
-              ) : (
-                <Moon size={18} weight="bold" color="var(--ink-2)" />
-              )}
-            </button>
-
-            <a
-              className="nav-link primary nav-github"
-              href="https://github.com/QuackForge-Studio/ThreadScore"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="GitHub Repository"
-            >
-              <GithubLogo weight="fill" size={17} /> GitHub
-            </a>
-          </nav>
         </header>
 
         <main className="site-main">
@@ -101,7 +49,7 @@ function AppContent() {
                 </a>
               </div>
 
-              <div style={{ marginTop: '10px' }}>
+              <div style={{ marginTop: '14px', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                 <button
                   type="button"
                   className="footer-donate-btn"
@@ -109,6 +57,16 @@ function AppContent() {
                 >
                   <Heart size={14} weight="fill" /> {t('footer.donate')}
                 </button>
+
+                <a
+                  className="footer-github-btn"
+                  href="https://github.com/QuackForge-Studio/ThreadScore"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="GitHub Repository"
+                >
+                  <GithubLogo weight="fill" size={15} /> GitHub
+                </a>
               </div>
             </div>
             <div className="footer-disclaimer">
@@ -133,15 +91,48 @@ function AppContent() {
               </Link>
             </div>
 
-            <div className="footer-credits">
-              {t('footer.credits')}{' '}
-              <a href="https://quackforge.io.vn" target="_blank" rel="noreferrer" className="footer-credit-link">
-                QuackForge Studio
-              </a>{' '}
-              &amp;{' '}
-              <a href="https://modelmart.io.vn" target="_blank" rel="noreferrer" className="footer-credit-link">
-                ModelMart
-              </a>
+            <div className="footer-actions-row">
+              <div className="footer-lang" role="group" aria-label={t('nav.langLabel')}>
+                <button
+                  type="button"
+                  className={`lang-btn ${lang === 'vi' ? 'active' : ''}`}
+                  onClick={() => setLang('vi')}
+                >
+                  VI
+                </button>
+                <button
+                  type="button"
+                  className={`lang-btn ${lang === 'en' ? 'active' : ''}`}
+                  onClick={() => setLang('en')}
+                >
+                  EN
+                </button>
+              </div>
+
+              <button
+                type="button"
+                className="theme-toggle-btn footer-theme-toggle"
+                onClick={toggleTheme}
+                title={t('nav.themeTitle')}
+                aria-label={theme === 'dark' ? t('theme.toggleLight') : t('theme.toggleDark')}
+              >
+                {theme === 'dark' ? (
+                  <Sun size={16} weight="bold" color="#FDB813" />
+                ) : (
+                  <Moon size={16} weight="bold" color="rgba(255, 253, 248, 0.8)" />
+                )}
+              </button>
+
+              <div className="footer-credits">
+                {t('footer.credits')}{' '}
+                <a href="https://quackforge.io.vn" target="_blank" rel="noreferrer" className="footer-credit-link">
+                  QuackForge Studio
+                </a>{' '}
+                &amp;{' '}
+                <a href="https://modelmart.io.vn" target="_blank" rel="noreferrer" className="footer-credit-link">
+                  ModelMart
+                </a>
+              </div>
             </div>
           </div>
         </footer>
