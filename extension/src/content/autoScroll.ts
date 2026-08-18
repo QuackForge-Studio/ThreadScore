@@ -62,6 +62,13 @@ function isRealSubReplyExpander(el: HTMLElement): boolean {
     return false;
   }
 
+  // QUAN TRỌNG: bỏ qua nút composer "Trả lời" (nút hành động mở công cụ soạn).
+  // Nút này có icon svg với aria-label "Trả lời"/"Reply" bên trong hoặc là chính nó.
+  const replyIcon = el.querySelector('svg[aria-label*="trả lời" i], svg[aria-label*="reply" i], svg[aria-label*="thích" i], svg[aria-label*="like" i]');
+  if (replyIcon) return false;
+  const selfIsReplyIcon = el.tagName.toLowerCase() === 'svg' && /trả lời|reply/i.test(el.getAttribute('aria-label') ?? '');
+  if (selfIsReplyIcon) return false;
+
   const txt = (el.textContent ?? '').trim().toLowerCase();
   if (!txt || txt.length < 2 || txt.length > 100) return false;
 
@@ -120,15 +127,29 @@ async function expandSubReplies(doc: Document): Promise<{ found: number; clicked
     // Kiểm tra nhanh text trước khi gọi reflow layout
     if (isRealSubReplyExpander(el)) {
       foundCount++;
-      // Chỉ click tối đa 8 expander mỗi lượt cuộn để tránh treo luồng giao diện
-      if (expandedCount < 8) {
+      // Chỉ click tối đa 2 expander mỗi lượt cuộn, chờ 600ms giữa mỗi lần —
+      // mở quá nhanh làm Threads reload trang mất toàn bộ trạng thái.
+      if (expandedCount < 2) {
         if (el.offsetParent !== null || el.clientHeight > 0) {
           try {
+            // Click phần tử leaf nhỏ nhất chứa đúng text của nút (tránh bấm
+            // nhầm container lớn có chứa cả nút composer "Trả lời").
+            const txt = (el.textContent ?? '').trim();
+            let target: HTMLElement = el;
+            const descendants = Array.from(el.querySelectorAll<HTMLElement>('span, div, p'));
+            for (const d of descendants) {
+              const dt = (d.textContent ?? '').trim();
+              if (dt === txt && d.offsetParent !== null) {
+                target = d;
+                break;
+              }
+            }
+            target.dataset.tsExpanded = 'true';
             el.dataset.tsExpanded = 'true';
-            el.click();
+            target.click();
             expandedCount++;
-            logDebug('expand', `clicked expander: "${(el.textContent ?? '').trim().slice(0, 60)}"`);
-            await new Promise((r) => setTimeout(r, 80));
+            logDebug('expand', `clicked expander: "${txt.slice(0, 60)}" (leaf=${target.tagName.toLowerCase()})`);
+            await new Promise((r) => setTimeout(r, 600));
           } catch {}
         }
       }
