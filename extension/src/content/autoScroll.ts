@@ -130,24 +130,22 @@ async function expandSubReplies(doc: Document): Promise<{ found: number; clicked
       if (expandedCount < 2) {
         if (el.offsetParent !== null || el.clientHeight > 0) {
           try {
-            // Click phần tử leaf nhỏ nhất chứa đúng text của nút (tránh bấm
-            // nhầm container lớn có chứa cả nút composer "Trả lời").
             const txt = (el.textContent ?? '').trim();
-            let target: HTMLElement = el;
-            const descendants = Array.from(el.querySelectorAll<HTMLElement>('span, div, p'));
-            for (const d of descendants) {
-              const dt = (d.textContent ?? '').trim();
-              if (dt === txt && d.offsetParent !== null) {
-                target = d;
-                break;
-              }
+            const desc = (s: string) => `tag=${el.tagName.toLowerCase()} class="${(el.className || '').toString().slice(0, 40)}" role="${el.getAttribute('role') ?? ''}" aria="${(el.getAttribute('aria-label') ?? '').slice(0, 30)}" title="${(el.getAttribute('title') ?? '').slice(0, 30)}"`;
+            logDebug('expand-inspect', `"${txt.slice(0, 50)}" ${desc('self')}`);
+
+            // KHÔNG click nếu phần tử (hoặc cha trực tiếp) chứa icon composer "Trả lời".
+            const hasComposerIcon = el.querySelector('svg[aria-label*="trả lời" i], svg[aria-label*="reply" i]');
+            if (hasComposerIcon) {
+              logDebug('expand-skip', `skip composer wrapper: "${txt.slice(0, 50)}"`);
+              el.dataset.tsExpanded = 'true';
+            } else {
+              el.dataset.tsExpanded = 'true';
+              el.click();
+              expandedCount++;
+              logDebug('expand', `clicked expander: "${txt.slice(0, 60)}"`);
+              await new Promise((r) => setTimeout(r, 600));
             }
-            target.dataset.tsExpanded = 'true';
-            el.dataset.tsExpanded = 'true';
-            target.click();
-            expandedCount++;
-            logDebug('expand', `clicked expander: "${txt.slice(0, 60)}" (leaf=${target.tagName.toLowerCase()})`);
-            await new Promise((r) => setTimeout(r, 600));
           } catch {}
         }
       }
