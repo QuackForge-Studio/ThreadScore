@@ -113,13 +113,20 @@ chrome.runtime.onMessage.addListener(
         const isThreads = validateThreadsUrl(tab?.url);
         let username: string | null = null;
         if (tab?.url) {
-          const match = tab.url.match(/threads\.(?:net|com)\/@([^/?#]+)/i);
+          const match = tab.url.match(/@([^/?#]+)/i);
           if (match) username = match[1];
+        }
+        let title = tab?.title || '';
+        const m = title.match(/[:：]\s*[“"']?([^"”']+)["”']?/);
+        if (m && m[1]) {
+          title = m[1].trim();
+        } else if (title.toLowerCase().includes('trang chủ') || title.toLowerCase().includes('threads')) {
+          title = '';
         }
         sendResponse({
           ok: true,
           payload: {
-            title: tab?.title || '',
+            title,
             url: tab?.url || '',
             isThreads,
             username,

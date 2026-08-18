@@ -252,10 +252,23 @@ const BADGE_TEXTS = new Set([
   'threads',
 ]);
 
+export function isGenericPromoText(text: string): boolean {
+  if (!text) return true;
+  const lower = text.trim().toLowerCase();
+  if (lower.includes('tham gia threads') || lower.includes('join threads')) return true;
+  if (lower.includes('đăng nhập bằng instagram') || lower.includes('log in with instagram')) return true;
+  if (lower.includes('trang chủ • threads') || lower.includes('home • threads')) return true;
+  if (lower.includes('chia sẻ ý tưởng') || lower.includes('share ideas')) return true;
+  if (lower.includes('đặt câu hỏi') || lower.includes('ask questions')) return true;
+  if (lower === 'threads' || lower === 'threads, an instagram app' || lower === 'bài viết threads') return true;
+  return false;
+}
+
 export function isMetaOrBadgeText(text: string): boolean {
   const lower = text.trim().toLowerCase();
   if (!lower || lower.length === 0) return true;
   if (BADGE_TEXTS.has(lower)) return true;
+  if (isGenericPromoText(lower)) return true;
   // Lọc lượt xem, views, lượt thích, likes, lượt phát, v.v. (bao gồm số thập phân, K, M, B, dấu chấm/phẩy)
   if (/^[\d.,\s]+[kKmMbB]?\s*(lượt xem|lượt xem bài viết|views|view|lượt thích|likes|like|lượt phát|plays|reposts|shares|bình luận|comments)$/i.test(lower)) return true;
   if (/\b(lượt xem|views|lượt phát|plays)\b/i.test(lower) && lower.length < 35) return true;
@@ -618,12 +631,11 @@ export function isSubReplyComment(
 
 function extractOgDescription(doc: Document): string | null {
   const ogDesc = doc.querySelector('meta[property="og:description"]')?.getAttribute('content')?.trim() ||
-                 doc.querySelector('meta[name="description"]')?.getAttribute('content')?.trim() ||
                  doc.querySelector('meta[property="twitter:description"]')?.getAttribute('content')?.trim();
   if (!ogDesc) return null;
   // Threads đặt og:description có dạng: "110 bình luận - Nội dung bài viết..." hoặc "Nội dung bài viết..."
   let clean = ogDesc.replace(/^[\d.,\s]+[kKmMbB]?\s*(bình luận|comments|lượt thích|likes|views|lượt xem)\s*[-–—:•]\s*/i, '').trim();
-  if (clean && !isMetaOrBadgeText(clean)) {
+  if (clean && !isMetaOrBadgeText(clean) && !isGenericPromoText(clean)) {
     return clean;
   }
   return null;
@@ -635,7 +647,7 @@ function extractFromDocumentTitle(doc: Document): string | null {
   const m = rawTitle.match(/[:：]\s*[“"']?([^"”']+)["”']?/);
   if (m && m[1]) {
     const text = m[1].trim();
-    if (text && !isMetaOrBadgeText(text)) return text;
+    if (text && !isMetaOrBadgeText(text) && !isGenericPromoText(text)) return text;
   }
   return null;
 }
@@ -656,28 +668,12 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
   let mainTitleText = titleEl?.textContent?.trim() ?? '';
   let mainContentText = contentEl?.textContent?.trim() ?? '';
 
-  if (isMetaOrBadgeText(mainTitleText)) mainTitleText = '';
-  if (isMetaOrBadgeText(mainContentText)) mainContentText = '';
+  if (isMetaOrBadgeText(mainTitleText) || isGenericPromoText(mainTitleText)) mainTitleText = '';
+  if (isMetaOrBadgeText(mainContentText) || isGenericPromoText(mainContentText)) mainContentText = '';
 
-  // 1. ƯU TIÊN SỐ 1: Trích xuất trực tiếp từ Meta Tag og:description do chính Threads Server render (chuẩn xác 100% không thể dính comment)
-  const ogContent = extractOgDescription(doc);
-  if (ogContent) {
-    mainContentText = ogContent;
-    mainTitleText = ogContent.length > 140 ? ogContent.slice(0, 140) + '...' : ogContent;
-  }
-
-  // 2. ƯU TIÊN SỐ 2: Trích xuất từ Document Title nếu có quote nội dung
-  if (!mainContentText || isMetaOrBadgeText(mainContentText)) {
-    const titleContent = extractFromDocumentTitle(doc);
-    if (titleContent) {
-      mainContentText = titleContent;
-      mainTitleText = titleContent.length > 140 ? titleContent.slice(0, 140) + '...' : titleContent;
-    }
-  }
-
-  // 3. ƯU TIÊN SỐ 3: Trích xuất từ GraphQL Buffer (chỉ chấp nhận khi mã code khớp chính xác với currentPostCode)
+  // 1. ƯU TIÊN SỐ 1: Trích xuất từ GraphQL Buffer (Mã code khớp chính xác với URL bài viết - dữ liệu gốc 100%)
   let rootPostNode = interceptedCommentsBuffer.find(
-    (gc) => currentPostCode && gc.code === currentPostCode && gc.text && !isMetaOrBadgeText(gc.text)
+    (gc) => currentPostCode && gc.code === currentPostCode && gc.text && !isMetaOrBadgeText(gc.text) && !isGenericPromoText(gc.text)
   );
   if (rootPostNode && rootPostNode.text && (!mainContentText || isMetaOrBadgeText(mainContentText))) {
     mainContentText = rootPostNode.text.trim();
@@ -686,12 +682,12 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
     }
   }
 
-  // 4. ƯU TIÊN SỐ 4: Fallback từ DOM container của bài viết gốc (lọc sạch tuyệt đối mọi metadata/view count/author)
+  // 2. ƯU TIÊN SỐ 2: Trích xuất trực tiếp từ DOM container của bài viết gốc ở đầu trang
   const mainPostContainer = findMainPostContainer(doc, mainAuthorUrl);
   if ((!mainContentText || isMetaOrBadgeText(mainContentText)) && mainPostContainer) {
     const rawTexts = Array.from(mainPostContainer.querySelectorAll('span[dir="auto"], div[dir="auto"], p'))
       .map((el) => el.textContent?.trim() || '')
-      .filter((t) => t.length > 0 && !isMetaOrBadgeText(t) && !t.startsWith('@'));
+      .filter((t) => t.length > 0 && !isMetaOrBadgeText(t) && !isGenericPromoText(t) && !t.startsWith('@'));
     if (rawTexts.length > 0) {
       mainContentText = rawTexts.reduce((a, b) => (a.length >= b.length ? a : b));
       if (!mainTitleText || isMetaOrBadgeText(mainTitleText)) {
@@ -700,9 +696,27 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
     }
   }
 
+  // 3. ƯU TIÊN SỐ 3: Trích xuất từ Meta Tag og:description
+  if (!mainContentText || isMetaOrBadgeText(mainContentText)) {
+    const ogContent = extractOgDescription(doc);
+    if (ogContent) {
+      mainContentText = ogContent;
+      mainTitleText = ogContent.length > 140 ? ogContent.slice(0, 140) + '...' : ogContent;
+    }
+  }
+
+  // 4. ƯU TIÊN SỐ 4: Trích xuất từ Document Title nếu có quote nội dung
+  if (!mainContentText || isMetaOrBadgeText(mainContentText)) {
+    const titleContent = extractFromDocumentTitle(doc);
+    if (titleContent) {
+      mainContentText = titleContent;
+      mainTitleText = titleContent.length > 140 ? titleContent.slice(0, 140) + '...' : titleContent;
+    }
+  }
+
   // Nếu title vẫn dính meta/badge text hoặc rỗng, làm sạch lần cuối
-  if (isMetaOrBadgeText(mainTitleText)) {
-    mainTitleText = mainContentText && !isMetaOrBadgeText(mainContentText)
+  if (isMetaOrBadgeText(mainTitleText) || isGenericPromoText(mainTitleText)) {
+    mainTitleText = mainContentText && !isMetaOrBadgeText(mainContentText) && !isGenericPromoText(mainContentText)
       ? (mainContentText.length > 140 ? mainContentText.slice(0, 140) + '...' : mainContentText)
       : '';
   }

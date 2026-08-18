@@ -57,7 +57,21 @@ export default function App() {
       if (!cfg.webUrl || !cfg.adminKey) setShowConfig(true);
     });
     refreshUsage();
-    getActiveTabInfo().then((info) => setTabInfo(info));
+    
+    const updateTab = () => {
+      getActiveTabInfo().then((info) => {
+        if (info && (info.url || info.username || info.title)) {
+          setTabInfo(info);
+        }
+      });
+    };
+    updateTab();
+    const interval = setInterval(updateTab, 2000);
+    window.addEventListener('focus', updateTab);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', updateTab);
+    };
   }, []);
 
   async function refreshUsage() {
@@ -99,6 +113,13 @@ export default function App() {
       const stats = s.debugStats || debugStats;
       setScraped(s);
       setLastStats({ ...stats });
+      if (s.author_username || s.title) {
+        setTabInfo((prev) => ({
+          ...prev,
+          username: s.author_username || prev.username,
+          title: s.title || prev.title,
+        }));
+      }
       log(`Quét hoàn tất: ${s.comments.length} bình luận.`);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Lỗi quét bài viết';
