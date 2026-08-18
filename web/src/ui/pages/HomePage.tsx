@@ -410,33 +410,9 @@ export default function HomePage() {
               )}
             </div>
 
-            {/* Cột Phải: Sidebar Widgets (Top Spotlight, Thống kê nhanh, Chrome Extension) */}
+            {/* Cột Phải: Sidebar Widgets (Thống kê hệ thống, Chrome Extension) */}
             <aside className="feed-sidebar-col">
-              {/* Widget 1: Spotlight Drama Nóng Nhất */}
-              {stats?.top_threads && stats.top_threads[0] && (
-                <div className="sidebar-widget spotlight-widget">
-                  <div className="widget-header">
-                    <span className="widget-kicker">
-                      <Fire size={16} weight="fill" color="var(--anger)" />
-                      {t('sidebar.hottestTitle')}
-                    </span>
-                    <span className="spotlight-badge">
-                      {stats.top_threads[0].avg_anger_score?.toFixed(0)}/100
-                    </span>
-                  </div>
-                  <a href={`/t/${stats.top_threads[0].id}`} className="spotlight-link">
-                    <h4 className="spotlight-title">
-                      {stats.top_threads[0].title || t('sb.fallback')}
-                    </h4>
-                    <div className="spotlight-footer">
-                      <span>@{stats.top_threads[0].author_username || t('tc.anon')}</span>
-                      <span>· {stats.top_threads[0].total_comments} {t('tc.comments')}</span>
-                    </div>
-                  </a>
-                </div>
-              )}
-
-              {/* Widget 2: Thống kê hệ thống */}
+              {/* Widget: Thống kê hệ thống */}
               {stats && (
                 <div className="sidebar-widget stats-widget">
                   <div className="widget-header">
