@@ -117,13 +117,13 @@ export default function HomePage() {
           <div className="hero-grid">
             {/* Cột Trái: Main Headline & Search Box */}
             <div className="hero-info-col">
-              <Reveal>
+              <Reveal className="hero-title-reveal">
                 <h1 className="hero-main-title">
                   {t('hero.mainHeadline')}
                 </h1>
               </Reveal>
 
-              <Reveal delay={0.06}>
+              <Reveal delay={0.06} className="hero-search-reveal">
                 <div className="hero-search-container">
                   <SearchBox />
                 </div>
@@ -132,7 +132,7 @@ export default function HomePage() {
 
             {/* Cột Phải: Heat Reactor & AI Mood Pill */}
             <div className="hero-reactor-col">
-              <Reveal delay={0.08}>
+              <Reveal delay={0.08} className="hero-reactor-reveal">
                 <div className="hero-reactor-box">
                   {/* Visual Hero Graphic: Heat Reactor */}
                   <div className="hero-heat-stage-wrap">
