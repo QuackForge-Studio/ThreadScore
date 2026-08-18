@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import { GoogleLogo, GithubLogo, Sun, Moon, EnvelopeSimple, Coffee, Heart, ShieldCheck } from '@phosphor-icons/react';
+import { GithubLogo, Sun, Moon, EnvelopeSimple, Coffee, Heart, ShieldCheck } from '@phosphor-icons/react';
 import HomePage from './pages/HomePage';
 import ThreadPage from './pages/ThreadPage';
 import AdminPage from './pages/AdminPage';
@@ -10,27 +10,9 @@ import { ThemeProvider, useTheme } from './theme';
 import { I18nProvider, useI18n } from './i18n';
 
 function AppContent() {
-  const [user, setUser] = useState<{ provider: string; name: string } | null>(null);
   const [isDonateOpen, setIsDonateOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { lang, setLang, t } = useI18n();
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const r = await fetch('/api/auth/me');
-        if (!r.ok) throw new Error('unauthenticated');
-        const b = (await r.json()) as { user: { provider: string; name: string } | null };
-        if (!cancelled) setUser(b.user);
-      } catch {
-        if (!cancelled) setUser(null);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   return (
     <BrowserRouter>
@@ -83,31 +65,15 @@ function AppContent() {
               )}
             </button>
 
-            {user ? (
-              <>
-                <span className="nav-user">{user.name || user.provider}</span>
-                <button
-                  type="button"
-                  className="nav-link"
-                  onClick={() => {
-                    fetch('/api/auth/logout', { method: 'POST' }).finally(() => {
-                      window.location.href = '/';
-                    });
-                  }}
-                >
-                  {t('nav.logout')}
-                </button>
-              </>
-            ) : (
-              <>
-                <a className="nav-link nav-google" href="/api/auth/google/login">
-                  <GoogleLogo weight="bold" size={17} /> {t('nav.google')}
-                </a>
-                <a className="nav-link primary nav-github" href="/api/auth/github/login">
-                  <GithubLogo weight="fill" size={17} /> GitHub
-                </a>
-              </>
-            )}
+            <a
+              className="nav-link primary nav-github"
+              href="https://github.com/QuackForge-Studio/ThreadScore"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="GitHub Repository"
+            >
+              <GithubLogo weight="fill" size={17} /> GitHub
+            </a>
           </nav>
         </header>
 
