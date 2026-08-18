@@ -685,15 +685,96 @@ button { font-family: var(--font-sans); }
   transition: transform 300ms ease;
 }
 
-/* Sóng chất lỏng chuyển động nhẹ bên trong */
-.flame-liquid-wave {
-  animation: liquid-pulse 4.2s ease-in-out infinite alternate;
-  transform-origin: 32px 42px;
+/* Animation ngọn lửa bập bùng cháy (Realistic Fire Flame Animation) */
+.flame-body-group {
+  animation: fire-flame-main 3.2s ease-in-out infinite alternate;
+  transform-origin: 32px 56px;
 }
 
-@keyframes liquid-pulse {
-  0% { transform: scale(0.96) translateY(0.5px); opacity: 0.82; }
-  100% { transform: scale(1.03) translateY(-0.5px); opacity: 0.96; }
+.flame-body-path {
+  animation: fire-flicker-outer 2.4s ease-in-out infinite alternate;
+  transform-origin: 32px 54px;
+}
+
+.flame-mid-tongue {
+  animation: fire-tongue-mid 1.9s ease-in-out infinite alternate-reverse;
+  transform-origin: 32px 50px;
+}
+
+.flame-core-flame {
+  animation: fire-core-pulse 1.3s ease-in-out infinite alternate;
+  transform-origin: 32px 48px;
+}
+
+@keyframes fire-flame-main {
+  0% {
+    transform: scale(1) translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.03, 1.05) translateY(-2px) rotate(1deg);
+  }
+  50% {
+    transform: scale(0.98, 1.02) translateY(-1px) rotate(-1.5deg);
+  }
+  75% {
+    transform: scale(1.04, 1.07) translateY(-3px) rotate(1.2deg);
+  }
+  100% {
+    transform: scale(0.97, 0.99) translateY(0) rotate(-0.5deg);
+  }
+}
+
+@keyframes fire-flicker-outer {
+  0% {
+    transform: scale(1);
+    opacity: 0.98;
+  }
+  33% {
+    transform: scale(1.02, 1.06) skewX(1deg);
+    opacity: 1;
+  }
+  66% {
+    transform: scale(0.98, 1.03) skewX(-1.5deg);
+    opacity: 0.96;
+  }
+  100% {
+    transform: scale(1.01, 1.04) skewX(0.5deg);
+    opacity: 1;
+  }
+}
+
+@keyframes fire-tongue-mid {
+  0% {
+    transform: scale(0.95, 0.94) translateY(1px) skewX(-1deg);
+    opacity: 0.82;
+  }
+  40% {
+    transform: scale(1.06, 1.12) translateY(-2.5px) skewX(2deg);
+    opacity: 0.95;
+  }
+  70% {
+    transform: scale(0.98, 1.04) translateY(-1px) skewX(-2deg);
+    opacity: 0.88;
+  }
+  100% {
+    transform: scale(1.04, 1.08) translateY(-2px) skewX(1.5deg);
+    opacity: 0.94;
+  }
+}
+
+@keyframes fire-core-pulse {
+  0% {
+    transform: scale(0.92, 0.9) translateY(1px);
+    opacity: 0.88;
+  }
+  50% {
+    transform: scale(1.08, 1.14) translateY(-2px);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.96, 0.98) translateY(0);
+    opacity: 0.92;
+  }
 }
 
 /* Vệt sáng chạy chéo qua icon (Specular Light Sweep) */
@@ -722,7 +803,7 @@ button { font-family: var(--font-sans); }
 
 @keyframes flame-breathe {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05) translateY(-3px); }
+  50% { transform: scale(1.04) translateY(-3px); }
 }
 
 /* 5. Con số lớn đặt sát flame + Gradient than sẫm sang cam cháy */
@@ -763,7 +844,10 @@ button { font-family: var(--font-sans); }
   .contour-path-1, .contour-path-2 { animation: none; }
   .spark { display: none; }
   .hero-flame-icon-box { animation: none; }
-  .flame-liquid-wave { animation: none; }
+  .flame-body-group { animation: none; }
+  .flame-body-path { animation: none; }
+  .flame-mid-tongue { animation: none; }
+  .flame-core-flame { animation: none; }
   .flame-sheen-sweep { display: none; }
 }
 

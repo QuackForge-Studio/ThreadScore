@@ -157,11 +157,19 @@ export default function HomePage() {
               </div>
 
               <div className="hero-heat-inner">
-                {/* 4. Visual Anchor: Flame-Orb (Signature Icon với sóng nóng lỏng & vệt sáng chéo) */}
+                {/* 4. Visual Anchor: Flame-Orb (Living Fire Flame Animation) */}
                 <div className="hero-flame-visual-wrap">
                   <div className="hero-flame-icon-box">
                     <svg className="hero-flame-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <defs>
+                        {/* Filter tạo sóng nhiệt biến dạng lửa sống động */}
+                        <filter id="fireHeatFilter" x="-20%" y="-20%" width="140%" height="140%">
+                          <feTurbulence type="fractalNoise" baseFrequency="0.04 0.08" numOctaves="2" result="noise">
+                            <animate attributeName="baseFrequency" values="0.03 0.07; 0.05 0.11; 0.03 0.08; 0.04 0.06; 0.03 0.07" dur="3.6s" repeatCount="indefinite" />
+                          </feTurbulence>
+                          <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.8" xChannelSelector="R" yChannelSelector="G" />
+                        </filter>
+
                         {/* Clip Path cho vệt sáng chéo specular sheen */}
                         <clipPath id="flameBodyClip">
                           <path d="M32 4C32 4 37 14 34 22C38 18 42 12 42 12C42 12 52 24 50 38C48 51 38 58 32 58C26 58 16 51 14 38C12 26 22 14 26 10C26 10 24 18 28 22C30 14 32 4 32 4Z" />
@@ -175,11 +183,18 @@ export default function HomePage() {
                           <stop offset="100%" stopColor={heatTier === 'low' ? '#78C4E0' : heatTier === 'mid' ? '#FFD166' : '#FFA26B'} />
                         </linearGradient>
 
-                        {/* Lõi sóng lỏng nhiệt chuyển động (Liquid Hot Wave) */}
-                        <linearGradient id="flameLiquidGrad" x1="0%" y1="100%" x2="0%" y2="0%">
-                          <stop offset="0%" stopColor={heatTier === 'low' ? '#FFA26B' : '#FFE5A3'} stopOpacity={heatTier === 'low' ? '0.75' : '0.95'} />
-                          <stop offset="50%" stopColor={heatTier === 'low' ? '#FFD166' : '#FFF4E0'} stopOpacity="0.88" />
-                          <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.95" />
+                        {/* Lưỡi lửa giữa (Mid flame tongue) */}
+                        <linearGradient id="flameMidGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+                          <stop offset="0%" stopColor={heatTier === 'low' ? '#F05A28' : '#FF7A45'} stopOpacity="0.85" />
+                          <stop offset="50%" stopColor={heatTier === 'low' ? '#FFA26B' : '#FFD166'} stopOpacity="0.9" />
+                          <stop offset="100%" stopColor={heatTier === 'low' ? '#FFF4E0' : '#FFFFFF'} stopOpacity="0.95" />
+                        </linearGradient>
+
+                        {/* Tim lửa / Lõi nóng bên trong (Core hot flame) */}
+                        <linearGradient id="flameCoreGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+                          <stop offset="0%" stopColor={heatTier === 'low' ? '#FFA26B' : '#FFE5A3'} stopOpacity="0.9" />
+                          <stop offset="60%" stopColor="#FFF4E0" stopOpacity="0.95" />
+                          <stop offset="100%" stopColor="#FFFFFF" stopOpacity="1" />
                         </linearGradient>
 
                         {/* Than hồng nhen nhóm ở cuống/đáy đối với score thấp (Than hồng đang thức) */}
@@ -193,35 +208,45 @@ export default function HomePage() {
                         <linearGradient id="sheenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                           <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0" />
                           <stop offset="45%" stopColor="#FFFFFF" stopOpacity="0.08" />
-                          <stop offset="50%" stopColor="#FFFFFF" stopOpacity="0.55" />
-                          <stop offset="55%" stopColor="#FFFFFF" stopOpacity="0.12" />
+                          <stop offset="50%" stopColor="#FFFFFF" stopOpacity="0.5" />
+                          <stop offset="55%" stopColor="#FFFFFF" stopOpacity="0.1" />
                           <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
                         </linearGradient>
                       </defs>
 
-                      {/* 1. Lớp thân lửa chính */}
-                      <path
-                        className="flame-body-path"
-                        d="M32 4C32 4 37 14 34 22C38 18 42 12 42 12C42 12 52 24 50 38C48 51 38 58 32 58C26 58 16 51 14 38C12 26 22 14 26 10C26 10 24 18 28 22C30 14 32 4 32 4Z"
-                        fill="url(#flameBodyGrad)"
-                      />
+                      {/* Nhóm thân lửa chính chịu tác động sóng nhiệt chuyển động */}
+                      <g className="flame-body-group" filter="url(#fireHeatFilter)">
+                        {/* 1. Lớp thân lửa chính */}
+                        <path
+                          className="flame-body-path"
+                          d="M32 4C32 4 37 14 34 22C38 18 42 12 42 12C42 12 52 24 50 38C48 51 38 58 32 58C26 58 16 51 14 38C12 26 22 14 26 10C26 10 24 18 28 22C30 14 32 4 32 4Z"
+                          fill="url(#flameBodyGrad)"
+                        />
 
-                      {/* 2. Đốm than hồng nhen nhóm ở đáy (cho cảm giác than hồng đang thức) */}
-                      <path
-                        className="flame-ember-root-path"
-                        d="M32 4C32 4 37 14 34 22C38 18 42 12 42 12C42 12 52 24 50 38C48 51 38 58 32 58C26 58 16 51 14 38C12 26 22 14 26 10C26 10 24 18 28 22C30 14 32 4 32 4Z"
-                        fill="url(#flameEmberRoot)"
-                        opacity={heatTier === 'low' ? '0.88' : '0.45'}
-                      />
+                        {/* 2. Đốm than hồng nhen nhóm ở đáy */}
+                        <path
+                          className="flame-ember-root-path"
+                          d="M32 4C32 4 37 14 34 22C38 18 42 12 42 12C42 12 52 24 50 38C48 51 38 58 32 58C26 58 16 51 14 38C12 26 22 14 26 10C26 10 24 18 28 22C30 14 32 4 32 4Z"
+                          fill="url(#flameEmberRoot)"
+                          opacity={heatTier === 'low' ? '0.88' : '0.45'}
+                        />
 
-                      {/* 3. Lớp sóng chất lỏng nhiệt bên trong (Liquid Heat Wave) */}
-                      <path
-                        className="flame-liquid-wave"
-                        d="M32 24C32 24 37 31 35 37C38 34 40 30 40 30C40 30 45 37 43 45C41 52 36 55 32 55C28 55 23 52 21 45C19 39 25 32 27 29C27 29 26 33 28 35C29 31 32 24 32 24Z"
-                        fill="url(#flameLiquidGrad)"
-                      />
+                        {/* 3. Lưỡi lửa giữa chuyển động lượn sóng độc lập */}
+                        <path
+                          className="flame-mid-tongue"
+                          d="M32 16C32 16 38 23 35 30C39 26 42 22 42 22C42 22 47 30 45 39C43 49 37 53 32 53C27 53 21 49 19 39C17 30 23 22 23 22C23 22 26 26 29 30C26 23 32 16 32 16Z"
+                          fill="url(#flameMidGrad)"
+                        />
 
-                      {/* 4. Vệt sáng chạy chéo qua icon (Specular Light Sweep) */}
+                        {/* 4. Tim lửa sáng rực bên trong (Core flame flicker) */}
+                        <path
+                          className="flame-core-flame"
+                          d="M32 26C32 26 36 32 34 38C37 35 39 31 39 31C39 31 43 38 41 46C39 52 35 55 32 55C29 55 25 52 23 46C21 38 25 31 25 31C25 31 27 35 30 38C28 32 32 26 32 26Z"
+                          fill="url(#flameCoreGrad)"
+                        />
+                      </g>
+
+                      {/* 5. Vệt sáng chạy chéo qua icon (Specular Light Sweep) */}
                       <g clipPath="url(#flameBodyClip)">
                         <rect
                           className="flame-sheen-sweep"
