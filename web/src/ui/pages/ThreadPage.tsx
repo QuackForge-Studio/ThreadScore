@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { WarningCircle, ArrowLeft, ArrowSquareOut, MagnifyingGlass, X, Quotes } from '@phosphor-icons/react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { WarningCircle, ArrowLeft, ArrowSquareOut, MagnifyingGlass, X, Quotes, CaretLeft, CaretRight } from '@phosphor-icons/react';
 import { apiGet } from '../api';
 import CommentCard from '../components/CommentCard';
 import DiscussionBox from '../components/DiscussionBox';
@@ -11,12 +11,22 @@ import { useI18n } from '../i18n';
 import type { ThreadRecord, CommentRecord, AiScoreRecord, UserCommentRecord } from '../../shared/types';
 import { isAuthorContinuationComment, cleanPartMarkers } from '../../server/services/commentContext';
 
+type AdjacentThread = {
+  id: string;
+  title: string | null;
+  author_username?: string | null;
+};
+
 type ThreadDetail = {
   thread: ThreadRecord;
   comments: (CommentRecord & { score: AiScoreRecord | null })[];
   breakdown: { bang_no: number; trung_lap: number; vui_ve: number } | null;
   user_comments: UserCommentRecord[];
   vote_counts: Record<string, { correct: number; incorrect: number }>;
+  adjacent?: {
+    prev: AdjacentThread | null;
+    next: AdjacentThread | null;
+  } | null;
 };
 
 type ScoredComment = CommentRecord & { score: AiScoreRecord | null };
@@ -66,6 +76,7 @@ const PAGE_SIZE = 15;
 
 export default function ThreadPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { t } = useI18n();
   const [data, setData] = useState<ThreadDetail | null>(null);
   const [filter, setFilter] = useState<'all' | 'BÙNG NỔ' | 'TRUNG LẬP' | 'VUI VẺ'>('all');
@@ -95,6 +106,23 @@ export default function ThreadPage() {
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [id, t]);
+
+  // Hỗ trợ phím tắt chuyển bài nhanh (Alt + Left/Right hoặc phím [ / ])
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      const active = document.activeElement;
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || (active as HTMLElement).isContentEditable)) {
+        return;
+      }
+      if ((e.key === '[' || (e.altKey && e.key === 'ArrowLeft')) && data?.adjacent?.prev) {
+        navigate(`/t/${data.adjacent.prev.id}`);
+      } else if ((e.key === ']' || (e.altKey && e.key === 'ArrowRight')) && data?.adjacent?.next) {
+        navigate(`/t/${data.adjacent.next.id}`);
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [data?.adjacent, navigate]);
 
   // Reset displayCount khi đổi filter hoặc search để cuộn lại từ đầu
   useEffect(() => {
@@ -189,11 +217,49 @@ export default function ThreadPage() {
 
   return (
     <div className="page thread-page">
+      {/* Thanh điều hướng đầu trang: Nút Quay lại + Cụm chuyển nhanh bài trước / sau */}
       <Reveal>
-        <div style={{ marginBottom: '20px' }}>
-          <Link to="/" className="thread-back" style={{ margin: 0 }}>
-            <ArrowLeft size={18} weight="bold" aria-hidden="true" /> {t('tp.back')}
+        <div className="thread-top-toolbar">
+          <Link to="/" className="thread-back-link">
+            <ArrowLeft size={16} weight="bold" aria-hidden="true" />
+            <span>{t('tp.back')}</span>
           </Link>
+
+          <div className="thread-quick-nav" aria-label={t('tp.quickNav')}>
+            {data.adjacent?.prev ? (
+              <Link
+                to={`/t/${data.adjacent.prev.id}`}
+                className="thread-quick-nav-btn prev"
+                title={`${t('tp.prevThread')}: ${data.adjacent.prev.title ?? ''}`}
+              >
+                <CaretLeft size={16} weight="bold" />
+                <span className="nav-btn-label">{t('tp.prevThread')}</span>
+              </Link>
+            ) : (
+              <span className="thread-quick-nav-btn disabled" aria-disabled="true">
+                <CaretLeft size={16} weight="bold" />
+                <span className="nav-btn-label">{t('tp.prevThread')}</span>
+              </span>
+            )}
+
+            <span className="thread-quick-nav-sep" />
+
+            {data.adjacent?.next ? (
+              <Link
+                to={`/t/${data.adjacent.next.id}`}
+                className="thread-quick-nav-btn next"
+                title={`${t('tp.nextThread')}: ${data.adjacent.next.title ?? ''}`}
+              >
+                <span className="nav-btn-label">{t('tp.nextThread')}</span>
+                <CaretRight size={16} weight="bold" />
+              </Link>
+            ) : (
+              <span className="thread-quick-nav-btn disabled" aria-disabled="true">
+                <span className="nav-btn-label">{t('tp.nextThread')}</span>
+                <CaretRight size={16} weight="bold" />
+              </span>
+            )}
+          </div>
         </div>
       </Reveal>
 
@@ -393,6 +459,47 @@ export default function ThreadPage() {
               <p className="empty-title">{t('tp.noComments')}</p>
               <p className="empty-subtitle">{t('tp.tryOther')}</p>
             </div>
+          )}
+
+          {/* Thẻ điều hướng bài trước / bài tiếp theo ở cuối trang */}
+          {(data.adjacent?.prev || data.adjacent?.next) && (
+            <Reveal delay={0.08}>
+              <nav className="thread-bottom-nav" aria-label={t('tp.quickNav')}>
+                {data.adjacent?.prev ? (
+                  <Link to={`/t/${data.adjacent.prev.id}`} className="thread-nav-card prev-card">
+                    <div className="thread-nav-card-icon">
+                      <CaretLeft size={20} weight="bold" />
+                    </div>
+                    <div className="thread-nav-card-text">
+                      <span className="thread-nav-direction">← {t('tp.prevThread')}</span>
+                      <span className="thread-nav-card-title">{data.adjacent.prev.title || t('tp.postFallback')}</span>
+                      {data.adjacent.prev.author_username && (
+                        <span className="thread-nav-card-author">@{data.adjacent.prev.author_username}</span>
+                      )}
+                    </div>
+                  </Link>
+                ) : (
+                  <div className="thread-nav-card-placeholder" />
+                )}
+
+                {data.adjacent?.next ? (
+                  <Link to={`/t/${data.adjacent.next.id}`} className="thread-nav-card next-card">
+                    <div className="thread-nav-card-text align-right">
+                      <span className="thread-nav-direction">{t('tp.nextThread')} →</span>
+                      <span className="thread-nav-card-title">{data.adjacent.next.title || t('tp.postFallback')}</span>
+                      {data.adjacent.next.author_username && (
+                        <span className="thread-nav-card-author">@{data.adjacent.next.author_username}</span>
+                      )}
+                    </div>
+                    <div className="thread-nav-card-icon">
+                      <CaretRight size={20} weight="bold" />
+                    </div>
+                  </Link>
+                ) : (
+                  <div className="thread-nav-card-placeholder" />
+                )}
+              </nav>
+            </Reveal>
           )}
         </div>
 

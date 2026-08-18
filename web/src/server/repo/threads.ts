@@ -52,3 +52,37 @@ export async function listPendingScoring(db: D1Database, limit: number): Promise
   ).bind(limit).all<ThreadRecord>();
   return results ?? [];
 }
+
+export async function getAdjacentThreads(
+  db: D1Database,
+  currentThread: ThreadRecord
+): Promise<{
+  prev: { id: string; title: string | null; author_username: string | null } | null;
+  next: { id: string; title: string | null; author_username: string | null } | null;
+}> {
+  const [prevRow, nextRow] = await Promise.all([
+    db.prepare(
+      `SELECT id, title, content, author_username FROM threads 
+       WHERE (created_at > ?) OR (created_at = ? AND id > ?) 
+       ORDER BY created_at ASC, id ASC LIMIT 1`
+    ).bind(currentThread.created_at, currentThread.created_at, currentThread.id).first<{ id: string; title: string | null; content: string | null; author_username: string | null }>(),
+    
+    db.prepare(
+      `SELECT id, title, content, author_username FROM threads 
+       WHERE (created_at < ?) OR (created_at = ? AND id < ?) 
+       ORDER BY created_at DESC, id DESC LIMIT 1`
+    ).bind(currentThread.created_at, currentThread.created_at, currentThread.id).first<{ id: string; title: string | null; content: string | null; author_username: string | null }>(),
+  ]);
+
+  const cleanText = (t: string | null) => {
+    if (!t) return null;
+    const clean = t.replace(/^\[Part\s*\d+\]\s*/i, '').trim();
+    return clean.length > 70 ? clean.slice(0, 70) + '...' : clean;
+  };
+
+  return {
+    prev: prevRow ? { id: prevRow.id, title: cleanText(prevRow.title) || cleanText(prevRow.content), author_username: prevRow.author_username } : null,
+    next: nextRow ? { id: nextRow.id, title: cleanText(nextRow.title) || cleanText(nextRow.content), author_username: nextRow.author_username } : null,
+  };
+}
+

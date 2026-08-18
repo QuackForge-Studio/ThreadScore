@@ -2,7 +2,7 @@ import type { Env } from '../../../src/server/db';
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   const id = context.params.id as string;
-  const { getThreadById } = await import('../../../src/server/repo/threads');
+  const { getThreadById, getAdjacentThreads } = await import('../../../src/server/repo/threads');
   const { getCommentsByThread } = await import('../../../src/server/repo/comments');
   const { getScoresForThread } = await import('../../../src/server/repo/scores');
   const { getVoteCounts } = await import('../../../src/server/repo/votes');
@@ -11,10 +11,11 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   const thread = await getThreadById(context.env.DB, id);
   if (!thread) return Response.json({ error: 'Không tìm thấy bài viết' }, { status: 404 });
 
-  const [comments, scores, userComments] = await Promise.all([
+  const [comments, scores, userComments, adjacent] = await Promise.all([
     getCommentsByThread(context.env.DB, id),
     getScoresForThread(context.env.DB, id),
     listUserCommentsByThread(context.env.DB, id),
+    getAdjacentThreads(context.env.DB, thread),
   ]);
 
   const scoreMap = new Map(scores.map(s => [s.comment_id, s]));
@@ -25,5 +26,5 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
   const breakdown = thread.score_breakdown ? JSON.parse(thread.score_breakdown) : null;
 
-  return Response.json({ thread, comments: commentsWithScores, breakdown, user_comments: userComments, vote_counts: voteCounts });
+  return Response.json({ thread, comments: commentsWithScores, breakdown, user_comments: userComments, vote_counts: voteCounts, adjacent });
 };

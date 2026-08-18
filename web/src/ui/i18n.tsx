@@ -173,13 +173,18 @@ export const translations = {
     'tp.discussionSend': 'Gửi bình luận',
     'tp.discussionErr': 'Không thể gửi comment',
     'tp.discussionAnon': 'Ẩn danh',
+    'tp.prevThread': 'Bài trước',
+    'tp.nextThread': 'Bài tiếp theo',
+    'tp.quickNav': 'Chuyển bài viết',
 
     // Hall of Fame
     'hof.eyebrow': 'Bảng Vinh Danh',
     'hof.title': 'Những Người Tiếp Lửa Cho ThreadScore',
     'hof.subtitle': 'Lời cảm ơn chân thành tới những người bạn và mạnh thường quân đã ủng hộ duy trì máy chủ & chi phí AI.',
     'hof.cta': 'Bạn muốn có tên trên Bảng Vinh Danh này?',
+    'hof.ctaDesc': 'Mỗi sự tiếp lửa dù là một ly cà phê đều giúp dự án duy trì máy chủ và công cụ AI miễn phí cho cộng đồng.',
     'hof.ctaBtn': 'Tiếp lửa ngay',
+    'hof.silentSupporter': 'Đồng hành cùng dự án',
 
     // CTA banner
     'cta.title': 'Đo ngay bài viết đang làm bạn tò mò',
@@ -372,13 +377,18 @@ export const translations = {
     'tp.discussionSend': 'Post comment',
     'tp.discussionErr': 'Failed to post comment',
     'tp.discussionAnon': 'Anonymous',
+    'tp.prevThread': 'Previous Thread',
+    'tp.nextThread': 'Next Thread',
+    'tp.quickNav': 'Navigate Threads',
 
     // Hall of Fame
     'hof.eyebrow': 'Hall of Fame',
     'hof.title': 'ThreadScore Flame Keepers',
     'hof.subtitle': 'Heartfelt thanks to the wonderful supporters keeping our servers and AI models running.',
     'hof.cta': 'Want your name featured on the Flame Keepers wall?',
+    'hof.ctaDesc': 'Every contribution directly supports our server operations and keeps ThreadScore free for the community.',
     'hof.ctaBtn': 'Support the project',
+    'hof.silentSupporter': 'Proud Supporter',
 
     // CTA banner
     'cta.title': 'Analyze the threads you are curious about',
