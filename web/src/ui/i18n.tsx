@@ -38,7 +38,9 @@ export const translations = {
     'sidebar.scoredThreads': 'Bài đã đánh giá',
     'sidebar.pendingThreads': 'Bài chờ đánh giá',
     'sidebar.pendingRequests': 'Yêu cầu chờ duyệt',
-    'sidebar.commentBreakdown': 'Phân bố cảm xúc bình luận',
+    'sidebar.scoredComments': 'Bình luận đã chấm',
+    'sidebar.commentBreakdown': 'Phân bố cảm xúc',
+    'sidebar.sentimentRatio': 'Tỷ lệ cảm xúc cộng đồng',
     'sidebar.extTitle': 'Cài Chrome Extension',
     'sidebar.extDesc': 'Quét & đo độ drama bất kỳ bài viết Threads nào chỉ với 1 click.',
 
@@ -235,7 +237,9 @@ export const translations = {
     'sidebar.scoredThreads': 'Scored threads',
     'sidebar.pendingThreads': 'Pending scoring',
     'sidebar.pendingRequests': 'Pending requests',
+    'sidebar.scoredComments': 'Scored comments',
     'sidebar.commentBreakdown': 'Comment sentiment',
+    'sidebar.sentimentRatio': 'Community sentiment ratio',
     'sidebar.extTitle': 'Get Chrome Extension',
     'sidebar.extDesc': 'Scan & measure drama on any Threads post with just 1 click.',
 

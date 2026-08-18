@@ -28,12 +28,15 @@ export async function getOverallStats(db: D1Database): Promise<OverallStats> {
      ORDER BY avg_anger_score DESC LIMIT 3`
   ).all<Pick<ThreadRecord, 'id' | 'title' | 'avg_anger_score' | 'total_comments'>>();
 
+  const totalScoredComments = breakdown.bang_no + breakdown.trung_lap + breakdown.vui_ve;
+
   return {
     threads: t?.n ?? 0,
     comments: c?.n ?? 0,
     scored_threads: scoredRow?.n ?? 0,
     pending_threads: pendingRow?.n ?? 0,
     pending_requests: reqRow?.n ?? 0,
+    scored_comments: totalScoredComments,
     avg_anger: avgRow?.avg != null ? Math.round(avgRow.avg * 10) / 10 : null,
     breakdown,
     top_threads: results ?? [],

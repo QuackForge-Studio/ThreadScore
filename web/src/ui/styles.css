@@ -1422,6 +1422,24 @@ button { font-family: var(--font-sans); }
   color: var(--ink);
 }
 
+.sidebar-sentiment-bar {
+  display: flex;
+  height: 8px;
+  width: 100%;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--surface-raised, rgba(0, 0, 0, 0.06));
+  margin: 6px 0 2px;
+}
+
+.sentiment-seg {
+  height: 100%;
+  transition: width 300ms ease;
+}
+.sentiment-seg.anger { background: var(--anger); }
+.sentiment-seg.neutral { background: var(--neutral); }
+.sentiment-seg.calm { background: var(--calm); }
+
 /* Ext Callout Widget */
 .ext-callout-widget {
   display: flex;

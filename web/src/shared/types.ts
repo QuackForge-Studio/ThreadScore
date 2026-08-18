@@ -77,6 +77,7 @@ export interface OverallStats {
   scored_threads?: number;
   pending_threads?: number;
   pending_requests?: number;
+  scored_comments?: number;
   avg_anger: number | null;
   breakdown: { bang_no: number; trung_lap: number; vui_ve: number };
   top_threads: Array<Pick<ThreadRecord, 'id' | 'title' | 'avg_anger_score' | 'total_comments'>>;

@@ -463,6 +463,41 @@ export default function HomePage() {
                     {/* 2. Cảm xúc bình luận */}
                     <div className="sidebar-stat-item">
                       <div className="stat-item-left">
+                        <span className="stat-bullet scored" />
+                        <span>{t('sidebar.scoredComments')}</span>
+                      </div>
+                      <b className="stat-item-val">
+                        {stats.scored_comments ??
+                          (stats.breakdown?.bang_no ?? 0) +
+                            (stats.breakdown?.trung_lap ?? 0) +
+                            (stats.breakdown?.vui_ve ?? 0)}
+                      </b>
+                    </div>
+
+                    {/* Thanh phân bố tỷ lệ cảm xúc trực quan (Stacked Sentiment Bar) */}
+                    {(() => {
+                      const totalScored =
+                        (stats.breakdown?.bang_no ?? 0) +
+                        (stats.breakdown?.trung_lap ?? 0) +
+                        (stats.breakdown?.vui_ve ?? 0);
+                      if (totalScored <= 0) return null;
+                      const pBang = ((stats.breakdown?.bang_no ?? 0) / totalScored) * 100;
+                      const pTrung = ((stats.breakdown?.trung_lap ?? 0) / totalScored) * 100;
+                      const pVui = ((stats.breakdown?.vui_ve ?? 0) / totalScored) * 100;
+                      return (
+                        <div
+                          className="sidebar-sentiment-bar"
+                          title={`${pBang.toFixed(0)}% Bùng nổ · ${pTrung.toFixed(0)}% Trung lập · ${pVui.toFixed(0)}% Vui vẻ`}
+                        >
+                          <div className="sentiment-seg anger" style={{ width: `${pBang}%` }} />
+                          <div className="sentiment-seg neutral" style={{ width: `${pTrung}%` }} />
+                          <div className="sentiment-seg calm" style={{ width: `${pVui}%` }} />
+                        </div>
+                      );
+                    })()}
+
+                    <div className="sidebar-stat-item">
+                      <div className="stat-item-left">
                         <span className="stat-bullet anger" />
                         <span>{t('stats.bang')}</span>
                       </div>
