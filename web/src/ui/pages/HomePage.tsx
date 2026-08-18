@@ -186,16 +186,8 @@ export default function HomePage() {
       </section>
 
       {/* 2. EXPLORE FEED - Thread Posts Feed */}
-      <section className="section-tight" id="explore" style={{ paddingTop: 'var(--space-4)' }}>
+      <section className="section-tight" id="explore" style={{ paddingTop: 'var(--space-2)' }}>
         <div className="container">
-          <Reveal>
-            <div className="section-head left" style={{ maxWidth: 'none', marginBottom: 'var(--space-5)' }}>
-              <h2 className="section-title" style={{ fontSize: 'clamp(1.5rem, 3vw, 2.1rem)' }}>
-                {t('feed.title')}
-              </h2>
-            </div>
-          </Reveal>
-
           <div className="sort-tabs" role="tablist">
             {(['hottest', 'newest', 'most_comments'] as const).map((s) => (
               <button
