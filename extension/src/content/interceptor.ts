@@ -61,6 +61,8 @@ interface RawComment {
         const pk = node.id || node.pk || null;
 
         const textPostInfo = node.text_post_app_info || {};
+        // Schema mới (2025): quan hệ cha-con nằm trong self_thread_info
+        const selfThreadInfo = textPostInfo.self_thread_info || {};
         const parentPk =
           typeof node.parent_id === 'string' || typeof node.parent_id === 'number' ? String(node.parent_id) :
           typeof node.parent_comment_id === 'string' || typeof node.parent_comment_id === 'number' ? String(node.parent_comment_id) :
@@ -68,11 +70,16 @@ interface RawComment {
           node.parent_comment && (node.parent_comment.id || node.parent_comment.pk) ? String(node.parent_comment.id || node.parent_comment.pk) :
           node.comment_parent_id ? String(node.comment_parent_id) :
           textPostInfo.parent_post_id ? String(textPostInfo.parent_post_id) :
-          textPostInfo.parent_comment_id ? String(textPostInfo.parent_comment_id) : null;
+          textPostInfo.parent_comment_id ? String(textPostInfo.parent_comment_id) :
+          selfThreadInfo.parent_post_id ? String(selfThreadInfo.parent_post_id) :
+          selfThreadInfo.parent_comment_id ? String(selfThreadInfo.parent_comment_id) :
+          selfThreadInfo.parent_id ? String(selfThreadInfo.parent_id) : null;
 
         const replyToUser =
           (node.reply_to_username ? String(node.reply_to_username) : null) ||
           (textPostInfo.reply_to_author?.username ? String(textPostInfo.reply_to_author.username) : null) ||
+          (selfThreadInfo.reply_to_author?.username ? String(selfThreadInfo.reply_to_author.username) : null) ||
+          (selfThreadInfo.reply_to_username ? String(selfThreadInfo.reply_to_username) : null) ||
           (node.parent_comment && (node.parent_comment.user?.username || node.parent_comment.user?.handle) ? String(node.parent_comment.user?.username || node.parent_comment.user?.handle) : null) ||
           (node.parent && (node.parent.user?.username || node.parent.user?.handle) ? String(node.parent.user?.username || node.parent.user?.handle) : null);
 
@@ -139,6 +146,17 @@ interface RawComment {
     const parentShapes: string[] = [];
     if (node.parent && typeof node.parent === 'object') parentShapes.push(`parent:{${Object.keys(node.parent).slice(0, 15).join(',')}}`);
     if (node.parent_comment && typeof node.parent_comment === 'object') parentShapes.push(`parent_comment:{${Object.keys(node.parent_comment).slice(0, 15).join(',')}}`);
+    const sti = textPostInfo?.self_thread_info;
+    if (sti && typeof sti === 'object') {
+      parentShapes.push(`self_thread_info:{${Object.keys(sti).slice(0, 15).join(',')}}`);
+      const sample: string[] = [];
+      for (const [k, v] of Object.entries(sti)) {
+        if (sample.length >= 6) break;
+        const vs = typeof v === 'string' ? `"${v.slice(0, 40)}"` : typeof v === 'number' || typeof v === 'boolean' ? String(v) : typeof v === 'object' ? (v === null ? 'null' : 'object') : String(v);
+        sample.push(`${k}=${vs}`);
+      }
+      if (sample.length > 0) parentShapes.push(`stiValues[${sample.join(', ')}]`);
+    }
     logDebug(
       'probe',
       `comment KHÔNG có parent_id. text="${String(text).slice(0, 40)}..." nodeKeys=[${keys}] textPostInfoKeys=[${infoKeys}] ${parentShapes.join(' ')}`

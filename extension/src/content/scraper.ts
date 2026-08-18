@@ -491,15 +491,22 @@ function extractCommentNode(obj: Record<string, any>, out: ScrapedComment[]) {
       const pk = node.id || node.pk || null;
 
       const textPostInfo = node.text_post_app_info || {};
+      // Schema mới (2025): quan hệ cha-con nằm trong self_thread_info
+      const selfThreadInfo = textPostInfo.self_thread_info || {};
       const parentPk =
         typeof node.parent_id === 'string' || typeof node.parent_id === 'number' ? String(node.parent_id) :
         node.parent && (node.parent.id || node.parent.pk) ? String(node.parent.id || node.parent.pk) :
         node.comment_parent_id ? String(node.comment_parent_id) :
-        textPostInfo.parent_post_id ? String(textPostInfo.parent_post_id) : null;
+        textPostInfo.parent_post_id ? String(textPostInfo.parent_post_id) :
+        selfThreadInfo.parent_post_id ? String(selfThreadInfo.parent_post_id) :
+        selfThreadInfo.parent_comment_id ? String(selfThreadInfo.parent_comment_id) :
+        selfThreadInfo.parent_id ? String(selfThreadInfo.parent_id) : null;
 
       const replyToUser =
         (node.reply_to_username ? String(node.reply_to_username) : null) ||
         (textPostInfo.reply_to_author?.username ? String(textPostInfo.reply_to_author.username) : null) ||
+        (selfThreadInfo.reply_to_author?.username ? String(selfThreadInfo.reply_to_author.username) : null) ||
+        (selfThreadInfo.reply_to_username ? String(selfThreadInfo.reply_to_username) : null) ||
         (node.parent && (node.parent.user?.username || node.parent.user?.handle) ? String(node.parent.user?.username || node.parent.user?.handle) : null);
 
       out.push({
@@ -651,13 +658,17 @@ async function fetchNestedReplies(
         console.log(`[TS-DEBUG] [nested] HTML fetch OK ${targetUrl}: len=${html.length}`);
 
         const scriptMatches = html.match(/<script[^>]*>([\s\S]*?)<\/script>/gi) || [];
+        let payloadCount = 0;
+        let extractedTotal = 0;
         for (const s of scriptMatches) {
           const match = s.match(/<script[^>]*>([\s\S]*?)<\/script>/i);
           if (!match || !match[1]) continue;
           const payloads = parseJsonPayloads(match[1]);
+          payloadCount += payloads.length;
           for (const p of payloads) {
             const extracted: ScrapedComment[] = [];
             extractCommentNode(p, extracted);
+            extractedTotal += extracted.length;
             for (const sub of extracted) {
               if (!sub.text || !sub.author_username) continue;
               if (sub.external_id && sub.external_id === parent.external_id) continue;
@@ -683,6 +694,7 @@ async function fetchNestedReplies(
             }
           }
         }
+        console.log(`[TS-DEBUG] [nested] HTML parse done ${targetUrl}: scripts=${scriptMatches.length}, payloads=${payloadCount}, extracted=${extractedTotal}, kept=${nestedComments.length}`);
       } catch {}
     });
     await Promise.all(promises);

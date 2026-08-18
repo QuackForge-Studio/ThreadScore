@@ -97,7 +97,9 @@ function isRealSubReplyExpander(el: HTMLElement): boolean {
     /(xem|view)\s+\d+\s+(câu\s+trả\s+lời|phản\s+hồi|replies|reply)/i.test(txt) ||
     /^\d+\s*(câu\s+trả\s+lời|phản\s+hồi)$/i.test(txt) ||
     /^\d+\s*(replies|reply)$/i.test(txt) ||
-    /(xem|view)\s+thêm\s+(câu\s+trả\s+lời|phản\s+hồi|bình\s+luận)/i.test(txt)
+    // UI mới: chữ "trả lời" đứng TRƯỚC số, không có khoảng trắng — "trả lời656", "trả lời13"
+    /^(trả\s*lời|phản\s*hồi|câu\s*trả\s*lời|reply|replies)\s*[\d.,]+[kKmM]?\s*$/i.test(txt) ||
+    /^(xem|view|hiển\s*thị)\s*(trả\s*lời|phản\s*hồi|reply|replies)\s*[\d.,]+[kKmM]?/i.test(txt)
   );
 }
 
