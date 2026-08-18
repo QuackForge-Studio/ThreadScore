@@ -25,6 +25,7 @@ export const importPayloadSchema = z.object({
   content: z.string().max(20000).nullable().optional(),
   author_username: z.string().max(200).nullable().optional(),
   author_name: z.string().max(200).nullable().optional(),
+  author_avatar_url: z.string().max(2000).nullable().optional(),
   posted_at: z.number().int().nullable().optional(),
   main_post_id: z.string().max(100).nullable().optional(),
   comments: z.array(commentInputSchema).max(1000),

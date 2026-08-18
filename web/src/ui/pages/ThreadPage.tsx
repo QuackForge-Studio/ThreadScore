@@ -228,7 +228,22 @@ export default function ThreadPage() {
                 </div>
               )}
 
-              <p className="thread-meta" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', fontSize: '13px', color: 'var(--muted)' }}>
+              <div className="thread-meta" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', fontSize: '13px', color: 'var(--muted)' }}>
+                <div className="threadcard-avatar" style={{ width: '26px', height: '26px' }}>
+                  {data.thread.author_avatar_url ? (
+                    <img
+                      src={data.thread.author_avatar_url}
+                      alt={data.thread.author_username ?? ''}
+                      className="threadcard-avatar-img"
+                      loading="lazy"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <span>{data.thread.author_username ? data.thread.author_username.charAt(0).toUpperCase() : 'TS'}</span>
+                  )}
+                </div>
                 <span style={{ fontWeight: '700', color: 'var(--ink)' }}>@{data.thread.author_username ?? t('tp.anon')}</span>
                 {data.thread.author_name && <span style={{ color: 'var(--ink-2)' }}>({data.thread.author_name})</span>}
                 {data.thread.posted_at != null && <span>· {formatRelativeTime(data.thread.posted_at)}</span>}
@@ -236,7 +251,7 @@ export default function ThreadPage() {
                 <a href={data.thread.url} target="_blank" rel="noreferrer" className="thread-link" style={{ color: 'var(--accent)', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                   {t('tp.onThreads')} <ArrowSquareOut size={13} />
                 </a>
-              </p>
+              </div>
             </div>
           </Reveal>
 

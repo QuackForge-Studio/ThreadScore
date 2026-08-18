@@ -93,7 +93,19 @@ export default function ThreadCard({ thread }: { thread: ThreadRecord }) {
       <div className="threadcard-head">
         <div className="threadcard-author">
           <div className="threadcard-avatar" style={avatarStyle}>
-            <span>{avatarInitial}</span>
+            {thread.author_avatar_url ? (
+              <img
+                src={thread.author_avatar_url}
+                alt={authorName}
+                className="threadcard-avatar-img"
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            ) : (
+              <span>{avatarInitial}</span>
+            )}
           </div>
           <span className="threadcard-username">
             @{authorName}

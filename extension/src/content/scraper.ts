@@ -9,6 +9,7 @@ export interface ScrapedComment {
   external_id: string | null;
   author_username: string | null;
   author_name: string | null;
+  author_avatar_url?: string | null;
   text: string;
   like_count: number;
   posted_at: number | null;
@@ -23,6 +24,7 @@ export interface ScrapedThread {
   content: string | null;
   author_username: string | null;
   author_name: string | null;
+  author_avatar_url?: string | null;
   posted_at: number | null;
   comments: ScrapedComment[];
   main_post_id?: string | null;
@@ -459,6 +461,7 @@ function extractCommentNode(obj: Record<string, any>, out: ScrapedComment[]) {
   if (typeof text === 'string' && text.trim().length > 0 && user && typeof user === 'object') {
     const username = user.username || user.handle || null;
     const fullName = user.full_name || user.name || null;
+    const avatarUrl = user.profile_pic_url_hd || user.profile_pic_url || user.avatar_url || user.profile_picture || null;
     if (username) {
       const likes =
         typeof node.like_count === 'number' ? node.like_count :
@@ -484,6 +487,7 @@ function extractCommentNode(obj: Record<string, any>, out: ScrapedComment[]) {
         external_id: pk ? String(pk) : null,
         author_username: String(username),
         author_name: fullName ? String(fullName) : null,
+        author_avatar_url: avatarUrl ? String(avatarUrl) : null,
         text: text.trim(),
         like_count: likes,
         posted_at: takenAt,
@@ -885,12 +889,32 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
     'a[href*="/@"], div[data-pressable-container="true"], article, div[role="listitem"], .reply-item'
   ).length;
 
+  // Trích xuất Avatar URL của tác giả bài viết
+  let authorAvatarUrl: string | null = rootPostNode?.author_avatar_url ?? null;
+  if (!authorAvatarUrl) {
+    const authorNode = interceptedCommentsBuffer.find(
+      (gc) => resolvedMainAuthor && gc.author_username && gc.author_username.toLowerCase() === resolvedMainAuthor.toLowerCase() && gc.author_avatar_url
+    );
+    if (authorNode?.author_avatar_url) {
+      authorAvatarUrl = authorNode.author_avatar_url;
+    }
+  }
+  if (!authorAvatarUrl && mainPostContainer) {
+    const imgEl = mainPostContainer.querySelector('a[href*="/@"] img, img[alt*="ảnh đại diện" i], img[alt*="profile picture" i], img[alt*="avatar" i]') ||
+                  doc.querySelector('header img, a[href*="/@"] img');
+    const src = imgEl?.getAttribute('src');
+    if (src && src.startsWith('http')) {
+      authorAvatarUrl = src;
+    }
+  }
+
   return {
     url: currentUrl,
     title: mainTitleText || titleEl?.textContent?.trim() || null,
     content: mainContentText || contentEl?.textContent?.trim() || null,
     author_username: resolvedMainAuthor,
-    author_name: null,
+    author_name: rootPostNode?.author_name ?? null,
+    author_avatar_url: authorAvatarUrl,
     posted_at: parseTime(timeEl),
     comments,
     main_post_id: mainPostId,
@@ -1039,6 +1063,7 @@ export async function testScrapeAndHighlight(doc: Document, limit: number = 5): 
     content: contentEl?.textContent?.trim() ?? null,
     author_username: resolvedMainAuthor,
     author_name: null,
+    author_avatar_url: null,
     posted_at: parseTime(timeEl),
     comments,
     debugStats: { ...debugStats },

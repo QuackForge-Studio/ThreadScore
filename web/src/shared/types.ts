@@ -9,6 +9,7 @@ export interface ThreadRecord {
   content: string | null;
   author_username: string | null;
   author_name: string | null;
+  author_avatar_url?: string | null;
   posted_at: number | null;
   main_post_id: string | null;
   total_comments: number;
@@ -95,6 +96,7 @@ export interface ImportPayload {
   content?: string | null;
   author_username?: string | null;
   author_name?: string | null;
+  author_avatar_url?: string | null;
   posted_at?: number | null;
   main_post_id?: string | null;
   comments: ImportCommentInput[];

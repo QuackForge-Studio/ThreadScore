@@ -12,6 +12,7 @@ interface RawComment {
   external_id: string | null;
   author_username: string | null;
   author_name: string | null;
+  author_avatar_url?: string | null;
   text: string;
   like_count: number;
   posted_at: number | null;
@@ -49,6 +50,7 @@ interface RawComment {
     if (typeof text === 'string' && text.trim().length > 0 && user && typeof user === 'object') {
       const username = user.username || user.handle || null;
       const fullName = user.full_name || user.name || null;
+      const avatarUrl = user.profile_pic_url_hd || user.profile_pic_url || user.avatar_url || user.profile_picture || null;
       if (username) {
         const likes =
           typeof node.like_count === 'number' ? node.like_count :
@@ -74,6 +76,7 @@ interface RawComment {
           external_id: pk ? String(pk) : null,
           author_username: String(username),
           author_name: fullName ? String(fullName) : null,
+          author_avatar_url: avatarUrl ? String(avatarUrl) : null,
           text: text.trim(),
           like_count: likes,
           posted_at: takenAt,

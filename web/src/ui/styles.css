@@ -1546,6 +1546,16 @@ button { font-family: var(--font-sans); }
   font-size: 13px;
   line-height: 1;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.threadcard-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
 }
 
 .threadcard-username {

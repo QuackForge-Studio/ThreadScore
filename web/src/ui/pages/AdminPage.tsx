@@ -54,6 +54,7 @@ export default function AdminPage() {
     content: string;
     author_username: string;
     author_name: string;
+    author_avatar_url: string;
   } | null>(null);
   const [savingThread, setSavingThread] = useState(false);
   const [threadEditSuccess, setThreadEditSuccess] = useState<string | null>(null);
@@ -238,7 +239,7 @@ export default function AdminPage() {
 
     try {
       // 1. Thử load trực tiếp theo id bài viết
-      let threadData: { thread?: { id: string; url: string; title: string | null; content: string | null; author_username: string | null; author_name: string | null } } | null = null;
+      let threadData: { thread?: { id: string; url: string; title: string | null; content: string | null; author_username: string | null; author_name: string | null; author_avatar_url: string | null } } | null = null;
       try {
         const resDirect = await fetch(`/api/threads/${encodeURIComponent(q)}`);
         if (resDirect.ok) {
@@ -250,7 +251,7 @@ export default function AdminPage() {
       if (!threadData?.thread) {
         const resSearch = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
         if (resSearch.ok) {
-          const searchData = (await resSearch.json()) as { matches?: Array<{ id: string; url: string; title: string | null; content: string | null; author_username: string | null; author_name: string | null }> };
+          const searchData = (await resSearch.json()) as { matches?: Array<{ id: string; url: string; title: string | null; content: string | null; author_username: string | null; author_name: string | null; author_avatar_url?: string | null }> };
           if (searchData.matches && searchData.matches.length > 0) {
             const first = searchData.matches[0];
             // Fetch chi tiết bài viết đầu tiên tìm thấy
@@ -275,6 +276,7 @@ export default function AdminPage() {
           content: rawContent,
           author_username: threadData.thread.author_username ?? '',
           author_name: threadData.thread.author_name ?? '',
+          author_avatar_url: threadData.thread.author_avatar_url ?? '',
         });
         showSuccess('Đã tải thông tin bài viết vào form chỉnh sửa!');
       } else {
@@ -307,6 +309,7 @@ export default function AdminPage() {
           content: selectedThread.content,
           author_username: selectedThread.author_username,
           author_name: selectedThread.author_name,
+          author_avatar_url: selectedThread.author_avatar_url,
         }),
       });
 
@@ -825,6 +828,33 @@ export default function AdminPage() {
                           placeholder="Tên đầy đủ của tác giả..."
                           value={selectedThread.author_name}
                           onChange={(e) => setSelectedThread({ ...selectedThread, author_name: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Author Avatar URL */}
+                    <div className="admin-field">
+                      <label className="admin-label">Ảnh đại diện tác giả (Avatar / Profile Image URL)</label>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        {selectedThread.author_avatar_url ? (
+                          <img
+                            src={selectedThread.author_avatar_url}
+                            alt="Avatar Preview"
+                            style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border)' }}
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                          />
+                        ) : (
+                          <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--surface-sunk)', display: 'grid', placeItems: 'center', fontSize: '11px', fontWeight: 'bold', color: 'var(--muted)' }}>
+                            TS
+                          </div>
+                        )}
+                        <input
+                          className="field-input"
+                          type="url"
+                          placeholder="https://... URL ảnh avatar của tác giả"
+                          value={selectedThread.author_avatar_url}
+                          onChange={(e) => setSelectedThread({ ...selectedThread, author_avatar_url: e.target.value })}
+                          style={{ flex: 1 }}
                         />
                       </div>
                     </div>

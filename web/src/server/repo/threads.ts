@@ -2,10 +2,10 @@ import type { ThreadRecord } from '../../shared/types';
 
 export async function insertThread(db: D1Database, t: ThreadRecord): Promise<void> {
   await db.prepare(
-    `INSERT INTO threads (id, url, title, content, author_username, author_name, posted_at,
+    `INSERT INTO threads (id, url, title, content, author_username, author_name, author_avatar_url, posted_at,
       main_post_id, total_comments, scoring_status, avg_anger_score, score_breakdown, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-  ).bind(t.id, t.url, t.title, t.content, t.author_username, t.author_name, t.posted_at,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(t.id, t.url, t.title, t.content, t.author_username, t.author_name, t.author_avatar_url ?? null, t.posted_at,
     t.main_post_id, t.total_comments, t.scoring_status, t.avg_anger_score, t.score_breakdown, t.created_at).run();
 }
 

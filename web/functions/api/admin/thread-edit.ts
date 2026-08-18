@@ -14,6 +14,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       content?: string | null;
       author_username?: string | null;
       author_name?: string | null;
+      author_avatar_url?: string | null;
     };
 
     const id = body.id?.trim();
@@ -43,6 +44,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       content: contentVal,
       author_username: cleanUsername !== undefined ? cleanUsername : existing.author_username,
       author_name: body.author_name !== undefined ? (body.author_name ? body.author_name.trim() : null) : existing.author_name,
+      author_avatar_url: body.author_avatar_url !== undefined ? (body.author_avatar_url ? body.author_avatar_url.trim() : null) : existing.author_avatar_url,
     };
 
     await updateThread(context.env.DB, id, patch);

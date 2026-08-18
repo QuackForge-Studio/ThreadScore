@@ -313,7 +313,20 @@ export default function App() {
             {/* Post Target Preview */}
             <div className="sp-post-preview">
               <div className="sp-post-avatar">
-                {tabInfo.username ? tabInfo.username.charAt(0).toUpperCase() : <User size={18} />}
+                {scraped?.author_avatar_url ? (
+                  <img
+                    src={scraped.author_avatar_url}
+                    alt={tabInfo.username ?? ''}
+                    style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                ) : tabInfo.username ? (
+                  tabInfo.username.charAt(0).toUpperCase()
+                ) : (
+                  <User size={18} />
+                )}
               </div>
               <div className="sp-post-meta">
                 <span className="sp-post-author">
