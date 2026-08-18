@@ -1371,7 +1371,22 @@ button { font-family: var(--font-sans); }
 .sidebar-stats-content {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 9px;
+}
+
+.sidebar-stats-divider {
+  height: 1px;
+  background: var(--border-soft);
+  margin: 6px 0;
+}
+
+.stat-group-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-top: 2px;
 }
 
 .sidebar-stat-item {
@@ -1392,7 +1407,11 @@ button { font-family: var(--font-sans); }
   width: 8px;
   height: 8px;
   border-radius: 50%;
+  flex-shrink: 0;
 }
+.stat-bullet.scored { background: #10b981; }
+.stat-bullet.pending { background: #f59e0b; }
+.stat-bullet.review { background: #6366f1; }
 .stat-bullet.anger { background: var(--anger); }
 .stat-bullet.neutral { background: var(--neutral); }
 .stat-bullet.calm { background: var(--calm); }

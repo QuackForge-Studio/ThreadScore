@@ -74,6 +74,9 @@ export interface UserCommentRecord {
 export interface OverallStats {
   threads: number;
   comments: number;
+  scored_threads?: number;
+  pending_threads?: number;
+  pending_requests?: number;
   avg_anger: number | null;
   breakdown: { bang_no: number; trung_lap: number; vui_ve: number };
   top_threads: Array<Pick<ThreadRecord, 'id' | 'title' | 'avg_anger_score' | 'total_comments'>>;

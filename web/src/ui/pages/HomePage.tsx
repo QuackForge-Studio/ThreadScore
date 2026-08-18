@@ -425,7 +425,7 @@ export default function HomePage() {
                 </div>
               )}
 
-              {/* Widget 2: Thống kê nhanh cảm xúc */}
+              {/* Widget 2: Thống kê hệ thống */}
               {stats && (
                 <div className="sidebar-widget stats-widget">
                   <div className="widget-header">
@@ -435,6 +435,32 @@ export default function HomePage() {
                     </span>
                   </div>
                   <div className="sidebar-stats-content">
+                    {/* 1. Trạng thái bài viết & yêu cầu */}
+                    <div className="sidebar-stat-item">
+                      <div className="stat-item-left">
+                        <span className="stat-bullet scored" />
+                        <span>{t('sidebar.scoredThreads')}</span>
+                      </div>
+                      <b className="stat-item-val">{stats.scored_threads ?? stats.threads ?? 0}</b>
+                    </div>
+                    <div className="sidebar-stat-item">
+                      <div className="stat-item-left">
+                        <span className="stat-bullet pending" />
+                        <span>{t('sidebar.pendingThreads')}</span>
+                      </div>
+                      <b className="stat-item-val">{stats.pending_threads ?? 0}</b>
+                    </div>
+                    <div className="sidebar-stat-item">
+                      <div className="stat-item-left">
+                        <span className="stat-bullet review" />
+                        <span>{t('sidebar.pendingRequests')}</span>
+                      </div>
+                      <b className="stat-item-val">{stats.pending_requests ?? 0}</b>
+                    </div>
+
+                    <div className="sidebar-stats-divider" />
+
+                    {/* 2. Cảm xúc bình luận */}
                     <div className="sidebar-stat-item">
                       <div className="stat-item-left">
                         <span className="stat-bullet anger" />
