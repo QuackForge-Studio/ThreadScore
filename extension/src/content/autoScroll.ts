@@ -65,7 +65,10 @@ function isRealSubReplyExpander(el: HTMLElement): boolean {
     /^\d+\s*(replies|reply)$/i.test(txt) ||
     // UI mới: chữ "trả lời" đứng TRƯỚC số, không khoảng trắng — "trả lời660", "reply90"
     /^(trả\s*lời|phản\s*hồi|câu\s*trả\s*lời|reply|replies)\s*[:.,]?\s*\d+/i.test(txt) ||
-    /^(xem|view|hiển\s*thị)\s*(trả\s*lời|phản\s*hồi|reply|replies)\s*[:.,]?\s*\d+/i.test(txt);
+    /^(xem|view|hiển\s*thị)\s*(trả\s*lời|phản\s*hồi|reply|replies)\s*[:.,]?\s*\d+/i.test(txt) ||
+    // Nút expander KHÔNG có số: "hiển thị trả lời", "xem câu trả lời", "view replies"
+    /^(hiển\s*thị|xem|view|show)\s+(trả\s*lời|phản\s*hồi|câu\s*trả\s*lời|replies|reply)\s*$/i.test(txt) ||
+    /^(trả\s*lời|phản\s*hồi|câu\s*trả\s*lời|replies|reply)\s*:\s*$/i.test(txt);
 
   if (hasReplyCount) return true;
 
@@ -126,9 +129,16 @@ function isRealSubReplyExpander(el: HTMLElement): boolean {
 
 // Ngân sách an toàn: tổng click expander tối đa cho CẢ lần quét + giới hạn thời gian.
 // Threads tự reload khi bị thao tác quá nhiều — phải dừng sớm.
-const MAX_TOTAL_CLICKS = 10;
+const MAX_TOTAL_CLICKS = 25;
 const MAX_SCAN_MS = 75_000;
 let totalClicksThisScan = 0;
+// Chống click lặp cùng 1 expander: Threads re-render DOM làm mất data-ts-expanded,
+// nhưng text "Trả lờiN" vẫn giữ nguyên → nhớ text đã click để không click lại.
+const clickedExpanders = new Set<string>();
+
+function expanderKey(el: HTMLElement): string {
+  return (el.textContent ?? '').trim().toLowerCase().slice(0, 40);
+}
 
 // Mở rộng các câu trả lời con (sub-replies) trực tiếp trên từng bình luận (tối ưu hóa chống lag DOM)
 async function expandSubReplies(doc: Document): Promise<{ found: number; clicked: number }> {
@@ -143,13 +153,15 @@ async function expandSubReplies(doc: Document): Promise<{ found: number; clicked
   for (const el of clickables) {
     if (!(el instanceof HTMLElement)) continue;
     if (el.dataset.tsExpanded === 'true') continue;
+    const key = expanderKey(el);
+    if (clickedExpanders.has(key)) continue; // đã click expander này rồi
 
     // Kiểm tra nhanh text trước khi gọi reflow layout
     if (isRealSubReplyExpander(el)) {
       foundCount++;
-      // Chỉ click tối đa 2 expander mỗi lượt cuộn, chờ 600ms giữa mỗi lần —
+      // Chỉ click tối đa 3 expander mỗi lượt cuộn, chờ 600ms giữa mỗi lần —
       // mở quá nhanh làm Threads reload trang mất toàn bộ trạng thái.
-      if (expandedCount < 2 && totalClicksThisScan < MAX_TOTAL_CLICKS) {
+      if (expandedCount < 3 && totalClicksThisScan < MAX_TOTAL_CLICKS) {
         if (el.offsetParent !== null || el.clientHeight > 0) {
           try {
             const txt = (el.textContent ?? '').trim();
@@ -163,6 +175,7 @@ async function expandSubReplies(doc: Document): Promise<{ found: number; clicked
             const numMatch = txt.match(/^(trả\s*lời|reply|replies|phản\s*hồi)\s*[:.,]?\s*(\d[\d.,]*[kKmM]?)\s*$/i);
             if (numMatch) {
               const count = numMatch[2];
+              const hasComposerIcon = el.querySelector('svg[aria-label*="trả lời" i], svg[aria-label*="reply" i], svg[aria-label*="comment" i]');
               // Ưu tiên: <a href> chứa đúng số (reply count link) → mở reply thread.
               const allDesc = Array.from(el.querySelectorAll<HTMLElement>('*'));
               let numTarget: HTMLElement | null = null;
@@ -183,15 +196,24 @@ async function expandSubReplies(doc: Document): Promise<{ found: number; clicked
                   if (isInteractive) { numTarget = d; break; }
                 }
               }
-              if (!numTarget) {
+              if (!numTarget && !hasComposerIcon) {
                 for (const d of allDesc) {
                   const st = (d.textContent ?? '').trim();
                   if (st === count && d.offsetParent !== null) { numTarget = d; break; }
                 }
               }
               if (numTarget) {
+                // Nếu wrapper chứa icon composer, chỉ click khi numTarget là link <a>
+                // (click span số trong wrapper composer sẽ bubble mở composer).
+                if (hasComposerIcon && numTarget.tagName.toLowerCase() !== 'a') {
+                  logDebug('expand-skip', `skip composer wrapper (icon): "${txt.slice(0, 50)}"`);
+                  el.dataset.tsExpanded = 'true';
+                  clickedExpanders.add(key);
+                  continue;
+                }
                 numTarget.dataset.tsExpanded = 'true';
                 el.dataset.tsExpanded = 'true';
+                clickedExpanders.add(key);
                 try {
                   numTarget.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: doc.defaultView ?? undefined }));
                 } catch {}
@@ -214,6 +236,7 @@ async function expandSubReplies(doc: Document): Promise<{ found: number; clicked
               el.dataset.tsExpanded = 'true';
             } else {
               el.dataset.tsExpanded = 'true';
+              clickedExpanders.add(key);
               el.click();
               expandedCount++;
               totalClicksThisScan++;

@@ -80,7 +80,8 @@ export function getCurrentPostComments(): BufferedComment[] {
 }
 
 // Persist buffer qua sessionStorage để sống sót khi Threads tự reload trang.
-const PERSIST_KEY = 'ts_intercepted_buffer_v1';
+// v2: mọi comment đều có pageUrl — dữ liệu cũ v1 (không có pageUrl) bị loại khi restore.
+const PERSIST_KEY = 'ts_intercepted_buffer_v2';
 let persistTimer: number | null = null;
 
 function persistBuffer() {
@@ -102,14 +103,16 @@ function restoreBuffer() {
       let dropped = 0;
       for (const c of parsed) {
         if (!c || !c.text || !c.author_username) continue;
-        // Dữ liệu cũ (phiên trước) không có pageUrl → không xác định được bài.
-        // Chỉ giữ nếu code khớp postCode bài đang mở; còn lại loại bỏ để không trộn bài cũ.
+        // Chỉ chấp nhận dữ liệu v2 có pageUrl — dữ liệu v1 cũ (không pageUrl) không xác định
+        // được bài, loại bỏ hoàn toàn để không bao giờ trộn comment bài cũ.
         if (!c.pageUrl) {
-          const code = c.code ? String(c.code) : null;
-          if (currentPostCode && code && code !== currentPostCode) {
-            dropped++;
-            continue;
-          }
+          dropped++;
+          continue;
+        }
+        const { postCode: bufPostCode } = parseThreadsUrl(c.pageUrl);
+        if (currentPostCode && bufPostCode && bufPostCode !== currentPostCode) {
+          dropped++;
+          continue;
         }
         const key = c.external_id || `${c.author_username}:${c.text}`;
         if (seen.has(key)) continue;
@@ -117,7 +120,7 @@ function restoreBuffer() {
         interceptedCommentsBuffer.push(c);
         restored++;
       }
-      logScrapeDebug('persist', `restored ${restored} comments từ sessionStorage, loại ${dropped} comment bài cũ (tổng buffer=${interceptedCommentsBuffer.length})`);
+      logScrapeDebug('persist', `restored ${restored} comments từ sessionStorage, loại ${dropped} comment không xác định/bài cũ (tổng buffer=${interceptedCommentsBuffer.length})`);
     }
   } catch {}
 }
@@ -791,12 +794,23 @@ async function fetchNestedReplies(
   maxParents: number = 60
 ): Promise<ScrapedComment[]> {
   const nestedComments: ScrapedComment[] = [];
-  // CHỈ fetch các comment thực sự có reply con (direct_reply_count > 0).
-  // Không fetch mọi comment có code — code của comment là bài độc lập (có thể là bài khác),
-  // fetch nhầm sẽ kéo replies của bài viết khác vào kết quả.
-  const parentsWithReplies = parentComments.filter(
-    (c) => c.direct_reply_count && c.direct_reply_count > 0 && c.code
-  );
+  // Fetch sâu các comment có reply con. Lưu ý: `direct_reply_count` có thể thiếu trên một số
+  // comment (Threads đổi schema) nên fetch cả comment có `code` — nhưng CHỈ giữ reply có
+  // parent_id trỏ về đúng comment cha (hoặc reply_to_username trùng author cha), tránh kéo
+  // replies của bài viết khác vào kết quả.
+  const parentsWithReplies = parentComments.filter((c) => c.code);
+
+  // sub có phải là reply trực tiếp của parent không? (chống kéo replies bài khác)
+  function isReplyToParent(sub: ScrapedComment, parent: ScrapedComment): boolean {
+    if (sub.parent_id && parent.external_id) {
+      return sub.parent_id === parent.external_id || sub.parent_id === parent.code;
+    }
+    if (sub.reply_to_username && parent.author_username) {
+      return sub.reply_to_username.toLowerCase() === parent.author_username.toLowerCase();
+    }
+    // Không xác định được quan hệ — chỉ chấp nhận nếu sub RÕ RÀNG là reply (có parent_id)
+    return sub.parent_id != null && sub.parent_id !== '';
+  }
 
   const targets = parentsWithReplies.slice(0, maxParents);
   if (targets.length === 0) {
@@ -845,6 +859,8 @@ async function fetchNestedReplies(
                   if (!sub.text || !sub.author_username) continue;
                   if (sub.external_id && sub.external_id === parent.external_id) continue;
                   if (sub.author_username === parent.author_username && sub.text === parent.text) continue;
+                  // Chỉ giữ reply thực sự của comment cha — không kéo replies bài khác
+                  if (!isReplyToParent(sub, parent)) continue;
 
                   const key = `${sub.author_username.toLowerCase()}:${sub.text}`;
                   if (seenKeys.has(key)) continue;
@@ -907,6 +923,8 @@ async function fetchNestedReplies(
               if (!sub.text || !sub.author_username) continue;
               if (sub.external_id && sub.external_id === parent.external_id) continue;
               if (sub.author_username === parent.author_username && sub.text === parent.text) continue;
+              // Chỉ giữ reply thực sự của comment cha — không kéo replies bài khác
+              if (!isReplyToParent(sub, parent)) continue;
 
               const key = `${sub.author_username.toLowerCase()}:${sub.text}`;
               if (seenKeys.has(key)) continue;
