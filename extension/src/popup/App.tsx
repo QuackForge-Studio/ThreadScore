@@ -19,10 +19,11 @@ import {
   Lightbulb,
   ChatCircleText,
   User,
+  Shuffle,
 } from '@phosphor-icons/react';
 import { getConfig, setConfig, type ExtensionConfig } from '../lib/storage';
 import { scrapeActiveTab, scrapeTestActiveTab, stopActiveTabScrape, getActiveTabInfo, type TabInfo } from './manual';
-import { runBatchFromPopup } from './batch';
+import { runBatchFromPopup, runRandomFromPopup } from './batch';
 import { pushImport } from '../lib/api';
 import type { ScrapedThread, ScrapedComment } from '../content/scraper';
 import {
@@ -200,6 +201,21 @@ export default function App() {
       await refreshUsage();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Lỗi xử lý batch');
+      setShowDetails(true);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function doRandom() {
+    setBusy(true);
+    setError(null);
+    try {
+      log('Đang pick random bài viết từ Queue...');
+      await runRandomFromPopup(config, log);
+      await refreshUsage();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Lỗi pick random');
       setShowDetails(true);
     } finally {
       setBusy(false);
@@ -514,6 +530,10 @@ export default function App() {
 
             <button className="sp-btn sp-btn-cta sp-btn-block" onClick={doBatch} disabled={busy}>
               <Play size={16} weight="fill" /> {busy ? 'Đang chạy batch...' : 'Chạy Batch Ngay'}
+            </button>
+
+            <button className="sp-btn sp-btn-secondary sp-btn-block" onClick={doRandom} disabled={busy} style={{ marginTop: 8 }}>
+              <Shuffle size={16} weight="fill" /> {busy ? 'Đang cào bài random...' : 'Pick Random & Cào Ngay'}
             </button>
 
             <div className="sp-toggle-row">

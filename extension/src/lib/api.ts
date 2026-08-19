@@ -38,3 +38,12 @@ export async function reportBatchError(config: ExtensionConfig, requestId: strin
     body: JSON.stringify({ id: requestId, error_message: message }),
   });
 }
+
+// Lấy 1 URL bài viết pending ngẫu nhiên (chưa được cào) từ web server.
+// Trả null nếu queue rỗng hoặc toàn bộ đã cào xong.
+export async function fetchRandomRequest(config: ExtensionConfig): Promise<string | null> {
+  const res = await fetch(`${config.webUrl.replace(/\/$/, '')}/api/queue/random`, { headers: headers(config) });
+  if (!res.ok) throw new Error(`Lỗi tải bài random: HTTP ${res.status}`);
+  const body = await res.json() as { url: string | null };
+  return body.url ?? null;
+}
