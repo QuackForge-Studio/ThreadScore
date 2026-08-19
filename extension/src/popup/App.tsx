@@ -127,6 +127,11 @@ export default function App() {
         }));
       }
       log(`Quét hoàn tất: ${s.comments.length} bình luận.`);
+      if (s.highlightSummary) {
+        log(
+          `Đã đánh dấu ${s.highlightSummary.highlighted} card trên trang — ${s.highlightSummary.totalComments} bình luận · ${s.highlightSummary.totalReplies} phản hồi (xem overlay góc phải trang Threads).`
+        );
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Lỗi quét bài viết';
       setError(msg);
@@ -146,7 +151,13 @@ export default function App() {
       const stats = s.debugStats || debugStats;
       setScraped(s);
       setLastStats({ ...stats });
-      log('Đã highlight xong trên trang Threads.');
+      if (s.highlightSummary) {
+        log(
+          `Highlight xong: ${s.highlightSummary.highlighted} card — ${s.highlightSummary.totalComments} bình luận · ${s.highlightSummary.totalReplies} phản hồi (xem overlay góc phải trang Threads).`
+        );
+      } else {
+        log('Đã highlight xong trên trang Threads.');
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Lỗi highlight');
     } finally {

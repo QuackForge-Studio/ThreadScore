@@ -157,14 +157,14 @@ export interface HighlightSummary {
 function removeOldHighlights(doc: Document): void {
   doc.querySelectorAll('.ts-highlight-badge, #ts-count-overlay').forEach((el) => el.remove());
   doc.querySelectorAll('[data-ts-highlighted="true"]').forEach((el) => {
-    if (el instanceof HTMLElement) {
-      el.style.outline = '';
-      el.style.backgroundColor = '';
-      el.style.boxShadow = '';
-      el.style.borderRadius = '';
-      el.style.position = '';
-      el.removeAttribute('data-ts-highlighted');
-    }
+    if (!('style' in el)) return;
+    const style = (el as HTMLElement).style;
+    style.outline = '';
+    style.backgroundColor = '';
+    style.boxShadow = '';
+    style.borderRadius = '';
+    style.position = '';
+    el.removeAttribute('data-ts-highlighted');
   });
 }
 
