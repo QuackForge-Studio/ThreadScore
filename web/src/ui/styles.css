@@ -3043,32 +3043,435 @@ textarea.field-input { resize: vertical; }
   .hero { padding: var(--space-8) var(--space-4) var(--space-7); }
 }
 
+/* ===== Streamlined Mobile Responsive System (Mobile-First Polish) ===== */
 @media (max-width: 640px) {
+  :root {
+    --space-4: 12px;
+    --space-5: 16px;
+    --space-6: 20px;
+    --space-7: 28px;
+    --space-8: 36px;
+  }
+
+  /* Header */
   .site-header {
-    top: 8px;
-    margin: 8px 8px 0;
-    padding: 8px 12px;
-    border-radius: 18px;
+    padding: 12px 14px 6px;
+    gap: 8px;
     flex-wrap: wrap;
+  }
+
+  .site-logo {
+    font-size: 16px;
+    gap: 7px;
+  }
+
+  .logo-img {
+    width: 24px;
+    height: 24px;
+  }
+
+  .site-nav {
+    gap: 6px;
+  }
+
+  .nav-link {
+    padding: 6px 11px;
+    font-size: 12px;
+    height: 32px;
+  }
+
+  .theme-toggle-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Hero Section */
+  .hero-streamlined {
+    padding: 20px 12px 14px;
+  }
+
+  .hero-main-title {
+    font-size: 1.42rem;
+    line-height: 1.28;
+    letter-spacing: -0.025em;
+    margin-bottom: 12px;
+  }
+
+  .hero-search-box-wrap {
+    max-width: 100%;
+    margin-bottom: 12px;
+  }
+
+  .hero-search-box-wrap:focus-within {
+    max-width: 100%;
+  }
+
+  .searchbox-row {
+    padding: 4px 4px 4px 12px;
+    gap: 6px;
+    border-radius: var(--radius-pill, 999px);
+  }
+
+  .searchbox-icon {
+    font-size: 16px;
+  }
+
+  .searchbox-input {
+    font-size: 13.5px;
+    padding: 4px 0;
+  }
+
+  .searchbox .btn-primary {
+    height: 34px;
+    padding: 0 14px;
+    font-size: 13px;
+  }
+
+  .hero-summary-bar {
+    padding: 5px 12px;
+    font-size: 11.5px;
+    gap: 5px;
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  .summary-items-inline {
+    gap: 5px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* Feed Section & Container */
+  .feed-container {
+    padding: 0 12px;
+    max-width: 100%;
+  }
+
+  .feed-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    padding-bottom: 4px;
+  }
+
+  .sort-tabs {
+    gap: 2px;
+  }
+
+  .sort-tab {
+    padding: 6px 9px;
+    font-size: 12.5px;
+  }
+
+  .calendar-trigger-btn {
+    padding: 4px 9px;
+    font-size: 11.5px;
+    height: 28px;
+    gap: 4px;
+  }
+
+  .calendar-popover {
+    width: calc(100vw - 24px);
+    max-width: 300px;
+    right: 0;
+    left: auto;
+  }
+
+  .active-filter-banner {
+    padding: 6px 10px;
+    font-size: 11.5px;
+    gap: 6px;
+  }
+
+  /* ThreadCard */
+  .threadcard-refined {
+    padding: 12px 14px;
+    border-radius: 12px;
+    gap: 7px;
+    margin-bottom: 8px;
+  }
+
+  .threadcard-head-tier {
+    gap: 6px;
+  }
+
+  .threadcard-author-group {
+    gap: 5px;
+    font-size: 12px;
+    min-width: 0;
+    max-width: calc(100% - 64px);
+  }
+
+  .threadcard-username {
+    font-size: 12.5px;
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .threadcard-time-sep {
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .threadcard-outlink-subtle {
+    font-size: 11px;
+    padding: 1px 5px;
+  }
+
+  .threadcard-content-text {
+    font-size: 13.5px;
+    line-height: 1.46;
+  }
+
+  .threadcard-footer-tier {
+    padding-top: 5px;
+    margin-top: 1px;
+    gap: 6px;
+  }
+
+  .threadcard-meta-left {
+    gap: 6px;
+  }
+
+  .threadcard-drama-pill {
+    padding: 2px 6px;
+    font-size: 10.5px;
+    gap: 3px;
+  }
+
+  .threadcard-drama-pill .drama-score-num {
+    font-size: 11px;
+  }
+
+  .threadcard-comment-stat {
+    font-size: 11px;
+    gap: 3px;
+  }
+
+  .threadcard-primary-cta {
+    font-size: 11px;
+    gap: 3px;
+  }
+
+  /* Pagination */
+  .feed-pagination-row {
+    margin-top: 12px;
+    margin-bottom: 20px;
+  }
+
+  .pagination-info {
+    font-size: 11.5px;
+  }
+
+  .pagination-controls {
+    padding: 3px 4px;
+    gap: 2px;
+    max-width: 100%;
+  }
+
+  .btn-page-nav {
+    padding: 4px 8px;
+    font-size: 11.5px;
+    height: 28px;
+  }
+
+  .btn-page-num {
+    width: 26px;
+    height: 26px;
+    font-size: 11.5px;
+  }
+
+  /* Thread Detail Page */
+  .thread-top-toolbar {
+    margin-bottom: 12px;
     gap: 8px;
   }
-  .site-nav { gap: 6px; flex-wrap: wrap; }
-  .nav-link { padding: 7px 12px; font-size: 12px; }
-  .nav-lang .lang-btn { padding: 4px 9px; font-size: 11px; }
-  .site-logo { font-size: 16px; }
-  .hero-title { font-size: clamp(2.2rem, 10vw, 3rem); }
-  .hero-subtitle { font-size: 16px; }
-  .console-big .num { font-size: 56px; }
-  .overall-thermo-num { font-size: 52px; }
-  .scorebar-track { width: 100px; }
-  .thread-avg-value { font-size: 26px; }
-  .footer-inner { flex-direction: column; }
-  .bento { grid-auto-rows: 96px; }
-  .cta-banner { padding: var(--space-7) var(--space-4); }
-  .sort-tab { padding: 12px 16px; font-size: 14px; }
-  .searchbox-row { padding: 6px 6px 6px 16px; }
-  .searchbox-input { height: 48px; font-size: 15px; }
-  .searchbox .btn-primary { height: 48px; padding: 0 22px; font-size: 15px; }
+
+  .thread-back-link {
+    padding: 6px 12px;
+    font-size: 12.5px;
+    gap: 5px;
+  }
+
+  .thread-quick-nav-btn {
+    padding: 5px 9px;
+    font-size: 11.5px;
+  }
+
+  .thread-title {
+    font-size: 1.35rem;
+    line-height: 1.3;
+    margin-bottom: 8px;
+  }
+
+  .thread-meta {
+    font-size: 12px;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .thread-content {
+    padding: 12px 14px;
+    font-size: 14px;
+    line-height: 1.55;
+    border-radius: 12px;
+    margin-bottom: 14px;
+  }
+
+  .thread-summary {
+    padding: 14px;
+    border-radius: 14px;
+    margin-bottom: 16px;
+  }
+
+  .thread-avg-value {
+    font-size: 24px;
+  }
+
+  .thread-bottom-nav {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-top: 18px;
+    padding-top: 14px;
+  }
+
+  .thread-nav-card {
+    padding: 12px 14px;
+    border-radius: 12px;
+    gap: 10px;
+  }
+
+  .thread-nav-card-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Hall of Fame */
+  .hof-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .hof-card {
+    padding: 12px 14px;
+    border-radius: 12px;
+    gap: 6px;
+  }
+
+  .hof-cta-box {
+    padding: 12px 14px;
+    border-radius: 12px;
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+    gap: 10px;
+  }
+
+  .hof-cta-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .hof-cta-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 8px 14px;
+    font-size: 12.5px;
+  }
+
+  /* Footer */
+  .site-footer {
+    padding: 28px 14px 18px;
+    margin-top: 32px;
+  }
+
+  .footer-inner {
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .footer-brand {
+    max-width: 100%;
+  }
+
+  .footer-actions-buttons {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .footer-donate-btn,
+  .footer-github-btn {
+    flex: 1;
+    height: 38px;
+    font-size: 13px;
+    justify-content: center;
+  }
+
+  .footer-disclaimer {
+    max-width: 100%;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 18px;
+    padding-top: 14px;
+  }
+
+  .footer-actions-row {
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  /* Modals */
+  .modal-card {
+    max-width: 100%;
+    border-radius: 14px;
+  }
+
+  .modal-head {
+    padding: 12px 14px;
+  }
+
+  .modal-body {
+    padding: 14px;
+  }
+
+  .donate-qr-img {
+    width: 150px;
+    height: 150px;
+  }
+}
+
+/* Extra small mobile (< 380px) */
+@media (max-width: 380px) {
+  .site-logo span:last-child {
+    display: none;
+  }
+  .sort-tab {
+    padding: 5px 6px;
+    font-size: 11.5px;
+  }
+  .threadcard-username {
+    max-width: 80px;
+  }
+  .threadcard-drama-pill .drama-score-text {
+    display: none;
+  }
+  .threadcard-comment-stat .stat-label {
+    display: none;
+  }
 }
 
 /* ===== Donate Modal & Footer Contact ===== */
