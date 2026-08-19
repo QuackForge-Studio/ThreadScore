@@ -384,8 +384,13 @@ button { font-family: var(--font-sans); }
 
 .hero-search-box-wrap {
   width: 100%;
-  max-width: 640px;
+  max-width: 460px;
   margin: 0 auto 14px;
+  transition: max-width 320ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hero-search-box-wrap:focus-within {
+  max-width: 680px;
 }
 
 /* ===== SearchBox ===== */
@@ -403,12 +408,12 @@ button { font-family: var(--font-sans); }
   border-radius: var(--radius-pill, 999px);
   padding: 6px 6px 6px 18px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-  transition: all 180ms ease;
+  transition: border-color 300ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1), background-color 300ms ease;
 }
 
 .searchbox-row:focus-within {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(229, 72, 77, 0.15), 0 4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 0 0 3.5px rgba(229, 72, 77, 0.16), 0 6px 20px rgba(0, 0, 0, 0.07);
 }
 
 .searchbox-input-wrap {
@@ -423,6 +428,11 @@ button { font-family: var(--font-sans); }
   font-size: 19px;
   color: var(--muted);
   flex-shrink: 0;
+  transition: color 200ms ease;
+}
+
+.searchbox-row:focus-within .searchbox-icon {
+  color: var(--accent);
 }
 
 .searchbox-input {
@@ -436,11 +446,17 @@ button { font-family: var(--font-sans); }
   font-size: 15px;
   color: var(--ink);
   padding: 6px 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .searchbox-input::placeholder {
   color: var(--muted);
   opacity: 0.85;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .searchbox .btn-primary {

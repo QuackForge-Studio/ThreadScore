@@ -1,7 +1,7 @@
 // Auto-scroll orchestrator: Cuộn trang kiên trì, nhận diện & mở rộng toàn bộ câu trả lời con (sub-replies).
 
 import { debugStats } from './debug';
-import { isScrapeAborted, getInterceptedCommentsCount } from './scraper';
+import { isScrapeAborted, getCurrentPostComments } from './scraper';
 
 // Candidate gần giống nút expander nhưng không khớp regex — để chẩn đoán vì sao không click được.
 const nearMissCandidates = new Set<string>();
@@ -370,7 +370,7 @@ export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?
 
     if (isScrapeAborted()) break;
 
-    const currentBufferCount = getInterceptedCommentsCount();
+    const currentBufferCount = getCurrentPostComments().length;
     const currentDomCount = countReplies(doc);
 
     // Chỉ tăng stableCount nếu CẢ GraphQL buffer VÀ DOM đều không có thêm dữ liệu mới VÀ không có expander nào vừa click
@@ -393,5 +393,5 @@ export async function autoScrollUntilStable(doc: Document, opts?: { maxComments?
   debugStats.expandersFound = totalExpandersFound;
   debugStats.expandersClicked = totalExpandersClicked;
   debugStats.repliesCounted = countReplies(doc);
-  logDebug('autoscroll', `done: scrolls=${maxScrolls} expandersFound=${totalExpandersFound} expandersClicked=${totalExpandersClicked} buffer=${getInterceptedCommentsCount()} reloadDetected=${reloadDetected}`);
+  logDebug('autoscroll', `done: scrolls=${maxScrolls} expandersFound=${totalExpandersFound} expandersClicked=${totalExpandersClicked} buffer=${getCurrentPostComments().length} reloadDetected=${reloadDetected}`);
 }

@@ -44,6 +44,41 @@ export function getInterceptedCommentsCount(): number {
   return interceptedCommentsBuffer.length;
 }
 
+// Lấy postCode (mã bài) từ URL trang mà comment được bắt — nguồn tin cậy nhất để lọc bài.
+// KHÔNG dùng c.code (code của comment/reply khác với mã bài chính, sẽ lọc nhầm).
+function getBufferedPostCode(c: BufferedComment): string | null {
+  if (!c.pageUrl) return null;
+  const { postCode } = parseThreadsUrl(c.pageUrl);
+  return postCode;
+}
+
+// Khi mở bài mới: chỉ giữ lại comment thuộc đúng bài đang mở, xóa hết comment bài cũ
+// khỏi buffer + sessionStorage (chống trộn dữ liệu giữa các bài viết).
+export function pruneBufferForPost(currentPostCode: string | null): void {
+  if (!currentPostCode) return;
+  const before = interceptedCommentsBuffer.length;
+  let kept = 0;
+  for (let i = interceptedCommentsBuffer.length - 1; i >= 0; i--) {
+    const c = interceptedCommentsBuffer[i];
+    const code = getBufferedPostCode(c);
+    // Giữ comment không xác định được bài (có thể là comment đang tải của bài hiện tại)
+    // nhưng loại chắc chắn thuộc bài khác (postCode khác).
+    if (code && code !== currentPostCode) {
+      interceptedCommentsBuffer.splice(i, 1);
+    } else {
+      kept++;
+    }
+  }
+  if (before !== kept) {
+    logScrapeDebug('prune', `đổi bài: xóa ${before - kept} comment bài cũ, giữ ${kept} (post=${currentPostCode})`);
+    persistBuffer();
+  }
+}
+
+export function getCurrentPostComments(): BufferedComment[] {
+  return interceptedCommentsBuffer;
+}
+
 // Persist buffer qua sessionStorage để sống sót khi Threads tự reload trang.
 const PERSIST_KEY = 'ts_intercepted_buffer_v1';
 let persistTimer: number | null = null;
@@ -1046,6 +1081,9 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
   const currentUrl = doc.location?.href ?? doc.defaultView?.location.href ?? '';
   const { author: mainAuthorUrl, postCode: currentPostCode } = parseThreadsUrl(currentUrl);
 
+  // Chỉ giữ comment của bài đang mở — xóa comment bài cũ khỏi buffer (chống trộn dữ liệu)
+  pruneBufferForPost(currentPostCode);
+
   await autoScrollUntilStable(doc, { maxComments: opts?.maxComments ?? MAX_COMMENTS });
 
   const titleEl = doc.querySelector(SELECTORS.title);
@@ -1155,9 +1193,15 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
 
   const comments: ScrapedComment[] = [];
 
-  // 1. Comment từ GraphQL interceptor
+  // 1. Comment từ GraphQL interceptor (chỉ của bài đang mở — lọc theo postCode/URL)
   for (const gc of interceptedCommentsBuffer) {
     if (!gc.text || !gc.author_username) continue;
+
+    // Bỏ qua comment thuộc bài khác (pageUrl/postCode khác với bài đang mở)
+    if (gc.pageUrl && currentPostCode) {
+      const { postCode: bufPostCode } = parseThreadsUrl(gc.pageUrl);
+      if (bufPostCode && bufPostCode !== currentPostCode) continue;
+    }
 
     // Bỏ qua nếu là bài viết gốc (Main Post)
     if (isMainPostComment(gc, resolvedMainAuthor, mainTitleText, mainContentText, currentPostCode)) {
