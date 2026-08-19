@@ -392,14 +392,14 @@ button { font-family: var(--font-sans); }
 /* ===== SearchBox ===== */
 .searchbox {
   width: 100%;
-  max-width: 440px;
+  max-width: 400px;
   margin: 0 auto;
   position: relative;
-  transition: max-width 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: max-width 380ms cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .searchbox:focus-within {
-  max-width: 720px;
+  max-width: 700px;
 }
 
 .searchbox-row {
@@ -411,12 +411,13 @@ button { font-family: var(--font-sans); }
   border-radius: var(--radius-pill, 999px);
   padding: 5px 6px 5px 16px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-  transition: border-color 300ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1), background-color 300ms ease;
+  transition: border-color 300ms ease, box-shadow 350ms cubic-bezier(0.25, 1, 0.5, 1), transform 350ms cubic-bezier(0.25, 1, 0.5, 1), background-color 300ms ease;
 }
 
 .searchbox-row:focus-within {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3.5px rgba(229, 72, 77, 0.16), 0 6px 20px rgba(0, 0, 0, 0.07);
+  transform: scale(1.01);
+  box-shadow: 0 0 0 4px rgba(229, 72, 77, 0.16), 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
 .searchbox-input-wrap {
@@ -3133,7 +3134,8 @@ textarea.field-input { resize: vertical; }
   }
 
   .searchbox {
-    max-width: 100%;
+    max-width: 290px;
+    transition: max-width 380ms cubic-bezier(0.25, 1, 0.5, 1);
   }
 
   .searchbox:focus-within {
