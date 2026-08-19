@@ -7,6 +7,7 @@ import { useI18n } from '../i18n';
 export default function SearchBox() {
   const { t, tf } = useI18n();
   const [q, setQ] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
   const [result, setResult] = useState<{ kind: string; state?: string; thread?: { id: string }; threads?: { id: string; url: string; title: string | null; content?: string | null; author_username: string | null }[]; message: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -47,7 +48,7 @@ export default function SearchBox() {
   }
 
   return (
-    <form className="searchbox" onSubmit={handleSubmit} role="search">
+    <form className={`searchbox${isFocused ? ' is-focused' : ''}`} onSubmit={handleSubmit} role="search">
       <div className="searchbox-row">
         <div className="searchbox-input-wrap">
           <MagnifyingGlass size={18} weight="bold" className="searchbox-icon" aria-hidden="true" />
@@ -59,6 +60,8 @@ export default function SearchBox() {
             placeholder={t('sb.placeholder')}
             value={q}
             onChange={e => setQ(e.target.value)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
             onKeyDown={handleKeyDown}
             aria-label={t('sb.placeholder')}
             autoComplete="off"

@@ -1,85 +1,289 @@
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [init] Interceptor sẵn sàng. Fetch thấy: 0, XHR thấy: 0, GraphQL responses: 0
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] script → inline-script
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [probe-payload] extract=0 nhưng có reply hints. url=inline-script top=[require] data=[]
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=0, noParent=0
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] script → inline-script
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [probe-payload] extract=0 nhưng có reply hints. url=inline-script top=[require] data=[]
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=0, noParent=0
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] script → inline-script
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [probe-payload] extract=0 nhưng có reply hints. url=inline-script top=[require] data=[]
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=0, noParent=0
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] script → inline-script
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [probe] comment KHÔNG có parent_id. text="Chúng m đọc post ko tưởng thật hả. Đọc k..." nodeKeys=[pk,id,logging_info_token,user,text_post_app_info,is_paid_partnership,audio,caption,caption_is_edited,transcription_data,carousel_media,code,image_versions2,original_height,original_width,accessibility_caption,usertags,is_dash_eligible,number_of_qualities,video_dash_manifest,video_versions,has_audio,media_type,caption_add_on,text_app_music_info,fbid,has_liked,like_count,taken_at,media_overlay_info,sharing_friction_info,canonical_url,has_viewer_saved,giphy_media_info,text_app_glimmer_post_info,original_lang_for_translations,detected_language,metaPlace,meta_place,gen_ai_detection_method] textPostInfoKeys=[show_header_follow,id,is_ghost_post,self_thread_info,is_spoiler_media,is_markup,special_effects_enabled_str,reply_control,tag_header,direct_reply_count,has_viewer_replied,self_thread_count,is_reply,post_author_reachability_status,can_reply,gen_ai_reply_bot_on_media_deny_reason,ghost_post_exp_time_ms,ghost_post_approximate_like_count_str,ghost_post_reply_type,ghost_post_approximate_reply_count_str] self_thread_info:{self_thread_length,id,post_position_in_self_thread} stiValues[self_thread_length=2, id="18014149718736460", post_position_in_self_thread=2]
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=1 (replies=0), total=1, noParent=1
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] script → inline-script
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [probe] comment KHÔNG có parent_id. text="Đề nghị nhà nước đánh thuế những người k..." nodeKeys=[pk,user,text_post_app_info,id,logging_info_token,is_paid_partnership,audio,caption,caption_is_edited,transcription_data,carousel_media,code,image_versions2,original_height,original_width,accessibility_caption,usertags,is_dash_eligible,number_of_qualities,video_dash_manifest,video_versions,has_audio,media_type,caption_add_on,text_app_music_info,fbid,has_liked,like_count,taken_at,media_overlay_info,sharing_friction_info,canonical_url,has_viewer_saved,giphy_media_info,text_app_glimmer_post_info,original_lang_for_translations,detected_language,metaPlace,meta_place,gen_ai_detection_method] textPostInfoKeys=[is_post_unavailable,pinned_post_info,id,share_info,ghost_post_exp_time_ms,is_ghost_post,reply_approval_info,hush_info,show_header_follow,self_thread_info,is_spoiler_media,is_markup,special_effects_enabled_str,reply_control,tag_header,direct_reply_count,has_viewer_replied,self_thread_count,is_reply,post_author_reachability_status] self_thread_info:{self_thread_length,id,post_position_in_self_thread} stiValues[self_thread_length=2, id=null, post_position_in_self_thread=1]
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [probe] comment KHÔNG có parent_id. text="Đề nghị nhà nước đánh thuế những người k..." nodeKeys=[pk,user,text_post_app_info,id,logging_info_token,is_paid_partnership,audio,caption,caption_is_edited,transcription_data,carousel_media,code,image_versions2,original_height,original_width,accessibility_caption,usertags,is_dash_eligible,number_of_qualities,video_dash_manifest,video_versions,has_audio,media_type,caption_add_on,text_app_music_info,fbid,has_liked,like_count,taken_at,media_overlay_info,sharing_friction_info,canonical_url,has_viewer_saved,giphy_media_info,text_app_glimmer_post_info,original_lang_for_translations,detected_language,metaPlace,meta_place,gen_ai_detection_method] textPostInfoKeys=[is_post_unavailable,pinned_post_info,id,share_info,ghost_post_exp_time_ms,is_ghost_post,reply_approval_info,hush_info,show_header_follow,self_thread_info,is_spoiler_media,is_markup,special_effects_enabled_str,reply_control,tag_header,direct_reply_count,has_viewer_replied,self_thread_count,is_reply,post_author_reachability_status] self_thread_info:{self_thread_length,id,post_position_in_self_thread} stiValues[self_thread_length=2, id=null, post_position_in_self_thread=1]
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=14 (replies=0), total=15, noParent=29
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /api/graphql
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=15, noParent=29
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /api/graphql
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=15, noParent=29
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /graphql/query
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=15, noParent=29
-d4of7FCiYof.js:251 
+ [TS-DEBUG] [init] Interceptor sẵn sàng. Fetch thấy: 0, XHR thấy: 0, GraphQL responses: 0
+ [TS-DEBUG] [response] script → inline-script
+ [TS-DEBUG] [probe-payload] extract=0 nhưng có reply hints. url=inline-script top=[require] data=[]
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=0, noParent=0
+ [TS-DEBUG] [response] script → inline-script
+ [TS-DEBUG] [probe-payload] extract=0 nhưng có reply hints. url=inline-script top=[require] data=[]
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=0, noParent=0
+ [TS-DEBUG] [response] script → inline-script
+ [TS-DEBUG] [probe] comment KHÔNG có parent_id. text="Nết t mỗi khi gặp mấy đứa con nít hỗn =)..." nodeKeys=[pk,id,logging_info_token,user,text_post_app_info,is_paid_partnership,audio,caption,caption_is_edited,transcription_data,carousel_media,code,image_versions2,original_height,original_width,accessibility_caption,usertags,is_dash_eligible,number_of_qualities,video_dash_manifest,video_versions,has_audio,media_type,caption_add_on,text_app_music_info,fbid,has_liked,like_count,taken_at,media_overlay_info,sharing_friction_info,canonical_url,has_viewer_saved,giphy_media_info,text_app_glimmer_post_info,original_lang_for_translations,detected_language,metaPlace,meta_place,gen_ai_detection_method] textPostInfoKeys=[show_header_follow,id,is_ghost_post,self_thread_info,is_spoiler_media,is_markup,special_effects_enabled_str,reply_control,tag_header,direct_reply_count,has_viewer_replied,self_thread_count,is_reply,post_author_reachability_status,can_reply,gen_ai_reply_bot_on_media_deny_reason,ghost_post_exp_time_ms,ghost_post_approximate_like_count_str,ghost_post_reply_type,ghost_post_approximate_reply_count_str] self_thread_info:{self_thread_length,id,post_position_in_self_thread} stiValues[self_thread_length=1, id="18125938882684404", post_position_in_self_thread=1]
+ [TS-DEBUG] [extract] comments=1 (replies=0), total=1, noParent=1
+ [TS-DEBUG] [response] script → inline-script
+ [TS-DEBUG] [probe-payload] extract=0 nhưng có reply hints. url=inline-script top=[require] data=[]
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=1, noParent=1
+ [TS-DEBUG] [response] script → inline-script
+ [TS-DEBUG] [probe-payload] extract=0 nhưng có reply hints. url=inline-script top=[require] data=[]
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=1, noParent=1
+ [TS-DEBUG] [response] script → inline-script
+ [TS-DEBUG] [probe] comment KHÔNG có parent_id. text="ultr t đó, chúng nó khóc t cũng khóc, nh..." nodeKeys=[pk,id,logging_info_token,user,text_post_app_info,is_paid_partnership,audio,caption,caption_is_edited,transcription_data,carousel_media,code,image_versions2,original_height,original_width,accessibility_caption,usertags,is_dash_eligible,number_of_qualities,video_dash_manifest,video_versions,has_audio,media_type,caption_add_on,text_app_music_info,fbid,has_liked,like_count,taken_at,media_overlay_info,sharing_friction_info,canonical_url,has_viewer_saved,giphy_media_info,text_app_glimmer_post_info,original_lang_for_translations,detected_language,metaPlace,meta_place,gen_ai_detection_method] textPostInfoKeys=[show_header_follow,id,is_ghost_post,self_thread_info,is_spoiler_media,is_markup,special_effects_enabled_str,reply_control,tag_header,direct_reply_count,has_viewer_replied,self_thread_count,is_reply,post_author_reachability_status,can_reply,gen_ai_reply_bot_on_media_deny_reason,ghost_post_exp_time_ms,ghost_post_approximate_like_count_str,ghost_post_reply_type,ghost_post_approximate_reply_count_str] 
+ [TS-DEBUG] [extract] comments=17 (replies=0), total=18, noParent=18
+ [TS-DEBUG] [persist] restored 179 comments từ sessionStorage (tổng buffer=161)
+ [TS-DEBUG] [persist] restored 0 comments từ sessionStorage (tổng buffer=0)
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
+ 
 Dừng lại!
-d4of7FCiYof.js:251 
+ 
 Đây là một tính năng của trình duyệt dành cho các nhà phát triển. Nếu ai đó yêu cầu bạn sao chép rồi dán nội dung nào đó vào đây để bật một tính năng của Threads hoặc "hack" tài khoản của người khác, đó là hành vi lừa đảo và sẽ khiến họ có thể truy cập vào tài khoản Threads của bạn.
-d4of7FCiYof.js:251 
+ 
 Xem https://www.facebook.com/selfxss để biết thêm thông tin.
-d4of7FCiYof.js:251 
+ 
 
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /api/graphql
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=15, noParent=29
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
+ [TS-DEBUG] [prune] đổi bài: xóa 3 comment bài cũ, giữ 158 (post=DcK3KymAZsY)
+ [TS-DEBUG] [expand-inspect] "Trả lời263" tag=div class="x1i10hfl x1qjc9v5 xjbqb8w xjqpnuy xc5r6h" role="button" aria="" title=""
+ [TS-DEBUG] [expand] clicked reply-count: "263" (tag=span, href=, role=, totalClicks=1/10)
  [TS-DEBUG] [response] xhr → /api/graphql
- [TS-DEBUG] [extract] comments=0 (replies=0), total=15, noParent=29
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
  [TS-DEBUG] [response] xhr → /api/graphql
- [TS-DEBUG] [extract] comments=0 (replies=0), total=15, noParent=29
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
  [TS-DEBUG] [response] xhr → /api/graphql
- [TS-DEBUG] [extract] comments=0 (replies=0), total=15, noParent=29
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
  [TS-DEBUG] [response] xhr → /api/graphql
- [TS-DEBUG] [extract] comments=0 (replies=0), total=15, noParent=29
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
+ [TS-DEBUG] [composer-close] escape #1 — đóng composer vô tình mở
+ [TS-DEBUG] [expand-nearmiss] candidate KHÔNG khớp: "trả lời xiuxiu.meo..."
+ [TS-DEBUG] [expand-inspect] "Trả lời2" tag=div class="x1i10hfl x1qjc9v5 xjbqb8w xjqpnuy xc5r6h" role="button" aria="" title=""
+ [TS-DEBUG] [expand] clicked reply-count: "2" (tag=span, href=, role=, totalClicks=2/10)
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=18, noParent=18
  [TS-DEBUG] [response] xhr → /api/graphql
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=15, noParent=29
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /api/graphql
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=15, noParent=29
+ [TS-DEBUG] [extract] comments=1 (replies=0), total=19, noParent=19
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=2 (replies=0), total=21, noParent=21
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=1 (replies=0), total=22, noParent=22
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=1 (replies=0), total=23, noParent=23
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=23, noParent=23
+ [TS-DEBUG] [expand-inspect] "Trả lời263" tag=div class="x1i10hfl x1qjc9v5 xjbqb8w xjqpnuy xc5r6h" role="button" aria="" title=""
+ [TS-DEBUG] [expand] clicked reply-count: "263" (tag=span, href=, role=, totalClicks=3/10)
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=23, noParent=23
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=23, noParent=23
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=23, noParent=23
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=23, noParent=23
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=4 (replies=0), total=27, noParent=27
+ [TS-DEBUG] [expand-inspect] "Trả lời263" tag=div class="x1i10hfl x1qjc9v5 xjbqb8w xjqpnuy xc5r6h" role="button" aria="" title=""
+ [TS-DEBUG] [expand] clicked reply-count: "263" (tag=span, href=, role=, totalClicks=4/10)
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=27, noParent=27
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=27, noParent=27
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=27, noParent=27
+ [TS-DEBUG] [composer-close] escape #2 — đóng composer vô tình mở
+ [TS-DEBUG] [expand-inspect] "Trả lời1" tag=div class="x1i10hfl x1qjc9v5 xjbqb8w xjqpnuy xc5r6h" role="button" aria="" title=""
+ [TS-DEBUG] [expand] clicked reply-count: "1" (tag=span, href=, role=, totalClicks=5/10)
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=27, noParent=27
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=1 (replies=0), total=28, noParent=28
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=28, noParent=28
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=1 (replies=0), total=29, noParent=29
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=1 (replies=0), total=30, noParent=30
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=30, noParent=30
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=30, noParent=30
+ [TS-DEBUG] [expand-inspect] "Trả lời263" tag=div class="x1i10hfl x1qjc9v5 xjbqb8w xjqpnuy xc5r6h" role="button" aria="" title=""
+ [TS-DEBUG] [expand] clicked reply-count: "263" (tag=span, href=, role=, totalClicks=6/10)
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=30, noParent=30
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=30, noParent=30
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=30, noParent=30
+ [TS-DEBUG] [expand-inspect] "Trả lời263" tag=div class="x1i10hfl x1qjc9v5 xjbqb8w xjqpnuy xc5r6h" role="button" aria="" title=""
+ [TS-DEBUG] [expand] clicked reply-count: "263" (tag=span, href=, role=, totalClicks=7/10)
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=30, noParent=30
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=30, noParent=30
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=30, noParent=30
+ [TS-DEBUG] [composer-close] escape #3 — đóng composer vô tình mở
+ [TS-DEBUG] [expand-inspect] "Trả lời1" tag=div class="x1i10hfl x1qjc9v5 xjbqb8w xjqpnuy xc5r6h" role="button" aria="" title=""
+ [TS-DEBUG] [expand] clicked reply-count: "1" (tag=span, href=, role=, totalClicks=8/10)
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=4 (replies=0), total=34, noParent=34
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=1 (replies=0), total=35, noParent=35
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=35, noParent=35
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=1 (replies=0), total=36, noParent=36
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=1 (replies=0), total=37, noParent=37
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=37, noParent=37
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=3 (replies=0), total=40, noParent=40
+ [TS-DEBUG] [expand-nearmiss] candidate KHÔNG khớp: "trả lời"
+ [TS-DEBUG] [expand-nearmiss] candidate KHÔNG khớp: "hiển thị trả lời"
+ [TS-DEBUG] [expand-inspect] "Trả lời1" tag=div class="x1i10hfl x1qjc9v5 xjbqb8w xjqpnuy xc5r6h" role="button" aria="" title=""
+ [TS-DEBUG] [expand] clicked reply-count: "1" (tag=span, href=, role=, totalClicks=9/10)
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=5 (replies=0), total=45, noParent=45
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=45, noParent=45
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=1 (replies=0), total=46, noParent=46
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=1 (replies=0), total=47, noParent=47
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=1 (replies=0), total=48, noParent=48
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=48, noParent=48
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=48, noParent=48
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=48, noParent=48
+ [TS-DEBUG] [expand-inspect] "Trả lời263" tag=div class="x1i10hfl x1qjc9v5 xjbqb8w xjqpnuy xc5r6h" role="button" aria="" title=""
+ [TS-DEBUG] [expand] clicked reply-count: "263" (tag=span, href=, role=, totalClicks=10/10)
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=48, noParent=48
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=48, noParent=48
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=48, noParent=48
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=3 (replies=0), total=51, noParent=51
+ [TS-DEBUG] [autoscroll] dừng sớm: đã click 10/10 expander (ngân sách chống reload)
+ [TS-DEBUG] [autoscroll] done: scrolls=90 expandersFound=40 expandersClicked=10 buffer=191 reloadDetected=false
+ [TS-DEBUG] [nested] targets=30, bắt đầu cào sâu...
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=5 (replies=0), total=56, noParent=56
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=6 (replies=0), total=62, noParent=62
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=62, noParent=62
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@ivy_.jasminn/post/DcLciX_FB5B: len=781704
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@ivy_.jasminn/post/DcLciX_FB5B: scripts=108, payloads=55, extracted=11, kept=10
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@ankechuyen27/post/DcLZlt_Ccbe: len=796820
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@ankechuyen27/post/DcLZlt_Ccbe: scripts=108, payloads=55, extracted=15, kept=24
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@supercute_6/post/DcNOMAaEuSc: len=682745
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@supercute_6/post/DcNOMAaEuSc: scripts=88, payloads=38, extracted=8, kept=28
+ [TS-DEBUG] [response] xhr → /api/graphql
+ [TS-DEBUG] [extract] comments=4 (replies=0), total=66, noParent=66
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@kaydollar.iam/post/DcM_jCDE4Sk: len=850149
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@kaydollar.iam/post/DcM_jCDE4Sk: scripts=108, payloads=55, extracted=19, kept=46
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@spongebob_72891927728191982/post/DcMG1FwCbxY: len=600007
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@spongebob_72891927728191982/post/DcMG1FwCbxY: scripts=88, payloads=38, extracted=0, kept=46
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=66, noParent=66
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@harucantrs/post/DcNNjNsgU40: len=599445
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@harucantrs/post/DcNNjNsgU40: scripts=88, payloads=38, extracted=0, kept=46
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@famiirrr/post/DcNMR10lIFK: len=697597
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@famiirrr/post/DcNMR10lIFK: scripts=108, payloads=55, extracted=2, kept=47
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@unique.name__/post/DcNAuVfErJF: len=805055
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@unique.name__/post/DcNAuVfErJF: scripts=108, payloads=55, extracted=15, kept=61
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@canhcutnong_/post/DcNJW3XoG3k: len=833455
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@canhcutnong_/post/DcNJW3XoG3k: scripts=108, payloads=55, extracted=16, kept=76
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@hoanghao.duong/post/DcNOEsamuDv: len=715418
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@hoanghao.duong/post/DcNOEsamuDv: scripts=108, payloads=55, extracted=2, kept=77
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@youngboialone/post/DcNPIWsGIXs: len=760388
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@youngboialone/post/DcNPIWsGIXs: scripts=108, payloads=55, extracted=5, kept=81
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=66, noParent=66
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@minhkhoimobi99/post/DcNMmQmElHO: len=648894
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@minhkhoimobi99/post/DcNMmQmElHO: scripts=88, payloads=38, extracted=6, kept=84
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@caigicungban9999/post/DcNOFjRjzGA: len=604172
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@caigicungban9999/post/DcNOFjRjzGA: scripts=88, payloads=38, extracted=2, kept=85
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@niam_1199/post/DcNPhYJEkeA: len=724020
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@niam_1199/post/DcNPhYJEkeA: scripts=108, payloads=55, extracted=3, kept=87
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@hynw.chanz_/post/DcNMrj7nV-U: len=635389
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@hynw.chanz_/post/DcNMrj7nV-U: scripts=88, payloads=38, extracted=6, kept=90
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@ng_duynam/post/DcNNbHZlIlh: len=871426
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@ng_duynam/post/DcNNbHZlIlh: scripts=108, payloads=55, extracted=14, kept=103
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@nguyensy_huy/post/DcNN5MBIKGA: len=706575
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@nguyensy_huy/post/DcNN5MBIKGA: scripts=108, payloads=55, extracted=1, kept=103
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=66, noParent=66
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@just_manhls/post/DcNPPVSD4nS: len=691282
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@just_manhls/post/DcNPPVSD4nS: scripts=108, payloads=55, extracted=1, kept=103
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=66, noParent=66
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@tnngan_09/post/DcNAonhk8H6: len=773339
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@tnngan_09/post/DcNAonhk8H6: scripts=108, payloads=55, extracted=10, kept=112
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@orange_cam_cam_/post/DcNXDcKGJyy: len=599494
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@orange_cam_cam_/post/DcNXDcKGJyy: scripts=88, payloads=38, extracted=0, kept=112
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@xoyuming/post/DcNIK2_iToX: len=894499
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@xoyuming/post/DcNIK2_iToX: scripts=108, payloads=55, extracted=17, kept=128
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@khoaitaythoii/post/DcM_kxBkt9J: len=795138
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@khoaitaythoii/post/DcM_kxBkt9J: scripts=108, payloads=55, extracted=12, kept=139
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@lamnhi682012/post/DcNHXu0GZS3: len=815080
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@lamnhi682012/post/DcNHXu0GZS3: scripts=108, payloads=55, extracted=14, kept=152
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@mr.scents.w/post/DcNYumWmEOM: len=742424
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@mr.scents.w/post/DcNYumWmEOM: scripts=108, payloads=55, extracted=6, kept=157
+ [TS-DEBUG] [response] xhr → /graphql/query
+ [TS-DEBUG] [extract] comments=0 (replies=0), total=66, noParent=66
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@leetannnnnn/post/DcNXrSRmewk: len=688643
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@leetannnnnn/post/DcNXrSRmewk: scripts=108, payloads=55, extracted=1, kept=157
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@dinosaur.2888165/post/DcNVOMhCSsR: len=710556
+ [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@dinosaur.2888165/post/DcNVOMhCSsR: scripts=108, payloads=55, extracted=1, kept=157
+ [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@n_wuang0709/post/DcNWz9yksVk: len=704180
+scraper.ts-C4xi_XVa.js:4 [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@n_wuang0709/post/DcNWz9yksVk: scripts=108, payloads=55, extracted=1, kept=157
+scraper.ts-C4xi_XVa.js:4 [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@captain_levuongai/post/DcNV-FHkxyP: len=725594
+scraper.ts-C4xi_XVa.js:4 [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@captain_levuongai/post/DcNV-FHkxyP: scripts=108, payloads=55, extracted=5, kept=161
+scraper.ts-C4xi_XVa.js:4 [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@mymy68934/post/DcNYoTrmPb5: len=766912
+scraper.ts-C4xi_XVa.js:4 [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@mymy68934/post/DcNYoTrmPb5: scripts=108, payloads=55, extracted=2, kept=162
+scraper.ts-C4xi_XVa.js:4 [TS-DEBUG] [nested] HTML fetch OK https://www.threads.com/@ammiewanderland/post/DcNVx0RCOp_: len=733688
+scraper.ts-C4xi_XVa.js:4 [TS-DEBUG] [nested] HTML parse done https://www.threads.com/@ammiewanderland/post/DcNVx0RCOp_: scripts=108, payloads=55, extracted=5, kept=166
+scraper.ts-C4xi_XVa.js:4 [TS-DEBUG] [nested] done: nestedFound=166, nestedTotal=166
 interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /graphql/query
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=15, noParent=29
+interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=66, noParent=66
+752632123_17951243313200040_7830145451073841734_n.jpg?stp=dst-jpg_s150x150_tt6&efg=eyJ2ZW5jb2RlX3Rh…:1  Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE.NotSameOrigin
 interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /graphql/query
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=15, noParent=29
+interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=66, noParent=66
 interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /graphql/query
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=15, noParent=29
+interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=66, noParent=66
 interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /graphql/query
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=15, noParent=29
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /graphql/query
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=15, noParent=29
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /graphql/query
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=15, noParent=29
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /graphql/query
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=15, noParent=29
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /graphql/query
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=15, noParent=29
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /graphql/query
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=15, noParent=29
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /graphql/query
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=15, noParent=29
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /graphql/query
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=15, noParent=29
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /graphql/query
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=15, noParent=29
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /api/graphql
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=15, noParent=29
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /graphql/query
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=15, noParent=29
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /graphql/query
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=1 (replies=0), total=16, noParent=30
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /graphql/query
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=28 (replies=0), total=44, noParent=86
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /api/graphql
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=44, noParent=86
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /graphql/query
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=44, noParent=86
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /graphql/query
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=44, noParent=86
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [response] xhr → /graphql/query
-interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=44, noParent=86
+interceptor.ts-BkNhwMYA.js:1 [TS-DEBUG] [extract] comments=0 (replies=0), total=66, noParent=66

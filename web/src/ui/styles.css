@@ -365,7 +365,15 @@ button { font-family: var(--font-sans); }
 
 .hero-streamlined-container {
   max-width: 720px;
+  width: 100%;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero-streamlined-container > * {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -386,20 +394,23 @@ button { font-family: var(--font-sans); }
   width: 100%;
   display: flex;
   justify-content: center;
+  align-items: center;
   margin: 0 auto 14px;
 }
 
 /* ===== SearchBox ===== */
 .searchbox {
-  width: 100%;
-  max-width: 310px;
+  width: 320px;
+  max-width: 100%;
   margin: 0 auto;
   position: relative;
-  transition: max-width 420ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: width 400ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.searchbox:focus-within {
-  max-width: 720px;
+.searchbox:focus-within,
+.searchbox.is-focused {
+  width: 720px;
+  max-width: 100%;
 }
 
 .searchbox-row {
@@ -3134,11 +3145,14 @@ textarea.field-input { resize: vertical; }
   }
 
   .searchbox {
-    max-width: 210px;
-    transition: max-width 400ms cubic-bezier(0.16, 1, 0.3, 1);
+    width: 220px;
+    max-width: 100%;
+    transition: width 400ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .searchbox:focus-within {
+  .searchbox:focus-within,
+  .searchbox.is-focused {
+    width: 100%;
     max-width: 100%;
   }
 
