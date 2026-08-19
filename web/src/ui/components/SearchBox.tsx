@@ -50,16 +50,19 @@ export default function SearchBox() {
     <form className="searchbox" onSubmit={handleSubmit} role="search">
       <div className="searchbox-row">
         <div className="searchbox-input-wrap">
-          <MagnifyingGlass className="searchbox-icon" aria-hidden="true" />
+          <MagnifyingGlass size={18} weight="bold" className="searchbox-icon" aria-hidden="true" />
           <input
             id="searchbox-input"
             className="searchbox-input"
-            type="search"
+            type="text"
+            inputMode="search"
             placeholder={t('sb.placeholder')}
             value={q}
             onChange={e => setQ(e.target.value)}
             onKeyDown={handleKeyDown}
             aria-label={t('sb.placeholder')}
+            autoComplete="off"
+            spellCheck="false"
           />
         </div>
         <button type="submit" className="btn btn-primary">{t('sb.search')}</button>
