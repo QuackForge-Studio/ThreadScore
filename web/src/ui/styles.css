@@ -384,19 +384,22 @@ button { font-family: var(--font-sans); }
 
 .hero-search-box-wrap {
   width: 100%;
-  max-width: 460px;
+  display: flex;
+  justify-content: center;
   margin: 0 auto 14px;
-  transition: max-width 320ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.hero-search-box-wrap:focus-within {
-  max-width: 680px;
 }
 
 /* ===== SearchBox ===== */
 .searchbox {
   width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
   position: relative;
+  transition: max-width 350ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.searchbox:focus-within {
+  max-width: 720px;
 }
 
 .searchbox-row {
@@ -3098,11 +3101,16 @@ textarea.field-input { resize: vertical; }
   }
 
   .hero-search-box-wrap {
-    max-width: 100%;
+    width: 100%;
     margin-bottom: 12px;
   }
 
-  .hero-search-box-wrap:focus-within {
+  .searchbox {
+    max-width: 320px;
+    transition: max-width 320ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .searchbox:focus-within {
     max-width: 100%;
   }
 
