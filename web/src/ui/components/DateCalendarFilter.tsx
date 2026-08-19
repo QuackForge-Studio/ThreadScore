@@ -161,7 +161,7 @@ export default function DateCalendarFilter({
           aria-label={t('calendar.filterByDate')}
           title={t('calendar.filterByDate')}
         >
-          <CalendarBlank size={16} weight={selectedDate ? 'fill' : 'bold'} />
+          <CalendarBlank size={18} weight={selectedDate ? 'fill' : 'bold'} />
           <span className="calendar-trigger-text">{buttonLabel}</span>
           {selectedDate && (
             <span
@@ -171,7 +171,7 @@ export default function DateCalendarFilter({
               role="button"
               aria-label={t('calendar.clearFilter')}
             >
-              <XCircle size={14} weight="fill" />
+              <XCircle size={16} weight="fill" />
             </span>
           )}
         </button>

@@ -151,7 +151,7 @@ export default function HomePage() {
           <Reveal delay={0.08}>
             <div className="hero-summary-bar">
               <span className="summary-flame-icon">
-                <Fire size={15} weight="fill" />
+                <Fire size={18} weight="fill" />
               </span>
               <div className="summary-items-inline">
                 {stats ? (
