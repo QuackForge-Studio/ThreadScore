@@ -364,7 +364,7 @@ button { font-family: var(--font-sans); }
 }
 
 .hero-streamlined-container {
-  max-width: 580px;
+  max-width: 720px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -373,9 +373,9 @@ button { font-family: var(--font-sans); }
 
 .hero-main-title {
   font-family: var(--font-sans);
-  font-size: clamp(1.85rem, 3.6vw, 2.5rem);
+  font-size: clamp(2rem, 3.8vw, 2.75rem);
   font-weight: 850;
-  line-height: 1.22;
+  line-height: 1.2;
   letter-spacing: -0.03em;
   color: var(--ink);
   margin: 0 0 18px;
@@ -384,8 +384,8 @@ button { font-family: var(--font-sans); }
 
 .hero-search-box-wrap {
   width: 100%;
-  max-width: 580px;
-  margin: 0 auto 12px;
+  max-width: 640px;
+  margin: 0 auto 14px;
 }
 
 /* ===== SearchBox ===== */
@@ -397,11 +397,11 @@ button { font-family: var(--font-sans); }
 .searchbox-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   background: var(--surface);
   border: 1.5px solid var(--border-strong);
   border-radius: var(--radius-pill, 999px);
-  padding: 5px 6px 5px 16px;
+  padding: 6px 6px 6px 18px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
   transition: all 180ms ease;
 }
@@ -414,13 +414,13 @@ button { font-family: var(--font-sans); }
 .searchbox-input-wrap {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex: 1;
   min-width: 0;
 }
 
 .searchbox-icon {
-  font-size: 18px;
+  font-size: 19px;
   color: var(--muted);
   flex-shrink: 0;
 }
@@ -428,11 +428,12 @@ button { font-family: var(--font-sans); }
 .searchbox-input {
   flex: 1;
   min-width: 0;
+  width: 100%;
   border: none;
   background: transparent;
   outline: none;
   font-family: var(--font-sans);
-  font-size: 14.5px;
+  font-size: 15px;
   color: var(--ink);
   padding: 6px 0;
 }
@@ -1071,7 +1072,7 @@ button { font-family: var(--font-sans); }
 
 /* ===== Feed Container ===== */
 .feed-container {
-  max-width: 580px;
+  max-width: 720px;
   margin: 0 auto;
   padding: 0 var(--space-4);
 }
@@ -3904,9 +3905,9 @@ textarea.field-input { resize: vertical; }
 
 .hof-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 12px;
-  max-width: 580px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  max-width: 720px;
   margin: 0 auto 18px;
 }
 
@@ -4047,9 +4048,9 @@ textarea.field-input { resize: vertical; }
 }
 
 .hof-cta-box {
-  max-width: 580px;
+  max-width: 720px;
   margin: 0 auto;
-  padding: 12px 16px;
+  padding: 14px 18px;
   border-radius: 14px;
   background: var(--surface);
   border: 1px solid var(--border-soft);
