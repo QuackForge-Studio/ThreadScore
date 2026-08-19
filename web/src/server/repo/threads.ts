@@ -27,17 +27,77 @@ export async function updateThread(db: D1Database, id: string, patch: Partial<Th
   await db.prepare(`UPDATE threads SET ${sets} WHERE id = ?`).bind(...values, id).run();
 }
 
-export async function listThreads(db: D1Database, opts: { sort: 'newest' | 'hottest' | 'most_comments'; limit: number; offset: number }): Promise<ThreadRecord[]> {
+export interface ListThreadsOptions {
+  sort: 'newest' | 'hottest' | 'most_comments';
+  limit: number;
+  offset: number;
+  date?: string; // YYYY-MM-DD
+}
+
+export async function listThreads(db: D1Database, opts: ListThreadsOptions): Promise<ThreadRecord[]> {
   const orderBy = opts.sort === 'hottest' ? 'avg_anger_score DESC' : opts.sort === 'most_comments' ? 'total_comments DESC' : 'created_at DESC';
+  
+  if (opts.date) {
+    // Lọc theo ngày (tính theo UTC/GMT+7)
+    // Tính timestamp start và end của ngày (khoảng 00:00:00 đến 23:59:59)
+    const startSec = Math.floor(new Date(`${opts.date}T00:00:00+07:00`).getTime() / 1000) || Math.floor(new Date(`${opts.date}T00:00:00Z`).getTime() / 1000);
+    const endSec = startSec + 86400;
+
+    const { results } = await db.prepare(
+      `SELECT * FROM threads 
+       WHERE (COALESCE(posted_at, created_at) >= ? AND COALESCE(posted_at, created_at) < ?)
+       ORDER BY CASE WHEN scoring_status = 'scored' THEN 0 ELSE 1 END, ${orderBy} LIMIT ? OFFSET ?`
+    ).bind(startSec, endSec, opts.limit, opts.offset).all<ThreadRecord>();
+    return results ?? [];
+  }
+
   const { results } = await db.prepare(
     `SELECT * FROM threads ORDER BY CASE WHEN scoring_status = 'scored' THEN 0 ELSE 1 END, ${orderBy} LIMIT ? OFFSET ?`
   ).bind(opts.limit, opts.offset).all<ThreadRecord>();
   return results ?? [];
 }
 
-export async function countThreads(db: D1Database): Promise<number> {
+export async function countThreads(db: D1Database, date?: string): Promise<number> {
+  if (date) {
+    const startSec = Math.floor(new Date(`${date}T00:00:00+07:00`).getTime() / 1000) || Math.floor(new Date(`${date}T00:00:00Z`).getTime() / 1000);
+    const endSec = startSec + 86400;
+    const row = await db.prepare(
+      `SELECT COUNT(*) as count FROM threads 
+       WHERE (COALESCE(posted_at, created_at) >= ? AND COALESCE(posted_at, created_at) < ?)`
+    ).bind(startSec, endSec).first<{ count: number }>();
+    return row?.count ?? 0;
+  }
   const row = await db.prepare('SELECT COUNT(*) as count FROM threads').first<{ count: number }>();
   return row?.count ?? 0;
+}
+
+export async function getThreadActiveDates(db: D1Database): Promise<{ date: string; count: number }[]> {
+  try {
+    const { results } = await db.prepare(
+      `SELECT strftime('%Y-%m-%d', datetime(COALESCE(posted_at, created_at), 'unixepoch', '+7 hours')) as date, COUNT(*) as count 
+       FROM threads 
+       WHERE date IS NOT NULL 
+       GROUP BY date 
+       ORDER BY date DESC`
+    ).all<{ date: string; count: number }>();
+    return results ?? [];
+  } catch {
+    // Fallback nếu strftime/unixepoch gặp môi trường đặc biệt
+    const { results } = await db.prepare('SELECT posted_at, created_at FROM threads').all<{ posted_at: number | null; created_at: number }>();
+    if (!results) return [];
+    const dateCounts: Record<string, number> = {};
+    for (const r of results) {
+      const ts = (r.posted_at || r.created_at) * 1000;
+      const d = new Date(ts);
+      // Format YYYY-MM-DD
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const key = `${year}-${month}-${day}`;
+      dateCounts[key] = (dateCounts[key] || 0) + 1;
+    }
+    return Object.entries(dateCounts).map(([date, count]) => ({ date, count }));
+  }
 }
 
 export async function listPendingScoring(db: D1Database, limit: number): Promise<ThreadRecord[]> {

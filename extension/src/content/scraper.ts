@@ -29,6 +29,7 @@ export interface ScrapedThread {
   comments: ScrapedComment[];
   main_post_id?: string | null;
   debugStats?: typeof debugStats;
+  highlightSummary?: HighlightSummary;
 }
 
 // Buffer chứa comment từ GraphQL interceptor (MAIN world postMessage).
@@ -145,6 +146,135 @@ function countReplyExpanders(doc: Document): number {
   return n;
 }
 
+// === HIGHLIGHT TRỰC QUAN (dùng chung cho scrape chính & test) ===
+
+export interface HighlightSummary {
+  highlighted: number; // số card comment/reply đã được đánh dấu trên trang
+  totalComments: number;
+  totalReplies: number;
+}
+
+function removeOldHighlights(doc: Document): void {
+  doc.querySelectorAll('.ts-highlight-badge, #ts-count-overlay').forEach((el) => el.remove());
+  doc.querySelectorAll('[data-ts-highlighted="true"]').forEach((el) => {
+    if (el instanceof HTMLElement) {
+      el.style.outline = '';
+      el.style.backgroundColor = '';
+      el.style.boxShadow = '';
+      el.style.borderRadius = '';
+      el.style.position = '';
+      el.removeAttribute('data-ts-highlighted');
+    }
+  });
+}
+
+// Overlay nổi hiện tổng số bình luận & phản hồi ngay trên trang Threads.
+function createCountOverlay(doc: Document, totalComments: number, totalReplies: number): HTMLElement {
+  const overlay = doc.createElement('div');
+  overlay.id = 'ts-count-overlay';
+  overlay.textContent = `THREADSCORE — ${totalComments} bình luận · ${totalReplies} phản hồi`;
+  Object.assign(overlay.style, {
+    position: 'fixed',
+    top: '12px',
+    right: '16px',
+    background: 'linear-gradient(135deg, #E5484D, #F05A28)',
+    color: '#FFFFFF',
+    fontSize: '12px',
+    fontWeight: '800',
+    padding: '6px 12px',
+    borderRadius: '14px',
+    boxShadow: '0 4px 16px rgba(0,0,0,0.45)',
+    zIndex: '2147483646',
+    pointerEvents: 'none',
+    fontFamily: 'system-ui, sans-serif',
+    letterSpacing: '0.02em',
+  });
+  (doc.body || doc.documentElement).appendChild(overlay);
+  return overlay;
+}
+
+// Đánh dấu viền đỏ + gắn badge "#N @username" lên từng card comment/reply
+// tìm thấy trong DOM, đồng thời tạo overlay đếm tổng comment & phản hồi.
+export function highlightCommentsOnPage(
+  doc: Document,
+  comments: ScrapedComment[],
+  opts?: {
+    mainPostContainer?: Element | null;
+    mainAuthorUsername?: string | null;
+    mainPostId?: string | null;
+    scrollMode?: 'none' | 'first' | 'each';
+  }
+): HighlightSummary {
+  removeOldHighlights(doc);
+  const mainPostContainer = opts?.mainPostContainer ?? null;
+  const mainAuthorUsername = opts?.mainAuthorUsername ?? null;
+  const mainPostId = opts?.mainPostId ?? null;
+  const scrollMode = opts?.scrollMode ?? 'none';
+
+  const totalReplies = comments.filter((c) => isSubReplyComment(c, mainAuthorUsername, mainPostId)).length;
+  createCountOverlay(doc, comments.length, totalReplies);
+
+  const authorLinks = Array.from(doc.querySelectorAll('a[href*="/@"]')).filter(
+    (l) => !l.closest('#ts-sidebar-container, header, nav, [role="navigation"]')
+  );
+
+  const usedCards = new Set<HTMLElement>();
+  let highlighted = 0;
+  let highlightIndex = 1;
+
+  for (const c of comments) {
+    const matchingLink = authorLinks.find((l) => {
+      const u = cleanUsername(l.getAttribute('href') ?? l.textContent);
+      return u && u.toLowerCase() === c.author_username?.toLowerCase();
+    });
+    if (!matchingLink) continue;
+    const card = findCardContainer(matchingLink, mainPostContainer);
+    if (!card || !('style' in card)) continue;
+    if (usedCards.has(card)) continue; // nhiều comment cùng tác giả — chỉ đánh dấu card 1 lần
+    usedCards.add(card);
+
+    const isReply = isSubReplyComment(c, mainAuthorUsername, mainPostId);
+    card.setAttribute('data-ts-highlighted', 'true');
+    card.style.outline = '3px solid #E5484D';
+    card.style.backgroundColor = 'rgba(229, 72, 77, 0.15)';
+    card.style.boxShadow = '0 0 16px rgba(229, 72, 77, 0.6)';
+    card.style.borderRadius = '8px';
+    card.style.position = 'relative';
+
+    const badge = doc.createElement('div');
+    badge.className = 'ts-highlight-badge';
+    badge.textContent = `#${highlightIndex} @${c.author_username}${isReply ? ' ↳ reply' : ''}`;
+    Object.assign(badge.style, {
+      position: 'absolute',
+      top: '-12px',
+      left: '12px',
+      background: 'linear-gradient(135deg, #E5484D, #F05A28)',
+      color: '#FFFFFF',
+      fontSize: '11px',
+      fontWeight: '800',
+      padding: '3px 8px',
+      borderRadius: '12px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+      zIndex: '999999',
+      pointerEvents: 'none',
+      fontFamily: 'system-ui, sans-serif',
+    });
+    card.appendChild(badge);
+    highlighted++;
+    highlightIndex++;
+
+    if (scrollMode === 'each' || (scrollMode === 'first' && highlighted === 1)) {
+      if (typeof card.scrollIntoView === 'function') {
+        try {
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } catch {}
+      }
+    }
+  }
+
+  return { highlighted, totalComments: comments.length, totalReplies };
+}
+
 function parseLikesNumber(raw: string): number {
   if (!raw) return 0;
   const compact = raw.replace(/,/g, '').trim();
@@ -224,21 +354,25 @@ function findCardContainer(link: Element, mainCard: Element | null): HTMLElement
   const direct = link.closest(
     '.reply-item, div[data-pressable-container="true"], [role="article"], div[role="listitem"], article'
   );
-  if (direct instanceof HTMLElement && direct !== mainCard && direct !== document.body && direct !== document.documentElement) {
-    return direct;
+  if (direct && 'style' in direct && direct !== mainCard && direct !== link.ownerDocument?.body && direct !== link.ownerDocument?.documentElement) {
+    return direct as HTMLElement;
   }
 
   // 2. Đi ngược DOM tree từ link để tìm container thích hợp
-  let cur: HTMLElement | null = link.parentElement;
+  let cur: Element | null = link.parentElement;
   let candidate: HTMLElement | null = null;
-  while (cur && cur !== document.body && cur !== document.documentElement && cur !== mainCard) {
+  while (cur && cur !== link.ownerDocument?.body && cur !== link.ownerDocument?.documentElement && cur !== mainCard) {
     const authorsInside = cur.querySelectorAll('a[href*="/@"]');
     if (authorsInside.length > 2) {
       break;
     }
-    candidate = cur;
+    if ('style' in cur) {
+      candidate = cur as HTMLElement;
+    }
     if (cur.querySelector('svg[aria-label*="like" i], svg[aria-label*="thích" i], time, button, [role="button"]')) {
-      candidate = cur;
+      if ('style' in cur) {
+        candidate = cur as HTMLElement;
+      }
     }
     cur = cur.parentElement;
   }
@@ -1104,6 +1238,14 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
   const finalTitle = cleanPartMarkers(mainTitleText || titleEl?.textContent?.trim() || '');
   const finalContent = cleanPartMarkers(mainContentText || contentEl?.textContent?.trim() || '');
 
+  // Highlight + hiện tổng số comment/reply ngay trên trang
+  const highlightSummary = highlightCommentsOnPage(doc, comments, {
+    mainPostContainer,
+    mainAuthorUsername: resolvedMainAuthor,
+    mainPostId,
+    scrollMode: 'none',
+  });
+
   return {
     url: currentUrl,
     title: finalTitle || null,
@@ -1115,6 +1257,7 @@ export async function scrapeCurrentThread(doc: Document, opts?: { maxComments?: 
     comments,
     main_post_id: mainPostId,
     debugStats: { ...debugStats },
+    highlightSummary,
   };
 }
 
@@ -1123,17 +1266,7 @@ export async function testScrapeAndHighlight(doc: Document, limit: number = 5): 
   const currentUrl = doc.location?.href ?? doc.defaultView?.location.href ?? '';
   const { author: mainAuthorUrl, postCode: currentPostCode } = parseThreadsUrl(currentUrl);
 
-  const oldBadges = doc.querySelectorAll('.ts-highlight-badge');
-  oldBadges.forEach((b) => b.remove());
-  const oldHighlighted = doc.querySelectorAll('[data-ts-highlighted="true"]');
-  oldHighlighted.forEach((el) => {
-    if (el instanceof HTMLElement) {
-      el.style.outline = '';
-      el.style.backgroundColor = '';
-      el.style.boxShadow = '';
-      el.removeAttribute('data-ts-highlighted');
-    }
-  });
+  removeOldHighlights(doc);
 
   const titleEl = doc.querySelector(SELECTORS.title);
   const contentEl = doc.querySelector(SELECTORS.content);
@@ -1191,56 +1324,12 @@ export async function testScrapeAndHighlight(doc: Document, limit: number = 5): 
     comments.push(...nestedReplies);
   }
 
-  // 4. Highlight trực quan các card tương ứng trên DOM
-  const authorLinks = Array.from(doc.querySelectorAll('a[href*="/@"]')).filter(
-    (l) => !l.closest('#ts-sidebar-container, header, nav, [role="navigation"]')
-  );
-
-  let highlightIndex = 1;
-  for (const c of comments) {
-    const matchingLink = authorLinks.find((l) => {
-      const u = cleanUsername(l.getAttribute('href') ?? l.textContent);
-      return u && u.toLowerCase() === c.author_username?.toLowerCase();
-    });
-    if (matchingLink) {
-      const card = findCardContainer(matchingLink, mainPostContainer);
-      if (card && card instanceof HTMLElement && !card.hasAttribute('data-ts-highlighted')) {
-        card.setAttribute('data-ts-highlighted', 'true');
-        card.style.outline = '3px solid #E5484D';
-        card.style.backgroundColor = 'rgba(229, 72, 77, 0.15)';
-        card.style.boxShadow = '0 0 16px rgba(229, 72, 77, 0.6)';
-        card.style.borderRadius = '8px';
-        card.style.position = 'relative';
-
-        const badge = doc.createElement('div');
-        badge.className = 'ts-highlight-badge';
-        badge.textContent = `#${highlightIndex} @${c.author_username}`;
-        Object.assign(badge.style, {
-          position: 'absolute',
-          top: '-12px',
-          left: '12px',
-          background: 'linear-gradient(135deg, #E5484D, #F05A28)',
-          color: '#FFFFFF',
-          fontSize: '11px',
-          fontWeight: '800',
-          padding: '3px 8px',
-          borderRadius: '12px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
-          zIndex: '999999',
-          pointerEvents: 'none',
-          fontFamily: 'system-ui, sans-serif',
-        });
-        card.appendChild(badge);
-
-        if (typeof card.scrollIntoView === 'function') {
-          try {
-            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          } catch {}
-        }
-        highlightIndex++;
-      }
-    }
-  }
+  // 4. Highlight trực quan các card tương ứng trên DOM + overlay đếm tổng
+  const highlightSummary = highlightCommentsOnPage(doc, comments, {
+    mainPostContainer,
+    mainAuthorUsername: resolvedMainAuthor,
+    scrollMode: 'each',
+  });
 
   debugStats.bufferSize = interceptedCommentsBuffer.length;
   debugStats.bufferedWithReplies = interceptedCommentsBuffer.filter(
@@ -1263,6 +1352,7 @@ export async function testScrapeAndHighlight(doc: Document, limit: number = 5): 
     posted_at: parseTime(timeEl),
     comments,
     debugStats: { ...debugStats },
+    highlightSummary,
   };
 }
 

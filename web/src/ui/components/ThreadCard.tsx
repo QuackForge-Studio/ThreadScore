@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Fire, Sparkle, Coffee, ChatCircleDots, ArrowRight, ArrowSquareOut, Lightning, Question } from '@phosphor-icons/react';
-import HeatGauge from './HeatGauge';
+import { Fire, Sparkle, Coffee, ChatCircleDots, ArrowRight, ArrowSquareOut, Lightning } from '@phosphor-icons/react';
 import { labelFromScore, LABEL_COLORS } from '../../shared/labels';
 import { formatRelativeTime } from '../format';
 import { useI18n } from '../i18n';
@@ -35,7 +34,6 @@ function getAvatarStyle(username: string | null) {
 export default function ThreadCard({
   thread,
   rank,
-  variant = 'compact',
 }: {
   thread: ThreadRecord;
   rank?: number;
@@ -44,32 +42,16 @@ export default function ThreadCard({
   const { t } = useI18n();
   const navigate = useNavigate();
 
-  let breakdown: { bang_no: number; trung_lap: number; vui_ve: number } | null = null;
-  if (thread.score_breakdown) {
-    try {
-      breakdown = typeof thread.score_breakdown === 'string'
-        ? JSON.parse(thread.score_breakdown)
-        : thread.score_breakdown;
-    } catch {
-      breakdown = null;
-    }
-  }
-
   const avg = thread.avg_anger_score;
   const isScored = thread.scoring_status === 'scored' && avg != null;
   const cls = avg != null ? labelFromScore(avg) : null;
-  const scoreBigClass = cls === 'BÙNG NỔ' ? 'anger' : cls === 'VUI VẺ' ? 'calm' : 'neutral';
+  const scoreClass = cls === 'BÙNG NỔ' ? 'anger' : cls === 'VUI VẺ' ? 'calm' : 'neutral';
   const heat = cls ? LABEL_COLORS[cls] : 'var(--border-soft)';
-
-  const totalBreakdown = breakdown ? (breakdown.bang_no + breakdown.trung_lap + breakdown.vui_ve) || 1 : 1;
-  const pctAngry = breakdown ? Math.round((breakdown.bang_no / totalBreakdown) * 100) : 0;
-  const pctNeutral = breakdown ? Math.round((breakdown.trung_lap / totalBreakdown) * 100) : 0;
-  const pctCalm = breakdown ? Math.round((breakdown.vui_ve / totalBreakdown) * 100) : 0;
 
   const displayTitle = thread.title && thread.title !== 'Thread'
     ? thread.title
     : thread.content
-    ? (thread.content.length > 130 ? thread.content.slice(0, 130) + '...' : thread.content)
+    ? (thread.content.length > 180 ? thread.content.slice(0, 180) + '...' : thread.content)
     : t('sb.fallback');
 
   const authorName = thread.author_username || t('tc.anon');
@@ -87,95 +69,9 @@ export default function ThreadCard({
     }
   }
 
-  // ===== COMPACT RESULT ROW (#2, #3, ...) =====
-  if (variant === 'compact') {
-    return (
-      <article
-        className="threadcard threadcard-compact"
-        style={{ '--card-heat': heat } as React.CSSProperties}
-        onClick={handleCardClick}
-        onKeyDown={handleKeyDown}
-        tabIndex={0}
-        role="link"
-        aria-label={`${displayTitle} - ${isScored ? `${Math.round(avg!)}/100` : t('tc.pending')}`}
-      >
-        {/* Cột trái: Rank & Score Anchor */}
-        <div className="threadrow-anchor">
-          {rank != null && (
-            <span className="threadrow-rank">#{rank < 10 ? `0${rank}` : rank}</span>
-          )}
-          {isScored ? (
-            <div className={`threadrow-score ${scoreBigClass}`} title={`${Math.round(avg!)}/100 - ${cls}`}>
-              <span className="threadrow-score-val">{Math.round(avg!)}</span>
-              <span className="threadrow-score-icon">
-                {cls === 'BÙNG NỔ' ? (
-                  <Fire size={13} weight="fill" />
-                ) : cls === 'VUI VẺ' ? (
-                  <Coffee size={13} weight="fill" />
-                ) : (
-                  <Sparkle size={13} weight="fill" />
-                )}
-              </span>
-            </div>
-          ) : (
-            <div className="threadrow-score pending" title={t('tc.pending')}>
-              <Lightning size={14} weight="fill" />
-            </div>
-          )}
-        </div>
-
-        {/* Cột phải: Title + Lightweight Metadata Row */}
-        <div className="threadrow-body">
-          <h4 className="threadrow-title">{displayTitle}</h4>
-          <div className="threadrow-meta">
-            <div className="threadcard-avatar threadrow-avatar" style={avatarStyle}>
-              {thread.author_avatar_url ? (
-                <img
-                  src={thread.author_avatar_url}
-                  alt={authorName}
-                  className="threadcard-avatar-img"
-                  loading="lazy"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              ) : (
-                <span>{avatarInitial}</span>
-              )}
-            </div>
-            <span className="threadrow-author">@{authorName}</span>
-            {thread.posted_at != null && (
-              <span className="threadrow-meta-item">· {formatRelativeTime(thread.posted_at)}</span>
-            )}
-            <span className="threadrow-meta-item">
-              · <b>{thread.total_comments}</b> {t('tc.comments')}
-            </span>
-            {thread.url && (
-              <a
-                href={thread.url}
-                target="_blank"
-                rel="noreferrer"
-                className="threadrow-outlink"
-                title={t('tc.onThreads')}
-                onClick={(e) => e.stopPropagation()}
-              >
-                Threads <ArrowSquareOut size={12} weight="bold" />
-              </a>
-            )}
-          </div>
-        </div>
-
-        <div className="threadrow-action" aria-hidden="true">
-          <ArrowRight size={16} weight="bold" />
-        </div>
-      </article>
-    );
-  }
-
-  // ===== FEATURED EDITORIAL CARD (#1) =====
   return (
     <article
-      className="threadcard threadcard-featured"
+      className="threadcard threadcard-refined"
       style={{ '--card-heat': heat } as React.CSSProperties}
       onClick={handleCardClick}
       onKeyDown={handleKeyDown}
@@ -183,15 +79,15 @@ export default function ThreadCard({
       role="link"
       aria-label={`${displayTitle} - ${isScored ? `${Math.round(avg!)}/100 ${t('tc.dramaScore')}` : t('tc.pending')}`}
     >
-      <div className="featured-kicker-bar">
-        <span className="featured-kicker-pill">
-          <Fire size={13} weight="fill" /> #{rank ?? 1} TÂM ĐIỂM NỔI BẬT
-        </span>
-      </div>
+      {/* TẦNG 1: Rank, Avatar, Account, Timestamp, Secondary Threads Outlink */}
+      <div className="threadcard-head-tier">
+        <div className="threadcard-author-group">
+          {rank != null && (
+            <span className="threadcard-rank-badge">
+              #{rank < 10 ? `0${rank}` : rank}
+            </span>
+          )}
 
-      {/* 1. Header: Monogram Avatar & Drama Score Badge */}
-      <div className="threadcard-head">
-        <div className="threadcard-author">
           <div className="threadcard-avatar" style={avatarStyle}>
             {thread.author_avatar_url ? (
               <img
@@ -207,95 +103,75 @@ export default function ThreadCard({
               <span>{avatarInitial}</span>
             )}
           </div>
-          <span className="threadcard-username">
-            @{authorName}
-          </span>
+
+          <span className="threadcard-username">@{authorName}</span>
+
           {thread.posted_at != null && (
-            <span className="threadcard-time">
-              · {formatRelativeTime(thread.posted_at)}
-            </span>
+            <span className="threadcard-time-sep">· {formatRelativeTime(thread.posted_at)}</span>
           )}
         </div>
 
-        {/* Drama Level Badge */}
-        {isScored ? (
-          <div
-            className={`threadcard-scorebig ${scoreBigClass}`}
-            title={t('tc.heatBadge')}
+        {thread.url && (
+          <a
+            href={thread.url}
+            target="_blank"
+            rel="noreferrer"
+            className="threadcard-outlink-subtle"
+            title={t('tc.onThreads')}
+            onClick={(e) => e.stopPropagation()}
           >
-            {cls === 'BÙNG NỔ' ? (
-              <Fire size={15} weight="fill" />
-            ) : cls === 'VUI VẺ' ? (
-              <Coffee size={15} weight="fill" />
-            ) : (
-              <Sparkle size={15} weight="fill" />
-            )}
-            <span className="threadcard-score-val">{Math.round(avg!)}/100</span>
-            <span className="threadcard-score-label">{t('tc.dramaScore')}</span>
-            <span className="threadcard-score-dot">•</span>
-            <span className="threadcard-score-status">
-              {cls === 'BÙNG NỔ' ? t('tc.hot') : cls === 'VUI VẺ' ? t('tc.calm') : t('tc.neutral')}
-            </span>
-          </div>
-        ) : (
-          <span className="pill pending">
-            <Lightning size={13} weight="fill" /> {t('tc.pending')}
-          </span>
+            <span>Threads</span>
+            <ArrowSquareOut size={13} weight="bold" />
+          </a>
         )}
       </div>
 
-      {/* 2. Tiêu đề nổi bật */}
-      <h3 className="threadcard-title-wrap">
-        <span className="threadcard-title featured-title">
+      {/* TẦNG 2: Nội dung / Tiêu đề bài viết giới hạn 2-3 dòng */}
+      <div className="threadcard-content-tier">
+        <h3 className="threadcard-content-text">
           {displayTitle}
-        </span>
-      </h3>
+        </h3>
+      </div>
 
-      {/* 3. Phân bố cảm xúc (Sentiment Spectrum) */}
-      {isScored && breakdown && (
-        <div className="threadcard-spectrum">
-          <HeatGauge breakdown={breakdown} />
-          <div className="threadcard-spectrum-legend">
-            <span className="spectrum-tag angry">
-              <span className="spectrum-dot angry" />
-              <b>{pctAngry}%</b> {t('tc.angry')} <small>({breakdown.bang_no})</small>
-            </span>
-            <span className="spectrum-tag neutral">
-              <span className="spectrum-dot neutral" />
-              <b>{pctNeutral}%</b> {t('tc.neutral')} <small>({breakdown.trung_lap})</small>
-            </span>
-            <span className="spectrum-tag positive">
-              <span className="spectrum-dot positive" />
-              <b>{pctCalm}%</b> {t('tc.positive')} <small>({breakdown.vui_ve})</small>
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* 4. Footer */}
-      <div className="threadcard-foot">
-        <div className="threadcard-foot-left">
-          <span className="threadcard-comments-count">
-            <ChatCircleDots size={16} weight="fill" color="var(--accent)" />
-            <b>{thread.total_comments}</b> {t('tc.comments')}
-          </span>
-          {thread.url && (
-            <a
-              href={thread.url}
-              target="_blank"
-              rel="noreferrer"
-              className="threadcard-threads-link"
-              title={t('tc.onThreads')}
-              onClick={(e) => e.stopPropagation()}
+      {/* TẦNG 3: Drama Score + Số bình luận + CTA xem chi tiết */}
+      <div className="threadcard-footer-tier">
+        <div className="threadcard-meta-left">
+          {/* Drama Score Pill */}
+          {isScored ? (
+            <div
+              className={`threadcard-drama-pill ${scoreClass}`}
+              title={`${Math.round(avg!)}/100 - ${cls}`}
             >
-              Threads <ArrowSquareOut size={13} weight="bold" />
-            </a>
+              {cls === 'BÙNG NỔ' ? (
+                <Fire size={14} weight="fill" />
+              ) : cls === 'VUI VẺ' ? (
+                <Coffee size={14} weight="fill" />
+              ) : (
+                <Sparkle size={14} weight="fill" />
+              )}
+              <span className="drama-score-num">{Math.round(avg!)}/100</span>
+              <span className="drama-score-text">{t('tc.dramaScore')}</span>
+            </div>
+          ) : (
+            <div className="threadcard-drama-pill pending" title={t('tc.pending')}>
+              <Lightning size={13} weight="fill" />
+              <span className="drama-score-text">{t('tc.pending')}</span>
+            </div>
           )}
+
+          {/* Comment Count */}
+          <span className="threadcard-comment-stat">
+            <ChatCircleDots size={15} weight="regular" />
+            <span>{thread.total_comments}</span>
+            <span className="stat-label">{t('tc.comments')}</span>
+          </span>
         </div>
 
-        <span className="threadcard-cta">
-          {t('tc.viewReport')} <ArrowRight size={14} weight="bold" className="threadcard-cta-icon" />
-        </span>
+        {/* Primary CTA */}
+        <div className="threadcard-primary-cta">
+          <span>{t('tc.viewAnalysis')}</span>
+          <ArrowRight size={14} weight="bold" className="cta-arrow" />
+        </div>
       </div>
     </article>
   );

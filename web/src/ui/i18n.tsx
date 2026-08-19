@@ -22,6 +22,8 @@ export const translations = {
     'hero.liveBadge': 'RADAR CẢM XÚC THREADS · LIVE',
     'hero.mainHeadline': 'Hôm nay Threads có biến gì không?',
     'hero.subHeadline': 'Giải mã mức độ drama, phát hiện tranh cãi và đo lường cảm xúc từ hàng ngàn bình luận trên Threads bằng AI.',
+    'hero.summaryText': '{drama} Độ drama hôm nay · {threads} bài đã phân tích · {comments} bình luận',
+    'hero.summaryNoData': 'Chưa có bài viết được phân tích hôm nay',
     'hero.flameLabel': 'ĐỘ DRAMA HÔM NAY',
     'hero.flameUnit': '/100 độ drama',
     'hero.moodLow': 'Cộng đồng đang ở trạng thái êm dịu, ít tranh cãi nảy lửa.',
@@ -31,6 +33,18 @@ export const translations = {
     'hero.flameStatusMid': 'Đang nóng lên từng giờ',
     'hero.flameStatusHigh': 'Cuộc thảo luận đang bùng nổ dữ dội!',
     'hero.flameNoData': 'Đang kết nối dữ liệu...',
+
+    // Calendar & Date Filter
+    'calendar.filterByDate': 'Lọc theo ngày',
+    'calendar.allDates': 'Tất cả ngày',
+    'calendar.today': 'Hôm nay',
+    'calendar.prevMonth': 'Tháng trước',
+    'calendar.nextMonth': 'Tháng sau',
+    'calendar.clearFilter': 'Xóa lọc ngày',
+    'calendar.highlightHint': 'Ngày có màu là ngày có bài phân tích',
+    'calendar.daysWithPostsCount': 'Có {n} ngày có bài viết được phân tích',
+    'calendar.noPostsOnDate': 'Không có bài viết nào được quét trong ngày {date}.',
+    'calendar.filteringBy': 'Đang xem bài viết ngày {date}',
 
     // Sidebar
     'sidebar.hottestTitle': 'Tâm điểm Drama',
@@ -114,8 +128,10 @@ export const translations = {
     'tc.angry': 'Gay gắt',
     'tc.positive': 'Tích cực',
     'tc.comments': 'bình luận',
+    'tc.postsCount': 'bài viết',
     'tc.onThreads': 'Mở trên Threads',
     'tc.viewReport': 'Xem chi tiết',
+    'tc.viewAnalysis': 'Xem phân tích →',
     'tc.heatBadge': 'Chỉ số độ drama thảo luận (0-100)',
     'tc.anon': 'ẩn danh',
 
@@ -194,6 +210,8 @@ export const translations = {
     // Footer
     'footer.brandDesc': 'Đo nhiệt độ cảm xúc của cộng đồng Threads bằng AI, từng bình luận, từng bài viết.',
     'footer.disclaimerTitle': 'Tuyên bố miễn trừ trách nhiệm & Pháp lý',
+    'footer.disclaimerSummary': 'ThreadScore là dự án nghiên cứu dữ liệu độc lập, không trực thuộc Meta Platforms hay Threads. Chỉ số và điểm số cảm xúc được tính toán tự động bởi AI phục vụ mục đích thống kê xu hướng mở.',
+    'footer.legalLink': 'Pháp lý & Phương pháp đánh giá',
     'footer.disclaimer1': 'Độc lập & Phi liên kết: ThreadScore là dự án nghiên cứu và phân tích dữ liệu độc lập, không trực thuộc, không được tài trợ, ủy quyền hay xác nhận bởi Meta Platforms, Inc. hoặc Threads. Tên gọi "Threads", logo và các nhãn hiệu liên quan thuộc toàn quyền sở hữu của Meta Platforms, Inc.',
     'footer.disclaimer2': 'Phạm vi dữ liệu: Dữ liệu bài viết và bình luận được trích xuất từ các nguồn công khai phục vụ mục đích nghiên cứu xu hướng và phân tích dữ liệu mở; do cơ chế phân trang và thuật toán của bên thứ ba, dữ liệu có thể không bao quát 100% tất cả phản hồi thực tế.',
     'footer.disclaimer3': 'Đánh giá của AI: Điểm số cảm xúc và phân loại nhiệt độ được mô hình ngôn ngữ lớn (LLM) tự động tính toán chỉ mang tính chất tham khảo, thống kê xu hướng, không cấu thành kết luận khẳng định hay ý kiến chủ quan về bất kỳ cá nhân, tổ chức nào.',
@@ -226,6 +244,8 @@ export const translations = {
     'hero.liveBadge': 'THREADS SENTIMENT RADAR · LIVE',
     'hero.mainHeadline': "What's firing up Threads today?",
     'hero.subHeadline': 'Decode drama levels, uncover heated debates, and measure community sentiment from thousands of comments using AI.',
+    'hero.summaryText': "{drama} Today's Drama Score · {threads} analyzed threads · {comments} comments",
+    'hero.summaryNoData': 'No threads analyzed today yet',
     'hero.flameLabel': 'TODAY\'S DRAMA SCORE',
     'hero.flameUnit': '/100 drama score',
     'hero.moodLow': 'Discussions are currently calm with minimal controversy.',
@@ -235,6 +255,18 @@ export const translations = {
     'hero.flameStatusMid': 'Discussions are warming up',
     'hero.flameStatusHigh': 'Discussions are fiercely heated!',
     'hero.flameNoData': 'Connecting live data...',
+
+    // Calendar & Date Filter
+    'calendar.filterByDate': 'Filter by date',
+    'calendar.allDates': 'All dates',
+    'calendar.today': 'Today',
+    'calendar.prevMonth': 'Previous month',
+    'calendar.nextMonth': 'Next month',
+    'calendar.clearFilter': 'Clear date filter',
+    'calendar.highlightHint': 'Highlighted days contain analyzed threads',
+    'calendar.daysWithPostsCount': '{n} days with analyzed threads',
+    'calendar.noPostsOnDate': 'No threads scanned on {date}.',
+    'calendar.filteringBy': 'Viewing threads from {date}',
 
     // Sidebar
     'sidebar.hottestTitle': 'Drama Spotlight',
@@ -318,8 +350,10 @@ export const translations = {
     'tc.angry': 'Tense',
     'tc.positive': 'Positive',
     'tc.comments': 'comments',
+    'tc.postsCount': 'threads',
     'tc.onThreads': 'Open on Threads',
     'tc.viewReport': 'View report',
+    'tc.viewAnalysis': 'View analysis →',
     'tc.heatBadge': 'Discussion drama score (0-100)',
     'tc.anon': 'anonymous',
 
@@ -398,6 +432,8 @@ export const translations = {
     // Footer
     'footer.brandDesc': 'Measuring the emotional temperature of Threads communities with AI, comment by comment, post by post.',
     'footer.disclaimerTitle': 'Disclaimer & Legal Notice',
+    'footer.disclaimerSummary': 'ThreadScore is an independent data research project and is not affiliated with Meta Platforms or Threads. Sentiment metrics are computed automatically by AI for open statistical reference.',
+    'footer.legalLink': 'Legal & Methodology',
     'footer.disclaimer1': 'Non-Affiliation: ThreadScore is an independent data research project and is not affiliated, associated, authorized, endorsed by, or in any way officially connected with Meta Platforms, Inc. or Threads. "Threads", logos, and related marks are trademarks of Meta Platforms, Inc.',
     'footer.disclaimer2': 'Data Scope: Post and comment data are extracted from publicly accessible web pages for academic and open trend research purposes; due to platform pagination and third-party limits, scraped datasets may not capture 100% of all real-world replies.',
     'footer.disclaimer3': 'AI Analysis: Sentiment scores (0-100) and heat metrics are generated by automated Large Language Models for statistical and observational reference only, and do not constitute factual assertions or endorsements.',

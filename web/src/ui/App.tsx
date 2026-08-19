@@ -71,16 +71,15 @@ function AppContent() {
             </div>
             <div className="footer-disclaimer">
               <h4>{t('footer.disclaimerTitle')}</h4>
-              <p>{t('footer.disclaimer1')}</p>
-              <p>{t('footer.disclaimer2')}</p>
-              <p>{t('footer.disclaimer3')}</p>
-              <p>
-                <b>{t('footer.privacyTitle')}</b>{' '}
-                {t('footer.privacyBody')}{' '}
+              <p>{t('footer.disclaimerSummary')}</p>
+              <div className="footer-legal-links-row">
+                <Link to="/privacy" className="footer-legal-action-link">
+                  <ShieldCheck size={14} /> {t('footer.legalLink')} →
+                </Link>
                 <a href="mailto:quackforge.studio@gmail.com" className="footer-credit-link">
-                  quackforge.studio@gmail.com
-                </a>.
-              </p>
+                  <EnvelopeSimple size={13} /> {t('footer.contact')}
+                </a>
+              </div>
             </div>
           </div>
           <div className="footer-bottom">

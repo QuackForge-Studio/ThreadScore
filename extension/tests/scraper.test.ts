@@ -13,7 +13,7 @@ vi.mock('../src/content/autoScroll', () => ({
   isEndOfCommentsReached: vi.fn().mockReturnValue(false),
 }));
 
-import { scrapeCurrentThread, testScrapeAndHighlight } from '../src/content/scraper';
+import { scrapeCurrentThread, testScrapeAndHighlight, highlightCommentsOnPage } from '../src/content/scraper';
 
 function makeDom(): Document {
   // Giống cấu trúc Threads thật: mỗi comment có a[href^="/@"]
@@ -147,6 +147,62 @@ describe('scrapeCurrentThread', () => {
     expect(result.author_username).toBe('haian_0409');
     expect(result.comments).toHaveLength(2);
     expect(result.comments[0].author_username).toBe('pistart_uh');
+
+    // Highlight: 2 comment đều phải được đánh dấu
+    expect(result.highlightSummary).toBeDefined();
+    expect(result.highlightSummary?.highlighted).toBe(2);
+    expect(result.highlightSummary?.totalComments).toBe(2);
+    expect(doc.querySelectorAll('[data-ts-highlighted="true"]')).toHaveLength(2);
+    expect(doc.querySelectorAll('.ts-highlight-badge')).toHaveLength(2);
+  });
+
+  it('scrapeCurrentThread highlights comments and shows count overlay', async () => {
+    const doc = makeRealisticThreadsDom();
+    const result = await scrapeCurrentThread(doc);
+
+    expect(result.highlightSummary).toBeDefined();
+    expect(result.highlightSummary?.totalComments).toBe(2);
+    expect(doc.querySelectorAll('[data-ts-highlighted="true"]')).toHaveLength(2);
+    expect(doc.querySelectorAll('.ts-highlight-badge')).toHaveLength(2);
+
+    // Overlay đếm tổng nằm trên trang
+    const overlay = doc.getElementById('ts-count-overlay');
+    expect(overlay).not.toBeNull();
+    expect(overlay?.textContent).toContain('2 bình luận');
+  });
+
+  it('highlightCommentsOnPage counts replies and dedupes same-author cards', () => {
+    const doc = makeRealisticThreadsDom();
+    const summary = highlightCommentsOnPage(
+      doc,
+      [
+        {
+          external_id: '1',
+          author_username: 'pistart_uh',
+          author_name: null,
+          text: 'Da minh nói...',
+          like_count: 0,
+          posted_at: null,
+          parent_id: null,
+        },
+        {
+          external_id: '2',
+          author_username: 'reviewer_pro',
+          author_name: null,
+          text: 'Chuẩn luôn bạn ơi!',
+          like_count: 0,
+          posted_at: null,
+          parent_id: '1',
+          reply_to_username: 'pistart_uh',
+        },
+      ],
+      { mainAuthorUsername: 'haian_0409', scrollMode: 'none' }
+    );
+
+    expect(summary.totalComments).toBe(2);
+    expect(summary.totalReplies).toBe(1);
+    expect(summary.highlighted).toBe(2);
+    expect(doc.getElementById('ts-count-overlay')?.textContent).toContain('1 phản hồi');
   });
 
   it('includes replies from GraphQL buffer with full fields', async () => {
