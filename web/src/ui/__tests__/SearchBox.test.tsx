@@ -30,7 +30,7 @@ describe('SearchBox', () => {
 
   it('shows request button for unknown threads URL', async () => {
     renderBox();
-    fireEvent.change(screen.getByPlaceholderText(/Tìm bài viết hoặc dán link Threads/i), {
+    fireEvent.change(screen.getByPlaceholderText(/Dán link Threads hoặc tìm kiếm/i), {
       target: { value: 'https://www.threads.net/@x/post/C1' },
     });
     fireEvent.click(screen.getByRole('button', { name: /Tìm/i }));
@@ -40,7 +40,7 @@ describe('SearchBox', () => {
 
   it('submits search on Enter key', async () => {
     renderBox();
-    const input = screen.getByPlaceholderText(/Tìm bài viết hoặc dán link Threads/i);
+    const input = screen.getByPlaceholderText(/Dán link Threads hoặc tìm kiếm/i);
     fireEvent.change(input, { target: { value: 'https://www.threads.net/@x/post/C1' } });
     fireEvent.keyDown(input, { key: 'Enter', code: 'Enter', charCode: 13 });
     await waitFor(() => expect(screen.getByText(/Bài viết này chưa có trên ThreadScore/i)).toBeTruthy());
@@ -48,7 +48,7 @@ describe('SearchBox', () => {
 
   it('shows English strings when language is English', async () => {
     renderBox('en');
-    fireEvent.change(screen.getByPlaceholderText(/Search threads or paste a Threads link/i), {
+    fireEvent.change(screen.getByPlaceholderText(/Paste Threads link or search/i), {
       target: { value: 'https://www.threads.net/@x/post/C1' },
     });
     fireEvent.click(screen.getByRole('button', { name: /Search/i }));

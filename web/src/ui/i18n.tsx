@@ -136,7 +136,7 @@ export const translations = {
     'tc.anon': 'ẩn danh',
 
     // SearchBox
-    'sb.placeholder': 'Tìm bài viết hoặc dán link Threads...',
+    'sb.placeholder': 'Dán link Threads hoặc tìm kiếm...',
     'sb.search': 'Tìm',
     'sb.pending': 'Bài viết này đang được xử lý. Quay lại sau nhé.',
     'sb.unknown': 'Bài viết này chưa có trên ThreadScore.',
@@ -358,7 +358,7 @@ export const translations = {
     'tc.anon': 'anonymous',
 
     // SearchBox
-    'sb.placeholder': 'Search threads or paste a Threads link...',
+    'sb.placeholder': 'Paste Threads link or search...',
     'sb.search': 'Search',
     'sb.pending': 'This thread is being processed. Check back soon.',
     'sb.unknown': 'This thread is not on ThreadScore yet.',

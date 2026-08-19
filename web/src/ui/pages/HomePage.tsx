@@ -358,31 +358,6 @@ export default function HomePage() {
       {/* 3. HALL OF FAME - Clean, Subtle Supporter Section */}
       <HallOfFame onOpenDonate={() => setIsDonateOpen(true)} />
 
-      {/* 4. ACTION CTA BANNER */}
-      <section className="section section-cta-compact">
-        <div className="container">
-          <Reveal>
-            <div className="cta-banner cta-banner-refined">
-              <h2>{t('cta.title')}</h2>
-              <p>{t('cta.subtitle')}</p>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => {
-                  const el = document.getElementById('searchbox-input');
-                  if (el) {
-                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    el.focus();
-                  }
-                }}
-              >
-                <Fire weight="fill" aria-hidden="true" /> {t('cta.btn')}
-              </button>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
       <DonateModal isOpen={isDonateOpen} onClose={() => setIsDonateOpen(false)} />
       <HowScoreWorksModal isOpen={isHowOpen} onClose={() => setIsHowOpen(false)} />
     </div>
