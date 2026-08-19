@@ -81,7 +81,7 @@ export default function HallOfFame({ onOpenDonate }: HallOfFameProps) {
         <Reveal>
           <div className="section-head hof-section-head">
             <span className="section-eyebrow hof-eyebrow-badge">
-              <Trophy size={16} weight="fill" /> {t('hof.eyebrow')}
+              <Trophy size={18} weight="fill" /> {t('hof.eyebrow')}
             </span>
             <h2 className="section-title">{t('hof.title')}</h2>
             <p className="section-subtitle">{t('hof.subtitle')}</p>
@@ -103,11 +103,11 @@ export default function HallOfFame({ onOpenDonate }: HallOfFameProps) {
                       {supporter.avatar ? (
                         <img src={supporter.avatar} alt={supporter.name} className="hof-avatar-img" />
                       ) : isLegend ? (
-                        <Crown size={22} weight="fill" />
+                        <Crown size={24} weight="fill" />
                       ) : isHero ? (
-                        <Sparkle size={20} weight="fill" />
+                        <Sparkle size={22} weight="fill" />
                       ) : (
-                        <Coffee size={20} weight="fill" />
+                        <Coffee size={22} weight="fill" />
                       )}
                     </div>
                     <div className="hof-meta">
@@ -117,11 +117,11 @@ export default function HallOfFame({ onOpenDonate }: HallOfFameProps) {
                       </div>
                       <span className={`hof-tier-badge hof-badge-${supporter.tier}`}>
                         {isLegend ? (
-                          <Fire size={12} weight="fill" />
+                          <Fire size={14} weight="fill" />
                         ) : isHero ? (
-                          <Star size={12} weight="fill" />
+                          <Star size={14} weight="fill" />
                         ) : (
-                          <Coffee size={12} weight="fill" />
+                          <Coffee size={14} weight="fill" />
                         )}
                         {supporter.amount || (isLegend ? 'Legend' : isHero ? 'Hero' : 'Supporter')}
                       </span>
@@ -131,7 +131,7 @@ export default function HallOfFame({ onOpenDonate }: HallOfFameProps) {
                   <div className="hof-card-body">
                     {supporter.message ? (
                       <div className="hof-message-box">
-                        <Quotes size={15} weight="fill" className="hof-quote-icon" />
+                        <Quotes size={18} weight="fill" className="hof-quote-icon" />
                         <p className="hof-message">{supporter.message}</p>
                       </div>
                     ) : (
@@ -145,7 +145,7 @@ export default function HallOfFame({ onOpenDonate }: HallOfFameProps) {
 
                   <div className="hof-footer">
                     <span className="hof-date">
-                      <CalendarBlank size={13} weight="bold" /> {supporter.date}
+                      <CalendarBlank size={15} weight="bold" /> {supporter.date}
                     </span>
                     <span className="hof-rank-tag">
                       {isLegend ? '🔥 Flame Sponsor' : isHero ? '⭐ Warm Backer' : '☕ Coffee Supporter'}
@@ -162,7 +162,7 @@ export default function HallOfFame({ onOpenDonate }: HallOfFameProps) {
             <div className="hof-cta-glow-bg" />
             <div className="hof-cta-content">
               <div className="hof-cta-icon-wrap">
-                <HandHeart size={26} weight="fill" />
+                <HandHeart size={28} weight="fill" />
               </div>
               <div className="hof-cta-text">
                 <h3 className="hof-cta-title">{t('hof.cta')}</h3>
@@ -171,7 +171,7 @@ export default function HallOfFame({ onOpenDonate }: HallOfFameProps) {
             </div>
             {onOpenDonate && (
               <button type="button" className="btn btn-primary hof-cta-btn" onClick={onOpenDonate}>
-                <Heart size={18} weight="fill" />
+                <Heart size={19} weight="fill" />
                 <span>{t('hof.ctaBtn')}</span>
               </button>
             )}

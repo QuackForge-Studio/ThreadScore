@@ -3972,49 +3972,67 @@ textarea.field-input { resize: vertical; }
 /* ===== Hall of Fame (Clean Supporter Grid) ===== */
 .hof-section-head {
   text-align: center;
-  max-width: 540px;
-  margin: 0 auto 20px;
+  max-width: 660px;
+  margin: 0 auto 28px;
 }
 
 .hof-eyebrow-badge {
   color: var(--accent);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.hof-section-head .section-title {
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 850;
+  letter-spacing: -0.03em;
+  margin-bottom: 12px;
+}
+
+.hof-section-head .section-subtitle {
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: var(--muted);
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .hof-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
   max-width: 720px;
-  margin: 0 auto 18px;
+  margin: 0 auto 24px;
 }
 
 .hof-card {
   position: relative;
   background: var(--surface);
   border: 1px solid var(--border-soft);
-  border-radius: 14px;
-  padding: 14px 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  transition: border-color 150ms ease, transform 150ms ease;
+  gap: 10px;
+  transition: border-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
 }
 
 .hof-card:hover {
   border-color: var(--border-strong);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
 }
 
 .hof-card-head {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .hof-avatar {
-  width: 30px;
-  height: 30px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -4044,13 +4062,13 @@ textarea.field-input { resize: vertical; }
 .hof-name-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .hof-name {
   margin: 0;
-  font-size: 13.5px;
-  font-weight: 750;
+  font-size: 16px;
+  font-weight: 800;
   color: var(--ink);
   white-space: nowrap;
   overflow: hidden;
@@ -4059,9 +4077,9 @@ textarea.field-input { resize: vertical; }
 
 .hof-vip-pill {
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 10.5px;
   font-weight: 800;
-  padding: 1px 5px;
+  padding: 2px 7px;
   border-radius: 4px;
   background: var(--accent);
   color: #fff;
@@ -4070,10 +4088,11 @@ textarea.field-input { resize: vertical; }
 .hof-tier-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 650;
+  gap: 5px;
+  font-size: 13.5px;
+  font-weight: 700;
   color: var(--muted);
+  margin-top: 2px;
 }
 
 .hof-card-body {
@@ -4083,19 +4102,19 @@ textarea.field-input { resize: vertical; }
 .hof-message-box {
   display: flex;
   align-items: flex-start;
-  gap: 6px;
+  gap: 8px;
   background: var(--surface-raised, rgba(0, 0, 0, 0.02));
-  border-radius: 8px;
-  padding: 7px 10px;
-  font-size: 12px;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
   color: var(--ink-2);
-  line-height: 1.45;
+  line-height: 1.5;
 }
 
 .hof-quote-icon {
   color: var(--accent);
   flex-shrink: 0;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
 .hof-message {
@@ -4106,49 +4125,52 @@ textarea.field-input { resize: vertical; }
   margin: 0;
   color: var(--muted);
   font-style: italic;
+  font-size: 13.5px;
 }
 
 .hof-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 11px;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--muted);
-  padding-top: 5px;
+  padding-top: 8px;
   border-top: 1px solid var(--border-soft);
 }
 
 .hof-date {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
 
 .hof-cta-box {
   max-width: 720px;
   margin: 0 auto;
-  padding: 14px 18px;
-  border-radius: 14px;
+  padding: 16px 22px;
+  border-radius: 16px;
   background: var(--surface);
   border: 1px solid var(--border-soft);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
 .hof-cta-content {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
   flex: 1;
   min-width: 0;
 }
 
 .hof-cta-icon-wrap {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -4158,23 +4180,26 @@ textarea.field-input { resize: vertical; }
 }
 
 .hof-cta-title {
-  margin: 0 0 1px;
-  font-size: 13px;
-  font-weight: 750;
+  margin: 0 0 3px;
+  font-size: 15.5px;
+  font-weight: 800;
   color: var(--ink);
 }
 
 .hof-cta-desc {
   margin: 0;
-  font-size: 11.5px;
+  font-size: 13.5px;
   color: var(--muted);
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .hof-cta-btn {
-  padding: 6px 13px;
-  font-size: 12px;
+  padding: 8px 18px;
+  font-size: 14px;
+  font-weight: 750;
+  height: 38px;
   flex-shrink: 0;
+  border-radius: var(--radius-pill, 999px);
 }
 
 
