@@ -131,7 +131,7 @@ export const translations = {
     'tc.postsCount': 'bài viết',
     'tc.onThreads': 'Mở trên Threads',
     'tc.viewReport': 'Xem chi tiết',
-    'tc.viewAnalysis': 'Xem phân tích →',
+    'tc.viewAnalysis': 'Xem phân tích',
     'tc.heatBadge': 'Chỉ số độ drama thảo luận (0-100)',
     'tc.anon': 'ẩn danh',
 
@@ -353,7 +353,7 @@ export const translations = {
     'tc.postsCount': 'threads',
     'tc.onThreads': 'Open on Threads',
     'tc.viewReport': 'View report',
-    'tc.viewAnalysis': 'View analysis →',
+    'tc.viewAnalysis': 'View analysis',
     'tc.heatBadge': 'Discussion drama score (0-100)',
     'tc.anon': 'anonymous',
 

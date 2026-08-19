@@ -80,10 +80,6 @@ function AppContent() {
                 <Link to="/privacy" className="footer-legal-action-link">
                   {t('footer.privacy')}
                 </Link>
-                <span className="footer-legal-sep">·</span>
-                <a href="mailto:quackforge.studio@gmail.com" className="footer-legal-action-link">
-                  {t('footer.contact')}
-                </a>
               </div>
             </div>
           </div>
