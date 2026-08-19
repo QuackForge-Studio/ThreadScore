@@ -1712,25 +1712,29 @@ button { font-family: var(--font-sans); }
 .footer-legal-links-row {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 8px;
   margin-top: 10px;
   flex-wrap: wrap;
 }
 
 .footer-legal-action-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
   color: var(--accent);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 650;
   text-decoration: none;
   transition: all 120ms ease;
 }
 
 .footer-legal-action-link:hover {
   text-decoration: underline;
-  transform: translateX(2px);
+  color: var(--accent-hover, #ff6b4a);
+}
+
+.footer-legal-sep {
+  color: var(--muted);
+  opacity: 0.5;
+  user-select: none;
+  font-size: 12px;
 }
 
 .pill {
@@ -3276,25 +3280,47 @@ textarea.field-input { resize: vertical; }
   text-decoration: underline;
 }
 
-.footer-donate-btn {
-  background: linear-gradient(135deg, rgba(240, 90, 40, 0.15), rgba(229, 72, 77, 0.15));
-  border: 1px solid rgba(240, 90, 40, 0.35);
-  color: var(--accent-strong);
-  padding: 4px 10px;
-  border-radius: var(--radius-pill);
-  font-size: 12px;
+.footer-donate-btn,
+.footer-github-btn {
+  height: 38px;
+  padding: 0 18px;
+  border-radius: var(--radius-pill, 999px);
+  font-size: 13.5px;
   font-weight: 700;
-  cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  transition: all 140ms ease;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 150ms ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.footer-donate-btn {
+  background: var(--anger-soft, rgba(229, 72, 77, 0.15));
+  border: 1px solid rgba(229, 72, 77, 0.35);
+  color: var(--anger-ink, #E5484D);
 }
 
 .footer-donate-btn:hover {
-  background: var(--accent);
+  background: var(--accent, #E5484D);
   color: #FFFFFF;
-  border-color: var(--accent);
+  border-color: var(--accent, #E5484D);
+  transform: translateY(-1px);
+}
+
+.footer-github-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.footer-github-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
 }
 
 /* ===== Hall of Fame ===== */

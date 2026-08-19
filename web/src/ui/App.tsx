@@ -74,20 +74,22 @@ function AppContent() {
               <p>{t('footer.disclaimerSummary')}</p>
               <div className="footer-legal-links-row">
                 <Link to="/privacy" className="footer-legal-action-link">
-                  <ShieldCheck size={14} /> {t('footer.legalLink')} →
+                  {t('footer.legalLink')}
                 </Link>
-                <a href="mailto:quackforge.studio@gmail.com" className="footer-credit-link">
-                  <EnvelopeSimple size={13} /> {t('footer.contact')}
+                <span className="footer-legal-sep">·</span>
+                <Link to="/privacy" className="footer-legal-action-link">
+                  {t('footer.privacy')}
+                </Link>
+                <span className="footer-legal-sep">·</span>
+                <a href="mailto:quackforge.studio@gmail.com" className="footer-legal-action-link">
+                  {t('footer.contact')}
                 </a>
               </div>
             </div>
           </div>
           <div className="footer-bottom">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+            <div>
               <span>© {new Date().getFullYear()} ThreadScore</span>
-              <Link to="/privacy" className="footer-credit-link" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                <ShieldCheck size={14} /> {t('footer.privacy')}
-              </Link>
             </div>
 
             <div className="footer-actions-row">
