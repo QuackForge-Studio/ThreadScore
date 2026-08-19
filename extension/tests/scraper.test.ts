@@ -234,5 +234,53 @@ describe('scrapeCurrentThread', () => {
     expect(gql?.author_name).toBe('Lão Tám');
     expect(gql?.posted_at).toBe(1700000000);
   });
+
+  it('does not mix comments from a previous post after switching threads', async () => {
+    // Giả lập comment của BÀI CŨ (URL khác) còn sót trong buffer
+    window.postMessage(
+      {
+        type: 'TS_GRAPHQL_COMMENTS_INTERCEPTED',
+        comments: [
+          {
+            external_id: 'old1',
+            author_username: 'olduser',
+            author_name: null,
+            text: 'comment của bài cũ, phải bị loại',
+            like_count: 1,
+            posted_at: null,
+          },
+        ],
+        pageUrl: 'https://www.threads.net/@oldauthor/post/OLDCODE123',
+      },
+      '*'
+    );
+    // Comment của BÀI MỚI (khớp URL đang mở) phải được giữ
+    window.postMessage(
+      {
+        type: 'TS_GRAPHQL_COMMENTS_INTERCEPTED',
+        comments: [
+          {
+            external_id: 'new1',
+            author_username: 'newuser',
+            author_name: null,
+            text: 'comment của bài mới',
+            like_count: 2,
+            posted_at: null,
+          },
+        ],
+        pageUrl: 'https://www.threads.net/@haian_0409/post/DF7k123',
+      },
+      '*'
+    );
+    await new Promise((r) => setTimeout(r, 20));
+
+    const doc = makeRealisticThreadsDom(); // URL = https://www.threads.net/@haian_0409/post/DF7k123
+    const result = await scrapeCurrentThread(doc);
+
+    const oldComment = result.comments.find((c) => c.author_username === 'olduser');
+    const newComment = result.comments.find((c) => c.author_username === 'newuser');
+    expect(oldComment).toBeUndefined(); // bài cũ phải bị loại
+    expect(newComment).toBeDefined(); // bài mới phải được giữ
+  });
 });
 
