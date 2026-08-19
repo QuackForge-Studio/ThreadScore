@@ -96,15 +96,28 @@ function restoreBuffer() {
     if (!raw) return;
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) {
+      const { postCode: currentPostCode } = parseThreadsUrl(window.location.href);
       const seen = new Set(interceptedCommentsBuffer.map(c => c.external_id || `${c.author_username}:${c.text}`));
+      let restored = 0;
+      let dropped = 0;
       for (const c of parsed) {
         if (!c || !c.text || !c.author_username) continue;
+        // Dữ liệu cũ (phiên trước) không có pageUrl → không xác định được bài.
+        // Chỉ giữ nếu code khớp postCode bài đang mở; còn lại loại bỏ để không trộn bài cũ.
+        if (!c.pageUrl) {
+          const code = c.code ? String(c.code) : null;
+          if (currentPostCode && code && code !== currentPostCode) {
+            dropped++;
+            continue;
+          }
+        }
         const key = c.external_id || `${c.author_username}:${c.text}`;
         if (seen.has(key)) continue;
         seen.add(key);
         interceptedCommentsBuffer.push(c);
+        restored++;
       }
-      logScrapeDebug('persist', `restored ${parsed.length} comments từ sessionStorage (tổng buffer=${interceptedCommentsBuffer.length})`);
+      logScrapeDebug('persist', `restored ${restored} comments từ sessionStorage, loại ${dropped} comment bài cũ (tổng buffer=${interceptedCommentsBuffer.length})`);
     }
   } catch {}
 }
@@ -778,8 +791,11 @@ async function fetchNestedReplies(
   maxParents: number = 60
 ): Promise<ScrapedComment[]> {
   const nestedComments: ScrapedComment[] = [];
+  // CHỈ fetch các comment thực sự có reply con (direct_reply_count > 0).
+  // Không fetch mọi comment có code — code của comment là bài độc lập (có thể là bài khác),
+  // fetch nhầm sẽ kéo replies của bài viết khác vào kết quả.
   const parentsWithReplies = parentComments.filter(
-    (c) => (c.direct_reply_count && c.direct_reply_count > 0 && c.code) || c.code
+    (c) => c.direct_reply_count && c.direct_reply_count > 0 && c.code
   );
 
   const targets = parentsWithReplies.slice(0, maxParents);
