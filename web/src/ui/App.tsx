@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { GithubLogo, Sun, Moon, EnvelopeSimple, Coffee, Heart, ShieldCheck } from '@phosphor-icons/react';
 import HomePage from './pages/HomePage';
@@ -122,7 +122,7 @@ function AppContent() {
 
               <div className="footer-credits">
                 {t('footer.credits')}{' '}
-                <a href="https://quackforge.io.vn" target="_blank" rel="noreferrer" className="footer-credit-link">
+                <a href="https://quackforge.xyz" target="_blank" rel="noreferrer" className="footer-credit-link">
                   QuackForge Studio
                 </a>{' '}
                 &amp;{' '}

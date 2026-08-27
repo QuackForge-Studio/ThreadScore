@@ -1,5 +1,5 @@
-// threadscore-cron: Worker với cron trigger mỗi 5 phút, gọi scoring endpoint của Pages.
-const PAGES_URL = 'https://threadscore.quackforge.io.vn/api/cron/scoring';
+﻿// threadscore-cron: Worker với cron trigger mỗi 5 phút, gọi scoring endpoint của Pages.
+const PAGES_URL = 'https://threadscore.quackforge.xyz/api/cron/scoring';
 
 async function triggerScoring(env: Env): Promise<void> {
   try {

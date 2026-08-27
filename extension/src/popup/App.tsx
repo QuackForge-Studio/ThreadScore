@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+﻿import { useEffect, useState, useMemo } from 'react';
 import {
   Fire,
   CloudArrowUp,
@@ -310,7 +310,7 @@ export default function App() {
           <div className="sp-field">
             <label>Domain Server Web</label>
             <input
-              placeholder="https://threadscore.quackforge.io.vn"
+              placeholder="https://threadscore.quackforge.xyz"
               value={config.webUrl}
               onChange={(e) => setConfigState({ ...config, webUrl: e.target.value })}
             />

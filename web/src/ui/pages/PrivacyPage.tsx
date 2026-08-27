@@ -1,4 +1,4 @@
-import { ShieldCheck, ArrowLeft, EnvelopeSimple, Lock, Eye, Database, Trash, Scales, ShieldWarning } from '@phosphor-icons/react';
+﻿import { ShieldCheck, ArrowLeft, EnvelopeSimple, Lock, Eye, Database, Trash, Scales, ShieldWarning } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
 import { Reveal } from '../components/motion';
 import { useI18n } from '../i18n';
@@ -196,7 +196,7 @@ export default function PrivacyPage() {
               <p>{m.s7p}</p>
               <div style={{ marginTop: '10px', fontSize: '14px' }}>
                 <p><b>{m.studio}</b> QuackForge Studio</p>
-                <p><b>{m.website}</b> <a href="https://quackforge.io.vn" target="_blank" rel="noreferrer" style={{ color: 'var(--accent-strong)' }}>https://quackforge.io.vn</a></p>
+                <p><b>{m.website}</b> <a href="https://quackforge.xyz" target="_blank" rel="noreferrer" style={{ color: 'var(--accent-strong)' }}>https://quackforge.xyz</a></p>
                 <p><b>{m.email}</b> <a href="mailto:quackforge.studio@gmail.com" style={{ color: 'var(--accent-strong)' }}>quackforge.studio@gmail.com</a></p>
               </div>
             </section>

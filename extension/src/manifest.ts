@@ -1,4 +1,4 @@
-import { defineManifest } from '@crxjs/vite-plugin';
+﻿import { defineManifest } from '@crxjs/vite-plugin';
 
 export default defineManifest({
   manifest_version: 3,
@@ -11,8 +11,8 @@ export default defineManifest({
     'https://*.threads.com/*',
     'https://threads.net/*',
     'https://threads.com/*',
-    'https://threadscore.quackforge.io.vn/*',
-    'https://*.quackforge.io.vn/*',
+    'https://threadscore.quackforge.xyz/*',
+    'https://*.quackforge.xyz/*',
     'http://localhost:*/*',
   ],
   action: { default_title: 'ThreadScore Importer' },

@@ -1,11 +1,11 @@
-export interface ExtensionConfig {
+﻿export interface ExtensionConfig {
   webUrl: string;
   adminKey: string;
   autoEnabled: boolean; // chạy batch tự động theo lịch (chrome.alarms)
 }
 
 const CONFIG_KEY = 'threadscore_config';
-const DEFAULTS: ExtensionConfig = { webUrl: 'https://threadscore.quackforge.io.vn', adminKey: '', autoEnabled: false };
+const DEFAULTS: ExtensionConfig = { webUrl: 'https://threadscore.quackforge.xyz', adminKey: '', autoEnabled: false };
 
 export async function getConfig(): Promise<ExtensionConfig> {
   const result = await chrome.storage.local.get(CONFIG_KEY);

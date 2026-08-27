@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockStorage: Record<string, unknown> = {};
 vi.stubGlobal('chrome', {
@@ -19,7 +19,7 @@ describe('storage', () => {
 
   it('returns default config when empty', async () => {
     const cfg = await getConfig();
-    expect(cfg.webUrl).toBe('https://threadscore.quackforge.io.vn');
+    expect(cfg.webUrl).toBe('https://threadscore.quackforge.xyz');
     expect(cfg.adminKey).toBe('');
   });
 

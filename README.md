@@ -1,4 +1,4 @@
-# 🦆 ThreadScore
+﻿# 🦆 ThreadScore
 
 Nền tảng đo lường & phân tích mức độ cảm xúc, tranh luận và "nhiệt độ" thảo luận trong các bài viết Threads của cộng đồng.
 
@@ -87,7 +87,7 @@ npx wrangler pages deploy dist
 3. Bật **Developer mode** (Chế độ dành cho nhà phát triển).
 4. Chọn **Load unpacked** (Tải tiện ích đã giải nén) và trỏ tới thư mục `extension/dist`.
 5. Mở Sidepanel của tiện ích, vào Cài đặt và nhập:
-   - **Web URL**: URL trang web ThreadScore của bạn (ví dụ: `https://threadscore.quackforge.io.vn` hoặc `http://localhost:5173`).
+   - **Web URL**: URL trang web ThreadScore của bạn (ví dụ: `https://threadscore.quackforge.xyz` hoặc `http://localhost:5173`).
    - **Admin Key**: Khóa trùng khớp với `ADMIN_SECRET_KEY` trên server.
 
 ---
