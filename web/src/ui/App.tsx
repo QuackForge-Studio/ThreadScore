@@ -5,6 +5,8 @@ import HomePage from './pages/HomePage';
 import ThreadPage from './pages/ThreadPage';
 import AdminPage from './pages/AdminPage';
 import PrivacyPage from './pages/PrivacyPage';
+import TermsPage from './pages/TermsPage';
+import PaymentPolicyPage from './pages/PaymentPolicyPage';
 import DonateModal from './components/DonateModal';
 import { ThemeProvider, useTheme } from './theme';
 import { I18nProvider, useI18n } from './i18n';
@@ -31,6 +33,9 @@ function AppContent() {
             <Route path="/t/:id" element={<ThreadPage />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/dieu-khoan-dich-vu" element={<TermsPage />} />
+            <Route path="/chinh-sach-bao-mat" element={<PrivacyPage />} />
+            <Route path="/chinh-sach-thanh-toan" element={<PaymentPolicyPage />} />
           </Routes>
         </main>
 
@@ -73,32 +78,26 @@ function AppContent() {
               <h4>{t('footer.disclaimerTitle')}</h4>
               <p>{t('footer.disclaimerSummary')}</p>
               <div className="footer-legal-links-row">
-                <a
-                  href="https://quackcraft.quackforge.xyz/dieu-khoan-dich-vu.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  to="/dieu-khoan-dich-vu"
                   className="footer-legal-action-link"
                 >
                   Điều khoản dịch vụ
-                </a>
+                </Link>
                 <span className="footer-legal-sep">·</span>
-                <a
-                  href="https://quackcraft.quackforge.xyz/chinh-sach-bao-mat.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  to="/chinh-sach-bao-mat"
                   className="footer-legal-action-link"
                 >
                   Chính sách bảo mật
-                </a>
+                </Link>
                 <span className="footer-legal-sep">·</span>
-                <a
-                  href="https://quackcraft.quackforge.xyz/chinh-sach-thanh-toan.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  to="/chinh-sach-thanh-toan"
                   className="footer-legal-action-link"
                 >
                   Chính sách thanh toán & Hoàn tiền
-                </a>
+                </Link>
               </div>
 
               <div className="footer-business-info" style={{ marginTop: '8px', fontSize: '11.5px', lineHeight: '1.6', color: 'rgba(255, 253, 248, 0.4)' }}>
