@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { GithubLogo, Sun, Moon, EnvelopeSimple, Coffee, Heart, ShieldCheck } from '@phosphor-icons/react';
 import HomePage from './pages/HomePage';
@@ -44,8 +44,8 @@ function AppContent() {
               <p>{t('footer.brandDesc')}</p>
 
               <div className="footer-contact-row">
-                <a href="mailto:quackforge.studio@gmail.com" className="footer-contact-link">
-                  <EnvelopeSimple size={15} /> quackforge.studio@gmail.com
+                <a href="mailto:support@quackforge.xyz" className="footer-contact-link">
+                  <EnvelopeSimple size={15} /> support@quackforge.xyz
                 </a>
               </div>
 
@@ -73,13 +73,44 @@ function AppContent() {
               <h4>{t('footer.disclaimerTitle')}</h4>
               <p>{t('footer.disclaimerSummary')}</p>
               <div className="footer-legal-links-row">
-                <Link to="/privacy" className="footer-legal-action-link">
-                  {t('footer.legalLink')}
-                </Link>
+                <a
+                  href="https://quackcraft.quackforge.xyz/dieu-khoan-dich-vu.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="footer-legal-action-link"
+                >
+                  Điều khoản dịch vụ
+                </a>
                 <span className="footer-legal-sep">·</span>
-                <Link to="/privacy" className="footer-legal-action-link">
-                  {t('footer.privacy')}
-                </Link>
+                <a
+                  href="https://quackcraft.quackforge.xyz/chinh-sach-bao-mat.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="footer-legal-action-link"
+                >
+                  Chính sách bảo mật
+                </a>
+                <span className="footer-legal-sep">·</span>
+                <a
+                  href="https://quackcraft.quackforge.xyz/chinh-sach-thanh-toan.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="footer-legal-action-link"
+                >
+                  Chính sách thanh toán & Hoàn tiền
+                </a>
+              </div>
+
+              <div className="footer-business-info" style={{ marginTop: '8px', fontSize: '11.5px', lineHeight: '1.6', color: 'rgba(255, 253, 248, 0.4)' }}>
+                <p style={{ margin: '0 0 2px' }}>
+                  <strong style={{ color: 'rgba(255, 253, 248, 0.7)' }}>CHỦ SỞ HỮU WEBSITE: HỘ KINH DOANH QUACKFORGE</strong> · MST: <strong style={{ color: 'rgba(255, 253, 248, 0.7)' }}>083204010221</strong> (UBND Xã An Định cấp ngày 04/08/2026)
+                </p>
+                <p style={{ margin: '0 0 2px' }}>
+                  Đại diện: <strong style={{ color: 'rgba(255, 253, 248, 0.7)' }}>Lương Duy Khang</strong> · Địa chỉ: <strong>số 135, Ấp Phú Lộc Thượng, Xã An Định, Tỉnh Vĩnh Long</strong>
+                </p>
+                <p style={{ margin: 0 }}>
+                  Điện thoại liên hệ: <a href="tel:0943505127" style={{ color: 'inherit', textDecoration: 'underline' }}>0943505127</a> · Email: <a href="mailto:support@quackforge.xyz" style={{ color: 'inherit', textDecoration: 'underline' }}>support@quackforge.xyz</a>
+                </p>
               </div>
             </div>
           </div>
